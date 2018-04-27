@@ -15,7 +15,7 @@ Class UserModel extends CI_Model {
         if($type == 'ID'){
            $this->db->where('u.user_id',$var); 
         }else{
-           $this->db->where('u.user_email',$var); 
+           $this->db->where('u.user_name',$var); 
         }
         
         $this->db->from('users u');
@@ -39,6 +39,33 @@ Class UserModel extends CI_Model {
             return false;
         }
         
+    }
+    
+    public function isDeveloper() {
+
+        if (isset($this->session->userdata['logged_in'])) {
+            
+            if($this->session->userdata['logged_in']['user_system_role'] == 'developer'){
+                return true;
+            }else{
+                return FALSE;
+            }
+            
+        } else {
+            return false;
+        }
+        
+    }
+    
+    
+    
+    public function isStationAdmin($user_id, $station_id = null) {
+        $res = $this->db->where('user_id',$user_id)->where('user_role','admin')->limit(1)->get('users');
+        if($res->num_rows() == 1){
+            return TRUE;
+        }else{
+            return FALSE;
+        }
     }
     
    

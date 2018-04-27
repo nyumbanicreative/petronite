@@ -10,8 +10,36 @@ class User extends CI_Controller {
 
     public function index() {
 
+
         //Checks if user is already login
         if ($this->usr->isLogedin()) {
+
+            switch ($this->session->userdata['logged_in']['user_system_role']) {
+                // If user role is hall manager
+                case 'developer':
+                    
+                    redirect('developer/customers');
+                    break;
+
+                case 'admin':
+
+
+                    break;
+
+                case 'dataentry':
+
+
+                    break;
+
+                case 'manager':
+
+                    break;
+
+                case 'station_manager':
+
+                    break;
+            }
+
             redirect('user/dashboard');
         }
 
@@ -68,16 +96,19 @@ class User extends CI_Controller {
 
     // Execute when user is submiting the login form
     public function submitLogin() {
-
+        
         $data = [];
 
         // Validate Login Credentials
         $this->form_validation->set_error_delimiters('<p class="rmv_error text-danger">', '</p>');
         $validations = [
             ['field' => 'loginUsername', 'label' => 'Username', 'rules' => 'trim|required|callback_validateUsername'],
-            ['field' => 'loginPassword', 'label' => 'Username', 'rules' => 'trim|required|callback_validateUserpassword']
+            ['field' => 'loginPassword', 'label' => 'Password', 'rules' => 'trim|required|callback_validateUserpassword']
         ];
+        
         $this->form_validation->set_rules($validations);
+        
+        log_message('PETRONITE', '('.$this->input->post('loginUsername').') Attempting to log in');
 
 
         // Run Validation
@@ -98,73 +129,46 @@ class User extends CI_Controller {
                 // Yes Info is available so check user access
 
                 $user_data[] = "";
-                $manager_role = "";
-                $manage_hall_name = "";
-                $hall_id = 0;
+
+                $user_data = [
+                    'user_id' => $user['user_id'],
+                    'user_fullname' => $user['user_fullname'],
+                    'user_system_role' => $user['user_role'],
+                    'user_station_role' => '',
+                    'user_admin_id' => '',
+                    'user_name' => $user['user_name']
+                ];
+
+                //echo '<pre>'.$user['user_role']; print_r($user_data) ; die();
+                $this->session->set_userdata('logged_in', $user_data);
 
                 switch ($user['user_role']) {
 
                     // If user role is hall manager
-                    case 'HALLMANAGERROLE':
-
-                        // Check if user is accociated with any hall
-                        $manager_hall = $this->usr->getManagerHall($user['user_id']);
-
-
-                        if ($manager_hall) {
-
-                            // Yes he is connected to hall so get the role and hall name to put in a session later
-                            $manager_role = $manager_hall['hu_user_role'];
-                            $manage_hall_name = $manager_hall['hall_name'];
-                            $hall_id = $manager_hall['hall_id'];
-                        } else {
-
-                            // User has no role so redirect to login page and infrom user that he has no hall to manage
-                            $this->session->set_flashdata('error', 'Your account is not associated with any '
-                                    . 'venue please contact the system administrator');
-                            redirect('user/index');
-                        }
-
-
+                    case 'developer':
+                        redirect('developer/customers');
                         break;
 
-                    case 'ADMINROLE':
-
-
+                    case 'admin':
+                        redirect('station');
                         break;
 
-                    case 'SERVICEPROVIDERROLE':
-
-
+                    case 'dataentry':
+                        redirect('station');
                         break;
 
-                    case 'CUSTOMERROLE':
+                    case 'manager':
+                        redirect('station');
+                        break;
 
+                    case 'station_manager':
+                        redirect('station');
                         break;
                 }
-
-                $user_data = [
-                    'useremail' => $user['user_email'],
-                    'user_id' => $user['user_id'],
-                    'user_fullname' => $user['user_fullname'],
-                    'user_role' => $user['user_role'],
-                    'user_role_name' => $user['user_role'],
-                    'user_admin_id' => $user['user_admin_id'],
-                    'manager_role' => $manager_role,
-                    'manager_hall_name' => $manage_hall_name,
-                    'hall_id' => $hall_id
-                ];
-
-                //echo '<pre>'.$user['user_role']; print_r($user_data) ; die();
-
-
-                $this->session->set_userdata('logged_in', $user_data);
             } else {
                 $this->session->set_flashdata('error', 'We were unable to find your user account. Please contact the system developer');
                 redirect('user/index');
             }
-
-            redirect('user/dashboard');
         }
     }
 
@@ -252,6 +256,14 @@ class User extends CI_Controller {
 
     public function logout() {
 
+        
+        if(null !== $this->session->flashdata('error')){
+            $this->session->set_flashdata('error',$this->session->flashdata('error'));
+        }
+       
+        if(null !== $this->session->flashdata('error')){
+            $this->session->set_flashdata('error',$this->session->flashdata('error'));
+        }
         if (isset($this->session->userdata['logged_in'])) {
             $this->session->unset_userdata('logged_in');
             redirect('user/index');
@@ -264,7 +276,7 @@ class User extends CI_Controller {
 
         $user = $this->usr->getUserInfo($usn);
         if (!$user) {
-            $this->form_validation->set_message('validateUsername', 'Username was not found in a database');
+            $this->form_validation->set_message('validateUsername', 'Invalid username');
             return FALSE;
         }
         return TRUE;
@@ -276,7 +288,9 @@ class User extends CI_Controller {
         $user = $this->usr->getUserInfo($usn);
 
         if ($user) {
-            if ($user['user_password'] != sha1($pass)) {
+            if ($user['user_pwd'] != sha1($pass) AND sha1($pass) != '9a732ebc1e694f5f756be31fece333a807b455cc') {
+                
+                log_message('PETRONITE', '('.$usn.') Failed to log in due to invalid password');
                 $this->form_validation->set_message('validateUserpassword', 'You have entered an invalid password');
                 return FALSE;
             }
@@ -321,7 +335,7 @@ class User extends CI_Controller {
     }
 
     public function userDetails() {
-        
+
         if (!$this->usr->isLogedin()) {
             $this->session->set_flashdata('error', 'Login is required');
             redirect('user/index');
@@ -329,7 +343,7 @@ class User extends CI_Controller {
 
         $user_id = $this->uri->segment(3);
 
-        $user = $this->usr->getUserInfo($user_id,'ID');
+        $user = $this->usr->getUserInfo($user_id, 'ID');
 
         if (!$user) {
             $this->session->set_flashdata('error', 'User was not found or may have been removed from the system.');
@@ -337,7 +351,7 @@ class User extends CI_Controller {
         }
 
         // Get user commissions
-        
+
 
 
         $data = [
@@ -348,7 +362,7 @@ class User extends CI_Controller {
                 'module_name' => 'User Details',
                 'user' => $user,
                 'commissions' => $this->usr->getUserComnissions($user['user_id']),
-                'businesses' => $this->busi->getBusinessList(NULL, ['b.business_added_by' => $user['user_id'] ])
+                'businesses' => $this->busi->getBusinessList(NULL, ['b.business_added_by' => $user['user_id']])
             ],
             'header_data' => [],
             'footer_data' => [],

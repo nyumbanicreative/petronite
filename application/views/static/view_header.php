@@ -44,7 +44,7 @@
         <!--    <link href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css" rel="stylesheet" type="text/css"/>
                 <script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js" type="text/javascript"></script>
         -->
-        
+
         <script src="<?php echo base_url(); ?>assets/vendor/datatables/datatables.min.js" type="text/javascript"></script>
         <link href="<?php echo base_url(); ?>assets/vendor/datatables/datatables.min.css" rel="stylesheet" type="text/css"/>
         <script src="<?php echo base_url(); ?>assets/vendor/datatables/responsive.1/js/dataTables.responsive.js" type="text/javascript"></script>
@@ -77,8 +77,8 @@
 
         <link href="<?php echo base_url(); ?>assets/vendor/select2/css/select2.css" rel="stylesheet" type="text/css"/>
         <script src="<?php echo base_url(); ?>assets/vendor/select2/js/select2.full.js" type="text/javascript"></script>
-        
-        
+
+
         <!--- Select 2 -->
 
 
@@ -95,7 +95,7 @@
         <link href="<?php echo base_url(); ?>assets/vendor/tooltipster-master/dist/css/tooltipster.bundle.min.css" rel="stylesheet" type="text/css"/>
 
 
-        
+
         <!-- Block UI -->
         <script src="<?php echo base_url(); ?>assets/js/jquery.blockUI.js" type="text/javascript"></script>
 
@@ -103,12 +103,12 @@
         <link href="<?php echo base_url(); ?>assets/vendor/simplecal/css/dncalendar-skin.css" rel="stylesheet" type="text/css"/>
         <script src="<?php echo base_url(); ?>assets/vendor/simplecal/js/dncalendar.js" type="text/javascript"></script>
 
-        
+
         <!-- Text Editor -->
         <script src="<?php echo base_url(); ?>assets/vendor/jte/jquery-te-1.4.0.min.js" type="text/javascript"></script>
         <link href="<?php echo base_url(); ?>assets/vendor/jte/jquery-te-1.4.0.css" rel="stylesheet" type="text/css"/>
-        
-        
+
+
         <script type="text/javascript">
 
             $(document).ready(function () {
@@ -139,7 +139,7 @@
                     }
                 });
 
-               
+
 
                 $('.input-field').click(function () {
 
@@ -159,7 +159,7 @@
                     $(this).children(".field_error").remove();
                     $(this).children('.form-control').removeClass("is-invalid");
                 });
-                
+
             });
         </script>
 
@@ -174,9 +174,17 @@
                 min-height: 100%;
                 height: 100%;
             }
+
+            td.danger{
+                background: #ffefef;
+            }
+            
+            td.info{
+                background: #effbff;;
+            }
         </style>
 
 
     </head>
     <body>
-        <div class="page <?php echo isset($page_class) ? $page_class : ""; ?>">
+        <div class=" <?php echo isset($page_class) ? $page_class : ""; ?>">

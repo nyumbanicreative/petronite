@@ -17,7 +17,7 @@
         if ($user_role == 'ADMINROLE') {
             ?>
 
-            <li class="<?php echo ($curr_menu == 'USERS') ? "active" : "" ?>"><a href="#users" aria-expanded="<?php echo ($curr_menu == 'USERS') ? "true" : "false" ?>" data-toggle="collapse"> <i class="fa fa-group"></i>Users Management </a>
+            <li class="<?php echo ($curr_menu == 'USERS') ? "active" : "" ?>"><a href="#users" aria-expanded="<?php echo ($curr_menu == 'USERS') ? "true" : "false" ?>" data-toggle="collapse"><i class="fa fa-group"></i>Users Management </a>
                 <ul id="users" class="<?php echo ($curr_sub_menu == 'USERS') ? "" : "collapse" ?> list-unstyled">
                     <li><a href="<?php echo site_url('user/userslist'); ?>">Users List</a></li>
                 </ul>

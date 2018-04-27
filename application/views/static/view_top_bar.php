@@ -14,10 +14,16 @@
         <!-- Navbar Header-->
         <div class="navbar-header">
             <!-- Toggle Button--><a id="toggle-btn" href="#" class="menu-btn active"><span></span><span></span><span></span></a>
-          <!-- Navbar Brand --><a href="index.html" class="navbar-brand">
-<!--            <div class="brand-text brand-big"><span>HALLS </span><strong>4ALL</strong></div>-->
-            <div class="brand-text brand-big"><span><?php echo SYSTEM_NAME; ?> </span></div>
-            <div class="brand-text brand-small"><strong><?php echo SYSTEM_NAME_SHORT; ?></strong></div></a>
+          <!-- Navbar Brand -->
+          
+          <a href="index.html" style="width:130px" class="">
+              
+              <img style="margin-top: -10px;" src="<?php echo base_url().'assets/img/petronite2.png';?>" />
+<!--            <div class="brand-text brand-big"><span>HALLS </span><strong>4ALL</strong></div>
+              <div class="brand-text brand-big"><span style="display: inline-block;width: 100px;"><?php //echo SYSTEM_NAME; ?> </span></div>
+            <div class="brand-text brand-small"><strong><?php echo SYSTEM_NAME_SHORT; ?></strong></div>
+          -->
+          </a>
           
         </div>
         <!-- Navbar Menu -->

@@ -94,3 +94,4 @@ define('SYSTEM_NAME', 'PETRONITE');
 define('SYSTEM_NAME_SHORT', 'PETRONITE');
 define('DESIGNED_BY', 'Nyumbani Creative');
 define('DESIGNED_BY_URL', 'http://nyumbanicreative.com');
+define('SYSTEM_LOG','PETRONITE');

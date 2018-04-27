@@ -13,7 +13,8 @@
     </ul>
 </div>
 <?php echo $error_msg . $success_msg; ?>
-<section class="tables no-padding-top">   
+<section class="tables no-padding-top">  
+    
     <div class="container-fluid" style="min-height: 500px;">
         <br/>
         <div class="row">

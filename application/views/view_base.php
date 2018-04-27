@@ -7,8 +7,9 @@ $content_data['success_msg'] = "";
 // Profile Data Above Menu
 if ($this->usr->isLogedin()) {
     $menu_data['user_fullname'] = $this->session->userdata['logged_in']['user_fullname'];
-    $menu_data['user_role'] = $this->session->userdata['logged_in']['user_role'];
-    $menu_data['user_role_name'] = $this->session->userdata['logged_in']['user_role_name'];
+    $menu_data['user_system_role'] = $this->session->userdata['logged_in']['user_system_role'];
+    $menu_data['user_station_role'] = $this->session->userdata['logged_in']['user_station_role'];
+    $menu_data['user_name'] = $this->session->userdata['logged_in']['user_name'];
 }
 
 
