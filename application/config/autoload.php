@@ -137,5 +137,11 @@ $autoload['model'] = [
     'UserModel' => 'usr',
     'DeveloperModel' => 'dev',
     'StationModel' => 'stn',
-    'CustomerModel' => 'cust'
+    'CustomerModel' => 'cust',
+    'ReportModel' => 'rpt', 
+    'MaintenanceModel' => 'mnt',
+    'AttendanceModel' => 'att',
+    'ExpenditureModel' => 'exps',
+    'DippingModel' => 'dipping',
+    'PurchaseModel' => 'purchase'
 ];

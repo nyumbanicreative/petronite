@@ -3,17 +3,17 @@
 if (!defined('BASEPATH'))
     exit('No direct script access allowed');
 
-function hall_nice_timestamp($time) {
+function cus_nice_timestamp($time) {
 
     return date('d M y G:i', strtotime($time));
 }
 
-function hall_nice_date($time) {
+function cus_nice_date($time) {
 
     return date('d M y', strtotime($time));
 }
 
-function hall_nice_short_date($time) {
+function cus_nice_short_date($time) {
 
     return date('d M', strtotime($time));
 }
@@ -23,11 +23,11 @@ function lz($num) {
     return (strlen($num) < 2) ? "0{$num}" : $num;
 }
 
-function isWeekend($date) {
+function cus_is_weekend($date) {
     return (date('N', strtotime($date)) >= 6);
 }
 
-function getSecondsFromHrsMinSec($str_time) {
+function cus_get_seconds_from_hrs_mns_secs($str_time) {
 
     sscanf($str_time, "%d:%d:%d", $hours, $minutes, $seconds);
     $time_seconds = isset($seconds) ? $hours * 3600 + $minutes * 60 + $seconds : $hours * 60 + $minutes;
@@ -35,7 +35,7 @@ function getSecondsFromHrsMinSec($str_time) {
     return $time_seconds;
 }
 
-function hall_random_password() {
+function cus_random_password() {
     $alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
     $pass = array(); //remember to declare $pass as an array
     $alphaLength = strlen($alphabet) - 1; //put the length -1 in cache
@@ -46,70 +46,20 @@ function hall_random_password() {
     return implode($pass); //turn the array into a string
 }
 
-function hall_print_r($input) {
-
+function cus_print_r($input) {
     echo "<pre>";
-
     print_r($input);
 }
 
-function hall_price_form($price) {
+function cus_price_form($price) {
     return number_format($price, 0, '.', ',');
 }
 
-function hall_price_form_french($price) {
-    return number_format($price, 2, '.', ' ');
+function cus_price_form_french($price) {
+    return number_format($price, 2, '.', '&nbsp;');
 }
 
-function getListingPaginationConfig($base_url, $total_rows) {
-
-    $config = array();
-    $config["base_url"] = $base_url;
-    $config["total_rows"] = $total_rows;
-
-    $config["per_page"] = LISTINGS_PER_PAGE;
-    $config["num_links"] = 2;
-
-    $config['first_tag_open'] = '<li>';
-    $config['first_tag_close'] = '</li>';
-
-
-    $config['tag_open'] = '<li>';
-    $config['tag_close'] = '</li>';
-
-    $config['num_tag_open'] = '<li>';
-    $config['num_tag_close'] = '</li>';
-
-    $config['next_tag_open'] = '<li>';
-    $config['next_tag_close'] = '</li>';
-
-    $config['prev_tag_open'] = '<li>';
-    $config['prev_tag_close'] = '</li>';
-
-    $config['cur_tag_open'] = '<li class="active"><a >';
-    $config['cur_tag_close'] = '</a></li>';
-
-    $config['last_tag_open'] = '<li>';
-    $config['last_tag_close'] = '</li>';
-
-
-    return $config;
-}
-
-function get_payment_instruction($option = "MPESA", $amount = "", $number = "155234") {
-
-    return 'Pay the amount of <b>' . $amount . '</b> to a busness number <b>' . $number . '</b><br/><br/>
-            <ol style="padding: 0 15px ;">
-                <li>Dial <b>*150*00#</b></li>
-                <li>Choose <b>1</b> Pay by M-Pesa</li>
-                <li>Choose <b>1</b> Enter LIPA Number </li>
-                <li>Enter <b>' . $number . '</b> as the LIPA Number </li>
-                <li>Enter the amount <b>' . $amount . '</b> in Tanzania Shillings</li>
-                <li>Enter <b>1</b> to confirm the payment</li>
-            </ol>';
-}
-
-function c_get_session_expire_json() {
+function cus_get_session_expire_json() {
 
     return json_encode([
         'status' => [
@@ -122,7 +72,7 @@ function c_get_session_expire_json() {
     ]);
 }
 
-function c_time_ago($timestamp = 0, $now = 0) {
+function cus_time_ago($timestamp = 0, $now = 0) {
 
     // Set up an array of time intervals.
     $intervals = array(
@@ -174,7 +124,14 @@ function c_time_ago($timestamp = 0, $now = 0) {
     }
 }
 
-function c_get_file_extension($filename) {
+function cus_get_file_extension($filename) {
     $file_array = explode('.', $filename);
     return end($file_array);
+}
+
+function cus_is_json($string) {
+
+    return ((is_string($string) &&
+            (is_object(json_decode($string)) ||
+            is_array(json_decode($string))))) ? true : false;
 }

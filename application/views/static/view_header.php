@@ -5,7 +5,8 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <title><?php echo SYSTEM_NAME; ?></title>
         <meta name="description" content="">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <meta name="HandheldFriendly" content="true" />
         <meta name="robots" content="all,follow">
         <!-- Bootstrap CSS-->
         <link rel="stylesheet" href="<?php echo base_url(); ?>assets/vendor/bootstrap/css/bootstrap.min.css">
@@ -35,7 +36,10 @@
         <script src="<?php echo base_url(); ?>assets/vendor/bootstrap/js/bootstrap.min.js"></script>
         <script src="<?php echo base_url(); ?>assets/vendor/jquery.cookie/jquery.cookie.js"></script>
         <script src="<?php echo base_url(); ?>assets/vendor/jquery-validation/jquery.validate.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+        <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>-->
+
+        <!--Chart Js-->
+        <script src="<?php echo base_url(); ?>assets/vendor/chart.js/Chart.bundle.min.js" type="text/javascript"></script>
 
         <script src="<?php echo base_url(); ?>assets/js/front.js"></script>
 
@@ -109,10 +113,25 @@
         <link href="<?php echo base_url(); ?>assets/vendor/jte/jquery-te-1.4.0.css" rel="stylesheet" type="text/css"/>
 
 
+        <!-- Jquery Knobs -->
+        <script src="<?php echo base_url(); ?>assets/js/jquery.knob.min.js" type="text/javascript"></script>
+
+        <!--Side bar-->
+        <link href="<?php echo base_url(); ?>assets/vendor/sidebar/sidebar-menu.css" rel="stylesheet" type="text/css"/>
+        <script src="<?php echo base_url(); ?>assets/vendor/sidebar/sidebar-menu.js" type="text/javascript"></script>
+
+
+        <!--Scroll bar-->
+        <link rel="stylesheet" href="<?php echo base_url(); ?>assets/vendor/scrollbar/jquery.mCustomScrollbar.min.css" />
+        <script src="<?php echo base_url(); ?>assets/vendor/scrollbar/jquery.mCustomScrollbar.concat.min.js"></script>
+
+
         <script type="text/javascript">
 
             $(document).ready(function () {
 
+                $.sidebarMenu($('.sidebar-menu'));
+                $(".sidebar-menu").mCustomScrollbar({autoHideScrollbar: true, theme: "dark"});
 
                 $('#attachment').viewer();
 
@@ -160,10 +179,32 @@
                     $(this).children('.form-control').removeClass("is-invalid");
                 });
 
+                setHeight();
+
+                // when resizing windows
+
+                $(window).resize(function () {
+                    setHeight();
+                });
+
+                // sidebar height
+                function setHeight() {
+
+                    winHeight = $(window).innerHeight() - 70;
+                    containerMinHeight = $(window).innerHeight() - 70;
+                    $('nav.side-navbar').css('height', winHeight)
+                    $('.content-inner').css('min-height', containerMinHeight)
+                    //s$('.overlay').css('min-height',winHeight)
+                }
+
             });
         </script>
 
         <style type="text/css">
+
+            .mCS-my-theme.mCSB_scrollTools .mCSB_dragger .mCSB_dragger_bar{ background-color: red; }
+            .mCS-my-theme.mCSB_scrollTools .mCSB_draggerRail{ background-color: white; } 
+
             img{
                 width:100%;
             }
@@ -178,9 +219,15 @@
             td.danger{
                 background: #ffefef;
             }
-            
+
             td.info{
                 background: #effbff;;
+            }
+            .module-date{
+                font-size:12px;font-weight:normal;
+            }
+            td{
+                vertical-align: middle;
             }
         </style>
 

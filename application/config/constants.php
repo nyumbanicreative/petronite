@@ -92,6 +92,7 @@ defined('EXIT__AUTO_MAX')      OR define('EXIT__AUTO_MAX', 125); // highest auto
 
 define('SYSTEM_NAME', 'PETRONITE');
 define('SYSTEM_NAME_SHORT', 'PETRONITE');
-define('DESIGNED_BY', 'Nyumbani Creative');
+define('DESIGNED_BY', 'Nyumbani Creative Ltd');
 define('DESIGNED_BY_URL', 'http://nyumbanicreative.com');
 define('SYSTEM_LOG','PETRONITE');
+define('CURRENCY','TZS');

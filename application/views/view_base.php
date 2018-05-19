@@ -8,6 +8,8 @@ $content_data['success_msg'] = "";
 if ($this->usr->isLogedin()) {
     $menu_data['user_fullname'] = $this->session->userdata['logged_in']['user_fullname'];
     $menu_data['user_system_role'] = $this->session->userdata['logged_in']['user_system_role'];
+    $menu_data['user_station_id'] = $this->session->userdata['logged_in']['user_station_id'];
+    $menu_data['user_station_name'] = $this->session->userdata['logged_in']['user_station_name'];
     $menu_data['user_station_role'] = $this->session->userdata['logged_in']['user_station_role'];
     $menu_data['user_name'] = $this->session->userdata['logged_in']['user_name'];
 }

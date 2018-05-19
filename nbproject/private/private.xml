@@ -3,11 +3,40 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/Applications/MAMP/htdocs/petronite/application/views/contents/view_logs.php</file>
-            <file>file:/Applications/MAMP/htdocs/petronite/application/views/static/view_top_bar.php</file>
-            <file>file:/Applications/MAMP/htdocs/petronite/application/views/contents/view_dashboard.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/assets/vendor/sidebar/sidebar-menu.js</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/assets/vendor/scrollbar/jquery.mCustomScrollbar.concat.min.js</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/helpers/custom_functions_helper.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/models/DippingModel.php</file>
             <file>file:/Applications/MAMP/htdocs/petronite/application/views/static/view_header.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/views/contents/view_dippings.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/assets/css/style.sea.css</file>
             <file>file:/Applications/MAMP/htdocs/petronite/application/views/contents/view_petronite_customers.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/views/contents/view_logs.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/controllers/Developer.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/views/menu/view_sys_menu.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/config/constants.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/assets/vendor/datatables/datatables.min.css</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/models/PurchaseModel.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/config/autoload.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/views/contents/view_credit_sales.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/views/contents/view_general_expenditure.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/models/AttendanceModel.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/views/contents/view_attendants_shifts.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/views/contents/view_login.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/views/menu/view_developer_menu.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/views/contents/view_expense_list.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/models/MaintenanceModel.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/assets/vendor/scrollbar/jquery.mCustomScrollbar.css</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/views/contents/view_dashboard_admin.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/views/contents/view_stations.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/controllers/Dailyentries.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/models/ExpenditureModel.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/views/menu/view_stations_menu.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/controllers/User.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/views/contents/view_purchases.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/views/contents/view_sale_details.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/models/ReportModel.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/views/contents/view_stock_transfer.php</file>
         </group>
     </open-files>
 </project-private>

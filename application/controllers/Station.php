@@ -51,6 +51,33 @@ class Station extends CI_Controller {
 
         $this->load->view('view_base', $data);
     }
+    
+    public function setStation() {
+        
+        if (!$this->usr->isLogedin()) {
+            $this->session->set_flashdata('error', 'Login is required');
+            redirect('user/index');
+        }
+        
+        $station_id = $this->uri->segment(3);
+        $user_id = $this->session->userdata['logged_in']['user_id'];
+        
+        $station = $this->stn->canAccessStation($user_id, $station_id);
+        
+        
+        if($station){
+            
+            $this->session->userdata['logged_in']['user_station_id'] = $station['station_id'];
+            $this->session->userdata['logged_in']['user_station_name'] = $station['station_name'];
+            $this->session->userdata['logged_in']['user_station_role'] = $station['organize_user_role'];
+            
+            redirect('user/dashboard');
+        }else{
+            $this->session->set_flashdata('error','Select a valid station');
+            redirect('station');
+        }
+       
+    }
 
     
 

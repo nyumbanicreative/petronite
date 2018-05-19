@@ -16,7 +16,7 @@
             <!-- Toggle Button--><a id="toggle-btn" href="#" class="menu-btn active"><span></span><span></span><span></span></a>
           <!-- Navbar Brand -->
           
-          <a href="index.html" style="width:130px" class="">
+          <a href="<?php echo site_url('user'); ?>" style="width:130px" class="">
               
               <img style="margin-top: -10px;" src="<?php echo base_url().'assets/img/petronite2.png';?>" />
 <!--            <div class="brand-text brand-big"><span>HALLS </span><strong>4ALL</strong></div>

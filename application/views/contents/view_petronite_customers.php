@@ -4,7 +4,7 @@
         <h2 class="no-margin-bottom"><?php echo $module_name; ?></h2>
     </div>
 </header>
-<?php echo $error_msg . $success_msg; ?>
+<?php echo $alert; ?>
 
 <section class="tables no-padding-top">  
     
@@ -125,7 +125,7 @@
             <div class="col-lg-12">
                 <div class="card">
                     <div class="card-body no-padding">
-                        <table id="customers_table" class="table table-striped">
+                        <table id="customers_table" class="table table-striped" style="width:100%">
                             <thead>
                                 <tr>
                                     <th>Company Name</th>
@@ -177,6 +177,7 @@
             responsive: true,
             searching: false,
             lengthChange : false,
+            fixedHeader: { headerOffset: 70 },
             columnDefs: [
                 {responsivePriority: 1, targets: 0},
                 {responsivePriority: 2, targets: -1}

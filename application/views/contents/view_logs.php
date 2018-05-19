@@ -44,7 +44,7 @@
                                     <tr>
                                         <!--<td class="<?php echo $classes[$cols['level'][$i]]; ?>"><?php echo $i + 1; ?></td>-->
                                         <td class="<?php echo $classes[$cols['level'][$i]]; ?>"><?php echo $cols['level'][$i]; ?></td>
-                                        <td class="<?php echo $classes[$cols['level'][$i]]; ?>"><?php echo $cols['time'][$i]; ?></td>
+                                        <td class="<?php echo $classes[$cols['level'][$i]]; ?>"><?php echo date('YmdHis', strtotime($cols['time'][$i])); ?></td>
                                         <td class="<?php echo $classes[$cols['level'][$i]]; ?>"><?php echo $cols['message'][$i]; ?></td>
                                     </tr>
                                     <?php
@@ -66,7 +66,9 @@
 
     $(document).ready(function () {
         $('#log_table').DataTable({
+            "order": [[ 1, "desc" ]],
             responsive: true,
+            fixedHeader: { headerOffset: 70 },
             columnDefs: [
                 //{responsivePriority: 1, targets: 0},
                 {responsivePriority: 2, targets: -1}
