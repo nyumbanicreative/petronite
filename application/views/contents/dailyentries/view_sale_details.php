@@ -96,7 +96,7 @@
                                 </div>
 
                                 <?php
-                                if (strtolower($sale['att_shift_status'] == 'closed')) {
+                                if (strtolower($sale['att_shift_status']) == 'closed') {
                                     ?>
 
 
