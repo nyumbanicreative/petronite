@@ -22,7 +22,7 @@
             <div class="col-lg-12">
                 <div class="card">
                     <div class="card-body no-padding">
-                        <table class="table" id="log_table">
+                        <table class="table" id="log_table" style="width: 100%;">
                             <thead>
                                 <tr>
                                     <!--<th>ID</th>-->
