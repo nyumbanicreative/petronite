@@ -60,7 +60,7 @@ class Admin extends CI_Controller {
             'content' => 'contents/administrator/view_stations_users', // View for contnet
             'menu_data' => ['curr_menu' => 'ADMIN', 'curr_sub_menu' => 'ADMIN'], //Inorder to collapse  menu items
             'content_data' => [ //Contents data pass here
-                'module_name' => 'Credit Customers',
+                'module_name' => 'Stations Users',
                 'customer' => $this->customer,
                 'stations_users' => $this->usr->getStationsUsers($this->admin_id)
             ],
