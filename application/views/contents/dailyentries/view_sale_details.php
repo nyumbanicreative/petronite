@@ -214,7 +214,7 @@
                     <div style="padding:10px 0"></div>
                     <div class="card-body no-padding">
 
-                        <table class="table credit_sales table-hover" style="width:100%">
+                        <table class="table credit_sales table-hover table-light" style="width:100%">
                             <thead>
                                 <tr>
                                     <th>Customer</th>
@@ -267,7 +267,7 @@
                     <h3 class="h4">Stock Transfer</h3>
                     <div style="padding:10px 0"></div>
                     <div class="card-body no-padding">
-                        <table class="table credit_sales table-hover">
+                        <table class="table credit_sales table-hover table-light">
                             <thead>
                                 <tr>
                                     <th>Customer</th>
@@ -320,7 +320,7 @@
                     <div style="padding:10px 0"></div>
                     <div class="card-body no-padding">
 
-                        <table class="table credit_sales table-hover">
+                        <table class="table credit_sales table-hover table-light">
                             <thead>
                                 <tr>
                                     <th>Customer</th>

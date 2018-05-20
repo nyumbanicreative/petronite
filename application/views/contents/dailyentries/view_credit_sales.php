@@ -24,15 +24,15 @@
         <br/>
         <div class="row row-border">
             <div class="col-lg-6 col-md-6 col-sm-8 col-xs-12">
-                <form  action="<?php echo site_url('dailyentries/stocktransfer'); ?>" method="get">
+                <form  action="<?php echo site_url('dailyentries/creditsales'); ?>" method="get">
                     <div class="form-group">
-                        <label>Transfer Due To Date</label>
+                        <label>Credits Due To Date</label>
                         <div class="input-group">
                             <input type="text" name="date" value="<?php echo $date; ?>" class="form-control form-control-sm">
                             <span class="input-group-btn">
                                 <button type="submit" class="btn btn-info"><i class="fa fa-search"></i></button>
-                                <a href="<?php echo site_url('dailyentries/stocktransfer?date=' . $prev_day); ?>" class="btn btn-info"><i class="fa fa-backward"></i></a>
-                                <a href="<?php echo site_url('dailyentries/stocktransfer?date=' . $next_day); ?>" class="btn btn-info"><i class="fa fa-forward"></i></a>
+                                <a href="<?php echo site_url('dailyentries/creditsales?date=' . $prev_day); ?>" class="btn btn-info"><i class="fa fa-backward"></i></a>
+                                <a href="<?php echo site_url('dailyentries/creditsales?date=' . $next_day); ?>" class="btn btn-info"><i class="fa fa-forward"></i></a>
                             </span>
                         </div>
                     </div>
@@ -49,11 +49,15 @@
 
         </div>
         <br/>
+      
+
+        
+
         <div class="row">
             <div class="col-lg-12">
                 <div class="card">
                     <div class="card-body no-padding">
-                        <table id="shifts_table" class="table  table-hover" style="width:100%">
+                        <table id="shifts_table" class="table  table-hover table-light" style="width:100%">
                             <thead>
                                 <tr>
                                     <th>Customer</th>

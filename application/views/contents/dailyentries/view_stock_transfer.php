@@ -17,22 +17,22 @@
                 </div>
                 <div class="btn-group pull-right" role="group" aria-label="Basic example">
                     <!--<button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#myModal"><i class="fa fa-calendar-o"></i>&nbsp;Latest Shifts</button>-->
-                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#myModal"><i class="fa fa-plus-square"></i>&nbsp;Assign Pump</button>
+                    <!--<button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#myModal"><i class="fa fa-plus-square"></i>&nbsp;Assign Pump</button>-->
                 </div>
             </div>
         </div>
         <br/>
         <div class="row row-border">
             <div class="col-lg-6 col-md-6 col-sm-8 col-xs-12">
-                <form  action="<?php echo site_url('dailyentries/attendantsshifts'); ?>" method="get">
+                <form  action="<?php echo site_url('dailyentries/stocktransfer'); ?>" method="get">
                     <div class="form-group">
-                        <label>Shifts Due To Date</label>
+                        <label>Transfer Due To Date</label>
                         <div class="input-group">
                             <input type="text" name="date" value="<?php echo $date; ?>" class="form-control form-control-sm">
                             <span class="input-group-btn">
                                 <button type="submit" class="btn btn-info"><i class="fa fa-search"></i></button>
-                                <a href="<?php echo site_url('dailyentries/attendantsshifts?date=' . $prev_day); ?>" class="btn btn-info"><i class="fa fa-backward"></i></a>
-                                <a href="<?php echo site_url('dailyentries/attendantsshifts?date=' . $next_day); ?>" class="btn btn-info"><i class="fa fa-forward"></i></a>
+                                <a href="<?php echo site_url('dailyentries/stocktransfer?date=' . $prev_day); ?>" class="btn btn-info"><i class="fa fa-backward"></i></a>
+                                <a href="<?php echo site_url('dailyentries/stocktransfer?date=' . $next_day); ?>" class="btn btn-info"><i class="fa fa-forward"></i></a>
                             </span>
                         </div>
                     </div>
@@ -49,36 +49,32 @@
 
         </div>
         <br/>
-      
-
-        
-
         <div class="row">
             <div class="col-lg-12">
                 <div class="card">
                     <div class="card-body no-padding">
-                        <table id="shifts_table" class="table  table-hover" style="width:100%">
+                        <table id="shifts_table" class="table  table-hover table-light" style="width:100%">
                             <thead>
                                 <tr>
-                                    <th>Attendants</th>
-                                    <th>Shift</th>
+                                    <th>Customer</th>
+                                    <th>Shift Name</th>
                                     <th>Pump</th>
-                                    <th>Open<br/>Mtr No</th>
-                                    <th>Closing<br/>Mtr No</th>
-                                    <th>Selling<br/>Price</th>
-                                    <th>Amount<br/>Banked</th>
-                                    <th style="width:10px;"> </th>
+                                    <th>Ltrs Sold</th>
+                                    <th>Manager</th>
+                                    <th>Attendant</th>
+                                    <th style="width:10px;"></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php
-                                foreach ($atts as $i => $att) {
+                                foreach ($credit_sales as $i => $sale) {
                                     ?>
-                                    <tr>
-                                        <td><?php echo $att['user_name']; ?></td>
+                                <tr <?php echo $sale['customer_sale_rtt'] == '1' ?'class="text-danger"' : ''; ?> >
+                                        <td><?php echo $sale['credit_type_name']; ?></td>
                                         <td><?php
-                                            echo $att['shift_name'] . '<br/>';
-                                            if ($att['att_shift_status'] == 'Closed') {
+                                            echo $sale['shift_name'] . '<br/>';
+                                            /*
+                                            if ($sale['att_shift_status'] == 'Closed') {
                                                 ?>
                                                 <span class="badge badge-success">CLOSED</span>
                                                 <?php
@@ -87,46 +83,22 @@
                                                 <span class="badge badge-danger">IN-PROGRESS</span>
                                                 <?php
                                             }
+                                             * 
+                                             */
                                             ?></td>
-                                        <td><?php echo $att['pump_name'] . '&nbsp;-&nbsp;' . $att['fuel_type_generic_name']; ?></td>
-                                        <td><?php echo $att['att_op_mtr_reading']; ?></td>
-                                        <td><?php echo $att['att_clo_mtr_reading']; ?></td>
+                                        <td><?php echo $sale['pump_name'] . '&nbsp;-&nbsp;' . $sale['fuel_type_generic_name']; ?></td>
+                                        <td><?php echo $sale['customer_sale_ltrs']; ?></td>
+                                        <td><?php echo $sale['user_name']; ?></td>
                                         <td>
-                                            <?php
-                                            echo CURRENCY . '&nbsp;' . cus_price_form_french($att['att_sale_price_per_ltr']);
-                                            ?>
-                                        </td>
-                                        <td>
-                                            <?php
-                                            if ($att['att_shift_status'] == 'Closed') {
-                                                echo CURRENCY . '&nbsp;' . cus_price_form_french($att['att_amount_banked']) . '<br/>';
-                                                $amt_collected = $att['att_amount_banked'];
-                                                $ltrs = $att['throughput'] - (float) $att['credit_sales'] - (float) $att['return_to_tank'] - (float) $att['transfered_to_station'];
-                                                $amt_to_collect = $ltrs * $att['att_sale_price_per_ltr'];
-
-                                                $short_excess = $amt_collected - $amt_to_collect;
-
-                                                if ($short_excess >= 0) {
-                                                    ?>
-                                                    <span class="badge badge-success"><?php echo CURRENCY . '&nbsp;' . cus_price_form_french($short_excess); ?></span>
-                                                    <?php
-                                                } else {
-                                                    ?>
-                                                    <span class="badge badge-danger"><?php echo CURRENCY . '&nbsp;' . cus_price_form_french(abs($short_excess)); ?></span>
-                                                    <?php
-                                                }
-                                            } else {
-                                                echo 'N/A';
-                                            }
-                                            ?>
+                                           <?php echo $sale['attendant_name']; ?>
                                         </td>
                                         <td>
                                             <div class="dropdown">
                                                 <button type="button" id="closeCard2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-info btn-sm"><i class="fa fa-ellipsis-v"></i></button>
                                                 <div aria-labelledby="closeCard2" class="dropdown-menu dropdown-menu-right has-shadow">
-                                                    <a href="<?php echo site_url('dailyentries/saledetails/' . $att['att_id']).'?url='. urlencode(current_url()) .'?'.$_SERVER['QUERY_STRING']; ?>"  class="dropdown-item edit_item text-success"> <i class="fa fa-list-ul"></i>&nbsp;&nbsp;Details</a>
-                                                    <a href="<?php echo site_url('inventory/edithallitem/' . $att['att_id']); ?>"  class="dropdown-item edit_item"> <i class="fa fa-edit"></i>&nbsp;&nbsp;Edit</a>
-                                                    <a href="<?php echo site_url('inventory/deletehallitem/' . $att['att_id']); ?>" class="dropdown-item edit text-danger"> <i class="fa fa-trash"></i>&nbsp;&nbsp;Delete</a>
+                                                    <a href="<?php echo site_url('dailyentries/saledetails/' . $sale['customer_sale_id']).'?url='. urlencode(current_url()) .'?'.$_SERVER['QUERY_STRING']; ?>"  class="dropdown-item edit_item text-success"> <i class="fa fa-list-ul"></i>&nbsp;&nbsp;Details</a>
+                                                    <a href="<?php echo site_url('inventory/edithallitem/' . $sale['customer_sale_id']); ?>"  class="dropdown-item edit_item"> <i class="fa fa-edit"></i>&nbsp;&nbsp;Edit</a>
+                                                    <a href="<?php echo site_url('inventory/deletehallitem/' . $sale['customer_sale_id']); ?>" class="dropdown-item edit text-danger"> <i class="fa fa-trash"></i>&nbsp;&nbsp;Delete</a>
                                                 </div>
                                             </div>
                                         </td>
@@ -169,8 +141,6 @@
         $('#search_shifts').keyup(function () {
             s_table.search($(this).val()).draw();
         });
-        
-        s_table.responsive.recalc();
 
         $("input[name=date]").daterangepicker({
 

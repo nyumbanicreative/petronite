@@ -26,11 +26,11 @@
         
         <li class="<?php echo ($curr_menu == 'MAINTENANCE') ? "active" : "" ?>"><a href="#maintenance" aria-expanded="<?php echo ($curr_menu == 'MAINTANANCE') ? "true" : "false" ?>" data-toggle="collapse"><i class="fa fa-gears"></i>Maintanance </a>
             <ul id="maintenance" class="<?php echo ($curr_sub_menu == 'MAINTENANCE') ? "" : "collapse" ?> list-unstyled">
-                <li><a href="<?php //echo site_url('dailyentries/attendantsshifts'); ?>"> Fuel &amp; Pricing</a></li>
-                <li><a href="<?php //echo site_url('dailyentries/creditsales'); ?>">Fuel Tanks</a></li>
-                <li><a href="<?php //echo site_url('dailyentries/stocktransfer'); ?>">Pumps</a></li>
-                <li><a href="<?php //echo site_url('dailyentries/expenditure'); ?>">Attendants</a></li>
-                <li><a href="<?php //echo site_url('dailyentries/dipping'); ?>">Shifts</a></li>
+                <li><a href="<?php echo site_url('maintenance/fuel'); ?>"> Fuel Types &amp; Pricing</a></li>
+                <li><a href="<?php echo site_url('maintenance/tanks'); ?>">Fuel Tanks</a></li>
+                <li><a href="<?php echo site_url('maintenance/pumps'); ?>">Pumps</a></li>
+                <li><a href="<?php echo site_url('maintenance/attendants'); ?>">Attendants</a></li>
+                <li><a href="<?php echo site_url('maintenance/shifts'); ?>">Shifts</a></li>
             </ul>
         </li>
         

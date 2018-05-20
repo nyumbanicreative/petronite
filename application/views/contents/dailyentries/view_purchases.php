@@ -51,7 +51,7 @@
                         <h3 class="h4"><?php echo $ft['fuel_type_name'] . ' - ' . $ft['fuel_type_generic_name']; ?></h3>
                         <div style="padding:10px 0"></div>
                         <div class="card-body no-padding">
-                            <table class="table dippings_table table-hover table-striped" style="width:100%">
+                            <table class="table dippings_table table-hover table-striped table-light" style="width:100%">
                                 <thead>
                                     <tr>
                                         <th>Tank Name</th>

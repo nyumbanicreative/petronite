@@ -4,6 +4,7 @@
         <h2 class="no-margin-bottom"><?php echo $module_name; ?></h2>
     </div>
 </header>
+
 <?php echo $alert; ?>
 
 <section class="tables no-padding-top">  
