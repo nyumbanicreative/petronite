@@ -13,7 +13,7 @@
         <div class="row">
             <div class="col-lg-12">
                 <div class="btn-group pull-left" role="group" aria-label="Dashboard">
-                    <a href="<?php echo site_url('station'); ?>"class="btn btn-primary btn-sm" data-target="#myModal"><i class="fa fa-building-o"></i>&nbsp;Station Selection</a>
+                    <a href="<?php echo $this->input->get('url'); ?>"class="btn btn-primary btn-sm" data-target="#myModal"><i class="fa fa-arrow-circle-left"></i>&nbsp;Back</a>
                 </div>
                 <div class="btn-group pull-right" role="group" aria-label="Fuel Types">
                     <!--<button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#myModal"><i class="fa fa-calendar-o"></i>&nbsp;Latest Shifts</button>-->
@@ -27,31 +27,45 @@
             <div class="col-lg-12">
                 <div class="card">
                     <div class="card-body no-padding">
-                        <table id="users_table" class="table  table-hover table-striped table-light table-sm" style="width:100%">
+                        <table id="user_station_table" class="table  table-hover table-striped table-light table-sm" style="width:100%">
                             <thead>
                                 <tr>
-                                    <th>User Name</th>
-                                    <th style="max-width: 500px;">Customer Stations</th>
-                                    <th>User Status</th>
+                                    <th>Station Name</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th style="max-width: 100px">Approve Expense</th>
                                     <th style="width:10px;"> </th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php
-                                foreach ($stations_users as $i => $u) {
+                                foreach ($user_stations as $i => $s) {
                                     ?>
                                     <tr>
-                                        <td><?php echo $u['user_name']; ?></td>
-                                        <td><?php echo $u['stations']; ?></td>
+                                        <td><?php echo strtoupper($s['station_name']); ?></td>
+                                        <td><?php echo $s['organize_user_role']; ?></td>
                                         <td>
                                             <?php
-                                            if ($u['user_active'] == 1) {
+                                            if ($s['organize_user_active'] == 1) {
                                                 ?>
                                                 <span class="badge badge-success">ACTIVE</span>
                                                 <?php
-                                            } elseif ($u['user_active'] == 0) {
+                                            } elseif ($s['organize_user_active'] == 0) {
                                                 ?>
                                                 <span class="badge badge-danger">IN-ACTIVE</span>
+                                                <?php
+                                            }
+                                            ?>
+                                        </td>
+                                        <td>
+                                            <?php
+                                            if ($s['organize_user_can_approve_expenditure'] == 1) {
+                                                ?>
+                                                <span class="badge badge-success">YES</span>
+                                                <?php
+                                            } elseif ($s['organize_user_can_approve_expenditure'] == 0) {
+                                                ?>
+                                                <span class="badge badge-danger">NO</span>
                                                 <?php
                                             }
                                             ?>
@@ -60,7 +74,7 @@
                                             <div class="dropdown">
                                                 <button type="button" id="closeCard2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-info btn-sm"><i class="fa fa-ellipsis-v"></i></button>
                                                 <div aria-labelledby="closeCard2" class="dropdown-menu dropdown-menu-right has-shadow">
-                                                    <a href="<?php echo site_url('admin/manageuserstations/' . $u['user_id']) . '?url=' . urlencode(current_url()) . '?' . $_SERVER['QUERY_STRING'];             ?>"  class="dropdown-item edit_item text-success"> <i class="fa fa-user-secret"></i>&nbsp;&nbsp;Manage User's Stations</a>
+                                                    <a href="#<?php //echo site_url('admin/manageuserstations/' . $s['user_id']);  ?>"  class="dropdown-item edit_item text-success"> <i class="fa fa-user-secret"></i>&nbsp;&nbsp;Manage User's Stations</a>
                                                     <a href="#<?php //echo site_url('dailyentries/saledetails/' . $att['att_id']) . '?url=' . urlencode(current_url()) . '?' . $_SERVER['QUERY_STRING'];             ?>"  class="dropdown-item edit_item text-info"> <i class="fa fa-edit"></i>&nbsp;&nbsp;Edit Details</a>
                                                 </div>
                                             </div>
@@ -86,7 +100,7 @@
 
     $(document).ready(function () {
 
-        s_table = $('#users_table').DataTable({
+        s_table = $('#user_station_table').DataTable({
             "aaSorting": [],
             responsive: true,
             fixedHeader: {headerOffset: 70},

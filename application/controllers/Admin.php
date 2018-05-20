@@ -50,7 +50,7 @@ class Admin extends CI_Controller {
     }
 
    
-    public function stationsUsers() {
+    public function usersManagement() {
 
         // Check user status
         $this->checkStatus(1, 1, 1);
@@ -60,9 +60,42 @@ class Admin extends CI_Controller {
             'content' => 'contents/administrator/view_stations_users', // View for contnet
             'menu_data' => ['curr_menu' => 'ADMIN', 'curr_sub_menu' => 'ADMIN'], //Inorder to collapse  menu items
             'content_data' => [ //Contents data pass here
-                'module_name' => 'Stations Users',
+                'module_name' => 'Users Management',
                 'customer' => $this->customer,
                 'stations_users' => $this->usr->getStationsUsers($this->admin_id)
+            ],
+            'header_data' => [], //Header data pass here
+            'footer_data' => [], //Footer data pass here
+            'top_bar_data' => [] //Top bar data pass here
+        ];
+
+        // Now call the base view which have everything we need to dispaly
+        $this->load->view('view_base', $data);
+    }
+    
+    
+    public function manageUserStations() {
+
+        // Check user status
+        $this->checkStatus(1, 1, 1);
+        
+        $user_id = $this->uri->segment(3);
+        
+        $user = $this->usr->getUserInfo($user_id, "ID");
+        
+        if(!$user){
+            $this->setSessMsg("User was not found or may have been removed from the system", "error","admin/stationsusers");
+        }
+
+        $data = [
+            'menu' => 'menu/view_stations_menu', // View for menu
+            'content' => 'contents/administrator/view_manage_user_stations', // View for contnet
+            'menu_data' => ['curr_menu' => 'ADMIN', 'curr_sub_menu' => 'ADMIN'], //Inorder to collapse  menu items
+            'content_data' => [ //Contents data pass here
+                'module_name' => "User's Stations For ". $user['user_name'],
+                'customer' => $this->customer,
+                'user' => $user,
+                'user_stations' => $this->stn->getUserStations($user['user_id'],$user['user_admin_id'])
             ],
             'header_data' => [], //Header data pass here
             'footer_data' => [], //Footer data pass here
