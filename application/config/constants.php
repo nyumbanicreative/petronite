@@ -96,3 +96,4 @@ define('DESIGNED_BY', 'Nyumbani Creative Ltd');
 define('DESIGNED_BY_URL', 'http://nyumbanicreative.com');
 define('SYSTEM_LOG','PETRONITE');
 define('CURRENCY','TZS');
+define('PRECIDING_ZEROZ',7);

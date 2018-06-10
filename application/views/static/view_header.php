@@ -137,27 +137,28 @@
 
                 $('#daterange').daterangepicker();
 
-                $('.confirm').click({
-                    title: 'Confirm!',
-                    content: 'Are you sure you want to disapprove this subscriber!',
-                    buttons: {
-                        confirm: function () {
-                            //$.alert('Confirmed!');
-                        },
-                        cancel: function () {
-                            //$.alert('Canceled!');
+                $(document).on('click', '.confirm', function (e) {
+                    e.preventDefault();
+                    var content = $(this).attr('title');
+                    var url = $(this).attr('href');
+                    $.confirm({
+                        title: 'Confirm!',
+                        content: 'Are you sure you want to ' + content,
+                        buttons: {
+                            cancel: function () {
+                                console.log('Confirmation cancelled');
+                            }, somethingElse: {
+                                text: 'Confirm',
+                                btnClass: 'btn-danger',
+                                keys: ['enter', 'shift'],
+                                action: function () {
+                                    window.location.href = url;
+                                }
+                            }
                         }
-                        /*somethingElse: {
-                         text: 'Something else',
-                         btnClass: 'btn-blue',
-                         keys: ['enter', 'shift'],
-                         action: function(){
-                         $.alert('Something else?');
-                         }
-                         }*/
-                    }
-                });
+                    });
 
+                });
 
 
                 $('.input-field').click(function () {
@@ -167,11 +168,9 @@
 
                 });
 
-                $('.rate').rateYo({starWidth: "20px"});
+
                 $('.rate').tooltipster({side: 'right'});
 
-                $('.rate_side').rateYo({starWidth: "20px"});
-                $('.rate_side').tooltipster({side: 'right'});
 
                 //Remove Field Errors
                 $(document).on("click", ".remove_error", function () {
@@ -196,6 +195,38 @@
                     $('.content-inner').css('min-height', containerMinHeight)
                     //s$('.overlay').css('min-height',winHeight)
                 }
+
+                $('.amount').numeric({decimalPlaces: 2, negative: false});
+                $('.volume').numeric({decimalPlaces: 3, negative: false});
+                $('.just_number').numeric({decimal: false, negative: false});
+
+                $(".max_date").daterangepicker({
+                    "format": 'YYYY-MM-DD',
+                    "autoUpdateInput": true,
+                    "singleDatePicker": true,
+                    "autoApply": false,
+                    "linkedCalendars": false,
+                    "startDate": "<?php echo date('m/d/Y'); ?>",
+                    "maxDate": "<?php echo date('m/d/Y'); ?>"
+
+                }, function (start, end, label) {
+                    //$('.max_date').val(start.format('YYYY-MM-DD'));
+                    console.log('New date range selected: ' + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD') + ' (predefined range: ' + label + ')');
+                });
+
+                $(".min_date").daterangepicker({
+                    "format": 'YYYY-MM-DD',
+                    "autoUpdateInput": true,
+                    "singleDatePicker": true,
+                    "autoApply": false,
+                    "linkedCalendars": false,
+                    "startDate": "<?php echo date('m/d/Y'); ?>",
+                    "minDate": "<?php echo date('m/d/Y'); ?>"
+
+                }, function (start, end, label) {
+                    //$('.max_date').val(start.format('YYYY-MM-DD'));
+                    console.log('New date range selected: ' + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD') + ' (predefined range: ' + label + ')');
+                });
 
             });
         </script>
@@ -229,6 +260,89 @@
             td{
                 vertical-align: middle;
             }
+
+            table.dataTable{
+                font-size: 0.8em;
+            }
+
+            /*Please wait loading*/
+
+            #loader-wrapper {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 1000;
+            }
+            #loader {
+                display: block;
+                position: relative;
+                left: 50%;
+                top: 50%;
+                width: 150px;
+                height: 150px;
+                margin: -75px 0 0 -75px;
+                border-radius: 50%;
+                border: 3px solid transparent;
+                border-top-color: #3498db;
+                -webkit-animation: spin 2s linear infinite; /* Chrome, Opera 15+, Safari 5+ */
+                animation: spin 2s linear infinite; /* Chrome, Firefox 16+, IE 10+, Opera */
+            }
+
+            #loader:before {
+                content: "";
+                position: absolute;
+                top: 5px;
+                left: 5px;
+                right: 5px;
+                bottom: 5px;
+                border-radius: 50%;
+                border: 3px solid transparent;
+                border-top-color: #e74c3c;
+                -webkit-animation: spin 3s linear infinite; /* Chrome, Opera 15+, Safari 5+ */
+                animation: spin 3s linear infinite; /* Chrome, Firefox 16+, IE 10+, Opera */
+            }
+
+            #loader:after {
+                content: "";
+                position: absolute;
+                top: 15px;
+                left: 15px;
+                right: 15px;
+                bottom: 15px;
+                border-radius: 50%;
+                border: 3px solid transparent;
+                border-top-color: #f9c922;
+                -webkit-animation: spin 1.5s linear infinite; /* Chrome, Opera 15+, Safari 5+ */
+                animation: spin 1.5s linear infinite; /* Chrome, Firefox 16+, IE 10+, Opera */
+            }
+
+            @-webkit-keyframes spin {
+                0%   {
+                    -webkit-transform: rotate(0deg);  /* Chrome, Opera 15+, Safari 3.1+ */
+                    -ms-transform: rotate(0deg);  /* IE 9 */
+                    transform: rotate(0deg);  /* Firefox 16+, IE 10+, Opera */
+                }
+                100% {
+                    -webkit-transform: rotate(360deg);  /* Chrome, Opera 15+, Safari 3.1+ */
+                    -ms-transform: rotate(360deg);  /* IE 9 */
+                    transform: rotate(360deg);  /* Firefox 16+, IE 10+, Opera */
+                }
+            }
+            @keyframes spin {
+                0%   {
+                    -webkit-transform: rotate(0deg);  /* Chrome, Opera 15+, Safari 3.1+ */
+                    -ms-transform: rotate(0deg);  /* IE 9 */
+                    transform: rotate(0deg);  /* Firefox 16+, IE 10+, Opera */
+                }
+                100% {
+                    -webkit-transform: rotate(360deg);  /* Chrome, Opera 15+, Safari 3.1+ */
+                    -ms-transform: rotate(360deg);  /* IE 9 */
+                    transform: rotate(360deg);  /* Firefox 16+, IE 10+, Opera */
+                }
+            }
+
         </style>
 
 

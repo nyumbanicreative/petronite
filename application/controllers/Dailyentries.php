@@ -9,6 +9,7 @@ class Dailyentries extends CI_Controller {
     var $station_id = null;
     var $is_logged_in = false;
     var $customer = null;
+    var $admin_id = null;
 
     public function __construct() {
         parent::__construct();
@@ -29,22 +30,40 @@ class Dailyentries extends CI_Controller {
             redirect($redirect_to);
         }
     }
-    
+
     private function checkStatus($logged_in = null, $customer = null, $admin = null) {
-        
-        if(null !== $logged_in AND !$this->is_logged_in){
+
+        if (null !== $logged_in AND ! $this->is_logged_in) {
             // User session expired they must login to continue
             $this->setSessMsg('Loging in is required', 'error', 'user/index');
         }
-      
+
         if (null !== $customer AND null === $this->customer) {
             // not a valid customer
-            $this->setSessMsg('It appears that, customer details was not found or may have been removed.', 'error', 'user/logout'); 
+            $this->setSessMsg('It appears that, customer details was not found or may have been removed.', 'error', 'user/logout');
         }
 
         if (null !== $admin AND null === $this->admin_id) {
             // admin identity not set
-            $this->setSessMsg('Select a valid customer', 'error','developer/customers');
+            $this->setSessMsg('Select a valid customer', 'error', 'developer/customers');
+        }
+    }
+
+    private function checkStatusJson($logged_in = null, $customer = null, $admin = null) {
+
+        if (null !== $logged_in AND ! $this->is_logged_in) {
+            // User session expired they must login to continue
+            cus_json_error('Loging in is required, Please refresh the page');
+        }
+
+        if (null !== $customer AND null === $this->customer) {
+            // not a valid customer
+            cus_json_error('It appears that, customer details was not found or may have been removed.');
+        }
+
+        if (null !== $admin AND null === $this->admin_id) {
+            // admin identity not set
+            cus_json_error('Select a valid customer');
         }
     }
 
@@ -68,13 +87,12 @@ class Dailyentries extends CI_Controller {
         $order_by = 's.shift_sequence ASC, u.user_name ASC, p.pump_name ASC, f.fuel_type_generic_name ASC';
         $atts = $this->rpt->getSales($cond, null, $order_by); // reused this function from report model coz it does the same
         //cus_print_r($atts);        die();
-
         // Creating view data
         $data = [
             'menu' => 'menu/view_sys_menu', // View for menu
             'content' => 'contents/dailyentries/view_attendants_shifts', // View for contnet
             'menu_data' => ['curr_menu' => 'DAILY', 'curr_sub_menu' => 'DAILY'], //Inorder to collapse  menu items
-            'content_data' => [ //Contents data pass here
+            'content_data' => [//Contents data pass here
                 'module_name' => 'Attendant Shifts',
                 'customer' => $this->customer,
                 'atts' => $atts,
@@ -108,7 +126,7 @@ class Dailyentries extends CI_Controller {
 
         if (!$sale) {
             //Sale details not found so we redirect to attendant shifts
-            $this->setSessMsg('Sale details was not found or may have been removed from the system', 'error','dailyentries/attendantsshifts');
+            $this->setSessMsg('Sale details was not found or may have been removed from the system', 'error', 'dailyentries/attendantsshifts');
         }
 
         //cus_print_r($sale);        die();
@@ -131,10 +149,10 @@ class Dailyentries extends CI_Controller {
     }
 
     public function creditSales() {
-        
+
         //Check user status
         $this->checkStatus(1, 1, 1);
-        
+
         // Attendants shifts date
         $date = $this->input->get('date');
         if (empty($date)) {
@@ -301,6 +319,39 @@ class Dailyentries extends CI_Controller {
         $this->load->view('view_base', $data);
     }
 
+    public function purchaseOrders() {
+
+        //Check user status
+        $this->checkStatus(1, 1, 1);
+
+
+        // Retrieving expenditure shifts due to date 
+        $cond = ['po.po_station_id' => $this->station_id];
+        $purchase_orders = $this->purchase->getPurchaseOrders($cond); // reused this function from report model coz it does the same
+        //cus_print_r($dippings);        die();
+
+        $data = [
+            'menu' => 'menu/view_sys_menu',
+            'content' => 'contents/dailyentries/view_purchase_orders',
+            'menu_data' => ['curr_menu' => 'DAILY', 'curr_sub_menu' => 'DAILY'],
+            'content_data' => [
+                'module_name' => 'Purchase Orders',
+                'customer' => $this->customer,
+                'purchase_orders' => $purchase_orders
+            ],
+            'modals_data' => [// Modals data
+                'modals' => ['modal_add_purchase_order'], // Put array of popup modals which you want them to appear on current page
+                'fuel_types_group' => $this->mnt->getFuelTypesGroup(), // Pass data for popup modals here
+                'station_depots' => $this->depo->getDepots(['depo.depo_admin_id' => $this->admin_id]) // Get station depots for creating purchase order
+            ],
+            'header_data' => [],
+            'footer_data' => [],
+            'top_bar_data' => []
+        ];
+
+        $this->load->view('view_base', $data);
+    }
+
     public function stocktransfer() {
 
         //Check user status
@@ -341,6 +392,107 @@ class Dailyentries extends CI_Controller {
         ];
 
         $this->load->view('view_base', $data);
+    }
+
+    public function submitCreateOrder() {
+
+        header('Access-allow-control-origin: *');
+        header('Content-type: text/json');
+
+        $this->checkStatusJson(1, 1, 1);
+
+        $validations = [
+                ['field' => 'order_date', 'label' => 'Order Date', 'rules' => 'trim|required|callback_validateOrderDate', 'errors' => ['required' => 'Select the order date.']],
+                ['field' => 'order_number', 'label' => 'Order Number', 'rules' => 'trim|required|callback_validateOrderNumber'],
+                ['field' => 'po_depo_id', 'label' => 'Depo', 'rules' => 'trim|required'],
+                ['field' => 'volume_ordered', 'label' => 'Volume ordered', 'rules' => 'trim|required|numeric'],
+                ['field' => 'truck_number', 'label' => 'Truck Number', 'rules' => 'trim|required'],
+                ['field' => 'driver_name', 'label' => 'Driver Name', 'rules' => 'trim|required'],
+                ['field' => 'driver_license', 'label' => 'Driver License', 'rules' => 'trim|required'],
+                ['field' => 'po_vessel_id', 'label' => 'Vessel', 'rules' => 'trim|required'],
+                ['field' => 'loading_date', 'label' => 'Loading Date', 'rules' => 'trim|required'],
+                ['field' => 'release_inst_number', 'label' => 'Release Instruction Number', 'rules' => 'trim|required'],
+        ];
+
+        $this->form_validation->set_rules($validations);
+
+        if ($this->form_validation->run() === FALSE) {
+            echo json_encode([
+                'status' => [
+                    'error' => TRUE,
+                    'error_type' => 'display',
+                    "form_errors" => validation_errors_array()
+                ]
+            ]);
+        } else {
+
+            $vessel_id = $this->input->post('po_vessel_id');
+            $vessel = $this->depo->getStockVessels(['v.vessel_id' => $vessel_id], 1);
+
+            if (!$vessel) {
+                cus_json_error('Vessel details can not be found');
+            }
+
+            $order_data = [
+                'po_date' => date('Y-m-d', strtotime($this->input->post('order_date'))),
+                'po_number' => $this->input->post('order_number'),
+                'po_depo_id' => $this->input->post('po_depo_id'),
+                'po_station_id' => $this->station_id,
+                'po_user_id' => $this->user_id,
+                'po_truck_number' => $this->input->post('truck_number'),
+                'po_volume' => $this->input->post('volume_ordered'),
+                'po_driver_name' => $this->input->post('driver_name'),
+                'po_status' => 'UNRELEASED',
+                'po_vessel_id' => $vessel['vessel_id'],
+                'po_fuel_type_group_id' => $vessel['vessel_fuel_type_group_id'],
+                'po_release_instr_no' => $this->input->post('release_inst_number'),
+                'po_loading_date' => date('Y-m-d', strtotime($this->input->post('order_date'))),
+                'po_driver_license' => $this->input->post('driver_license'),
+            ];
+
+            $res = $this->purchase->savePurchaseOrder(['order_data' => $order_data]);
+
+            if ($res) {
+                $this->setSessMsg('Order created succesffuly', 'success');
+
+                echo json_encode([
+                    'status' => [
+                        'error' => FALSE,
+                        'redirect' => true,
+                        'redirect_url' => site_url('dailyentries/purchaseorders')
+                    ]
+                ]);
+            } else {
+                cus_json_error('Unable to create new order please refresh the page and try again.');
+            }
+        }
+    }
+
+    public function releaseOrder() {
+
+        $this->checkStatus();
+
+        $order_id = $this->uri->segment(3);
+
+        $po = $this->purchase->getPurchaseOrders(['po.po_id' => $order_id], 1);
+
+        if (!$po) {
+            $this->setSessMsg('Purchase order was not found or it may have been removed from the system', 'error', 'dailyentries/purchaseorders');
+        }
+
+        if ($this->purchase->updatePurchaseOrder(['po_status' => 'RELEASED'], ['po_id' => $po['po_id']])) {
+            $this->setSessMsg('Purchase order updated successfully', 'success', 'dailyentries/purchaseorders');
+        } else {
+            $this->setSessMsg('Something went wrong, Purchase order was not updates', 'warning', 'dailyentries/purchaseorders');
+        }
+    }
+
+    public function validateOrderDate($order_date) {
+        return TRUE;
+    }
+
+    public function validateOrderNumber($order_number) {
+        return TRUE;
     }
 
 }

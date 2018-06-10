@@ -50,5 +50,10 @@ Class CustomerModel extends CI_Model {
         return $res->result_array();
     }
     
+    public function getStationSuppliers($admin_id) {
+        
+       
+    }
+    
    
 }

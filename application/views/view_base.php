@@ -11,6 +11,8 @@ if ($this->usr->isLogedin()) {
     $menu_data['user_station_id'] = $this->session->userdata['logged_in']['user_station_id'];
     $menu_data['user_station_name'] = $this->session->userdata['logged_in']['user_station_name'];
     $menu_data['user_station_role'] = $this->session->userdata['logged_in']['user_station_role'];
+    $menu_data['user_depo_name'] = $this->session->userdata['logged_in']['user_depo_name'];
+    $menu_data['user_depo_role'] = $this->session->userdata['logged_in']['user_depo_role'];
     $menu_data['user_name'] = $this->session->userdata['logged_in']['user_name'];
 }
 
@@ -46,8 +48,11 @@ if (null !== $this->session->flashdata('info')) {
 
 $content_data['alert'] = $alert;
 
+$modals_data = isset($modals_data)? $modals_data : ['modals' => []];
+
 $this->load->view('static/view_header', $header_data);
 $this->load->view('static/view_top_bar', $top_bar_data);
 $this->load->view($menu, $menu_data);
+$this->load->view('static/view_modals', $modals_data);
 $this->load->view($content, $content_data);
 $this->load->view('static/view_footer', $footer_data);

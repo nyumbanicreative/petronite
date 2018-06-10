@@ -72,6 +72,28 @@ class Customers extends CI_Controller {
         // Now call the base view which have everything we need to dispaly
         $this->load->view('view_base', $data);
     }
+    
+    public function suppliers() {
+        // Check user status
+        $this->checkStatus(1, 1, 1);
+
+        $data = [
+            'menu' => 'menu/view_stations_menu', // View for menu
+            'content' => 'contents/customers/view_credit_customers', // View for contnet
+            'menu_data' => ['curr_menu' => 'CUSTOMERS', 'curr_sub_menu' => 'CUSTOMERS'], //Inorder to collapse  menu items
+            'content_data' => [ //Contents data pass here
+                'module_name' => 'Credit Customers',
+                'customer' => $this->customer,
+                'credit_customers' => $this->cust->getStationCustomers($this->admin_id)
+            ],
+            'header_data' => [], //Header data pass here
+            'footer_data' => [], //Footer data pass here
+            'top_bar_data' => [] //Top bar data pass here
+        ];
+
+        // Now call the base view which have everything we need to dispaly
+        $this->load->view('view_base', $data);
+    }
 
    
 

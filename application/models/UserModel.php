@@ -128,5 +128,6 @@ Class UserModel extends CI_Model {
 
         return $res->result_array();
     }
+    
 
 }

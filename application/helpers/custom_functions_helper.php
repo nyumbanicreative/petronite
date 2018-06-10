@@ -135,3 +135,18 @@ function cus_is_json($string) {
             (is_object(json_decode($string)) ||
             is_array(json_decode($string))))) ? true : false;
 }
+
+function cus_json_error($msg) {
+    echo json_encode([
+        'status' => [
+            'error' => TRUE,
+            'error_type' => 'pop',
+            "error_msg" => $msg
+        ]
+    ]);
+    die();
+}
+
+function cus_preciding_zeros($number){
+    return str_pad($number, PRECIDING_ZEROZ, '0', STR_PAD_LEFT);
+}

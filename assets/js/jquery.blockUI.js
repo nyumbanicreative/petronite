@@ -130,7 +130,7 @@
 				left:		'35%',
 				textAlign:	'center',
 				color:		'#000',
-				border:		'3px solid #aaa',
+				border:		'0px solid #aaa',
 				backgroundColor:'#fff',
 				cursor:		'wait'
 			},

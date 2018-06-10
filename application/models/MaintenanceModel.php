@@ -70,5 +70,14 @@ Class MaintenanceModel extends CI_Model {
         return $res->result_array();
     }
     
+    
+    public function getFuelTypesGroup() {
+          
+        $res = $this->db->from('fuel_types_group ft')
+                ->get();
+        
+        return $res->result_array();
+    }
+    
    
 }

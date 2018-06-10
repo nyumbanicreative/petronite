@@ -88,13 +88,13 @@ class User extends CI_Controller {
             }
         }
 
-      
+
         // Create graph data
         foreach ($fuel_types as $f => $ft) {
             foreach ($graph_dates as $d => $gd) {
                 foreach ($sales as $s) {
                     if ($s['att_date'] == $gd['dt'] AND $s['fuel_type_id'] == $ft['fuel_type_id']) {
-                        $graph_data[$f][$d] += $s['throughput'] - (float)$s['return_to_tank'] - (float)$s['transfered_to_station']; 
+                        $graph_data[$f][$d] += $s['throughput'] - (float) $s['return_to_tank'] - (float) $s['transfered_to_station'];
                     }
                 }
             }
@@ -104,8 +104,8 @@ class User extends CI_Controller {
         foreach ($graph_dates as $date) {
             $graph_labels[] = cus_nice_short_date($date['dt']);
         }
-        
- 
+
+
 
         $data = [
             'menu' => 'menu/view_sys_menu',
@@ -151,8 +151,8 @@ class User extends CI_Controller {
         // Validate Login Credentials
         $this->form_validation->set_error_delimiters('<p class="rmv_error text-danger">', '</p>');
         $validations = [
-            ['field' => 'loginUsername', 'label' => 'Username', 'rules' => 'trim|required|callback_validateUsername'],
-            ['field' => 'loginPassword', 'label' => 'Password', 'rules' => 'trim|required|callback_validateUserpassword']
+                ['field' => 'loginUsername', 'label' => 'Username', 'rules' => 'trim|required|callback_validateUsername'],
+                ['field' => 'loginPassword', 'label' => 'Password', 'rules' => 'trim|required|callback_validateUserpassword']
         ];
 
         $this->form_validation->set_rules($validations);
@@ -188,6 +188,9 @@ class User extends CI_Controller {
                     'user_station_id' => '',
                     'user_station_name' => '',
                     'user_station_role' => '',
+                    'user_depo_id' => '',
+                    'user_depo_name' => '',
+                    'user_depo_role' => '',
                     'user_name' => $user['user_name']
                 ];
 
@@ -243,12 +246,12 @@ class User extends CI_Controller {
         $details_type = $this->input->post('details_type');
 
         $validations = [
-            ['field' => 'full_name', 'label' => 'User Fullname', 'rules' => 'trim|required'],
-            ['field' => 'email', 'label' => 'User Email', 'rules' => 'trim|required|is_unique[tbl_users.user_email]', 'errors' => ['is_unique' => 'User email is already taken.']],
-            ['field' => 'phone', 'label' => 'User Phone', 'rules' => 'trim|required'],
-            ['field' => 'pass1', 'label' => 'Password', 'rules' => 'trim|required'],
-            ['field' => 'pass2', 'label' => 'Re-type password', 'rules' => 'trim|required'],
-            ['field' => 'role', 'label' => 'User Role', 'rules' => 'trim|required']
+                ['field' => 'full_name', 'label' => 'User Fullname', 'rules' => 'trim|required'],
+                ['field' => 'email', 'label' => 'User Email', 'rules' => 'trim|required|is_unique[tbl_users.user_email]', 'errors' => ['is_unique' => 'User email is already taken.']],
+                ['field' => 'phone', 'label' => 'User Phone', 'rules' => 'trim|required'],
+                ['field' => 'pass1', 'label' => 'Password', 'rules' => 'trim|required'],
+                ['field' => 'pass2', 'label' => 'Re-type password', 'rules' => 'trim|required'],
+                ['field' => 'role', 'label' => 'User Role', 'rules' => 'trim|required']
         ];
 
         $this->form_validation->set_rules($validations);

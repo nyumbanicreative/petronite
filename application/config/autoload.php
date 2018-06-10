@@ -143,5 +143,6 @@ $autoload['model'] = [
     'AttendanceModel' => 'att',
     'ExpenditureModel' => 'exps',
     'DippingModel' => 'dipping',
-    'PurchaseModel' => 'purchase'
+    'PurchaseModel' => 'purchase',
+    'DepotsModel' => 'depo'
 ];

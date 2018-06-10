@@ -18,10 +18,17 @@
         }
         ?>
         <li class="<?php echo ($curr_menu == 'STATIONS') ? "active" : "" ?>"> <a href="<?php echo site_url('station'); ?>"><i class="fa fa-building-o"></i>Stations</a></li>
+        <li class="<?php echo ($curr_menu == 'DEPOTS') ? "active" : "" ?>"> <a href="<?php echo site_url('depots'); ?>"><i class="fa fa-ship"></i>Depots</a></li>
         <li class="<?php echo ($curr_menu == 'CUSTOMERS') ? "active" : "" ?>"><a href="#customers" aria-expanded="<?php echo ($curr_menu == 'CUSTOMERS') ? "true" : "false" ?>" data-toggle="collapse"> <i class="fa fa-group"></i>Customers &amp; Suppliers</a>
             <ul id="customers" class="<?php echo ($curr_sub_menu == 'CUSTOMERS') ? "" : "collapse" ?> list-unstyled">
                 <li><a href="<?php echo site_url('customers');   ?>">Credit Customers</a></li>
                 <li><a href="#<?php //echo site_url('customers');   ?>">Suppliers</a></li>
+            </ul>
+        </li>
+        <li class="<?php echo ($curr_menu == 'PURCHASE') ? "active" : "" ?>"><a href="#purchase" aria-expanded="<?php echo ($curr_menu == 'PURCHASE') ? "true" : "false" ?>" data-toggle="collapse"><i class="fa fa-money"></i>Purchase Entries</a>
+            <ul id="purchase" class="<?php echo ($curr_sub_menu == 'PURCHASE') ? "" : "collapse" ?> list-unstyled">
+                <li><a href="<?php echo site_url('station/purchaseorders'); ?>">Purchase Orders</a></li>
+                <li><a href="<?php echo site_url('station/releaseinstructions'); ?>">Release Instructions</a></li>
             </ul>
         </li>
         <li class="<?php echo ($curr_menu == 'REPORTS') ? "active" : "" ?>"><a href="#rpts" aria-expanded="<?php echo ($curr_menu == 'REPORTS') ? "true" : "false" ?>" data-toggle="collapse"> <i class="fa fa-bar-chart"></i>Combined Reports</a>

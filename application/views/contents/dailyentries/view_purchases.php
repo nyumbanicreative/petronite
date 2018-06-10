@@ -16,7 +16,7 @@
                     <a href="<?php echo site_url('user/dashboard'); ?>"class="btn btn-primary btn-sm" data-target="#myModal"><i class="fa fa-dashboard"></i>&nbsp;Dashboard</a>
                 </div>
                 <div class="btn-group pull-right" role="group" aria-label="Basic example">
-                    <!--<button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#myModal"><i class="fa fa-calendar-o"></i>&nbsp;Latest Shifts</button>-->
+                    <a href="<?php echo  site_url('dailyentries/purchaseorders'); ?>" class="btn btn-info btn-sm" ><i class="fa fa-list-ol"></i>&nbsp;&nbsp;Purchase Orders</a>
                     <!--<button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#myModal"><i class="fa fa-plus-square"></i>&nbsp;Assign Pump</button>-->
                 </div>
             </div>
@@ -26,7 +26,7 @@
             <div class="col-lg-6 col-md-6 col-sm-8 col-xs-12">
                 <form  action="<?php echo site_url('dailyentries/purchases'); ?>" method="get">
                     <div class="form-group">
-                        <label>Dipping Due To Date</label>
+                        <label>Purchases Due To Date</label>
                         <div class="input-group">
                             <input type="text" name="date" value="<?php echo $date; ?>" class="form-control form-control-sm">
                             <span class="input-group-btn">
