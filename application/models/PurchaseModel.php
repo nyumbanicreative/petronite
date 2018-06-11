@@ -8,13 +8,14 @@ Class PurchaseModel extends CI_Model {
     var $cols_select_purchase_order = ['po.po_id', 'po.po_date', 'po.po_volume', 'po.po_number', 'ftg.fuel_type_group_name', 'po.po_driver_name', 'po.po_driver_license', 'po.po_truck_number', 'po.po_status', 'st.station_name'];
     var $cols_search_purchase_order = ['po.po_id', 'po.po_number', 'po.po_date', 'po.po_driver_name', 'po.po_driver_license', 'st.station_name'];
     var $cols_order_purchase_order = ['po.po_id', 'po.po_volume'];
-    var $col_order_by_purchase_order = ['po.po_date' => 'DESC'];
-// Release Instructions 
+    var $col_order_by_purchase_order = ['po.po_number' => 'DESC'];
+    
+    // Release Instructions 
     var $tbl_release_instruction = 'release_instructions ri';
     var $cols_select_release_instruction = ['ri.ri_id', 'ri.ri_number', 'ri.ri_loading_date', 'ri.ri_status', 'ri.ri_number', 'ri.ri_depo_id', 'depo.depo_name'];
     var $cols_search_release_instruction = ['ri.ri_number'];
     var $cols_order_release_instruction = ['ri.ri_loading_date'];
-    var $col_order_by_release_instruction = ['ri.ri_loading_date' => 'DESC'];
+    var $col_order_by_release_instruction = ['ri.ri_number' => 'DESC'];
 
     public function __construct() {
         if (isset($this->session->userdata['logged_in']['user_admin_id'])) {
@@ -104,6 +105,7 @@ Class PurchaseModel extends CI_Model {
                 ->join('stations st', 'st.station_id = po.po_station_id', 'INNER')
                 ->join('petronite_customers c', 'c.pc_admin_id = st.station_admin_id')
                 ->join('petronite_customers s', 's.pc_admin_id = depo.depo_admin_id')
+                ->join('release_instructions ri','ri.ri_id = po.po_ri_id','LEFT OUTER')
                 ->order_by('po.po_timestamp', 'DESC')
                 ->get();
 
@@ -358,6 +360,24 @@ Class PurchaseModel extends CI_Model {
         }
 
         $this->db->update('purchase_order', $data);
+        return $this->db->affected_rows();
+    }
+    
+    public function updateRi($data, $cond = null, $where_in_ri = null) {
+
+        if ($cond == null AND $where_in_ri == NULL) {
+            return false;
+        }
+
+        if ($cond !== NULL) {
+            $this->db->where($cond);
+        }
+
+        if (null !== $where_in_ri) {
+            $this->db->where_in('po_id', $where_in_ri);
+        }
+
+        $this->db->update('release_instructions', $data);
         return $this->db->affected_rows();
     }
 

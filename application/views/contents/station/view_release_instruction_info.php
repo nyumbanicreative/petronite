@@ -18,7 +18,14 @@
                 </div>
 
                 <div class="pull-right">
-                    <a href="<?php echo site_url('station/pdfreleaseinstructioninfo/' . $ri['ri_id']); ?>" target="_blank" class="btn btn-danger btn-sm" ><i class="fa fa-file-pdf-o"></i>&nbsp;&nbsp;PDF</a>
+                    <?php
+                    if ($ri['ri_status'] == 'NEW') {
+                        ?>
+                        <a href="<?php echo site_url('station/markriasreleased/' . $ri['ri_id']); ?>"  class="btn btn-sm btn-primary confirm" title="Mark This Release Instruction As Released"> <i class="fa fa-check-circle-o"></i>&nbsp;&nbsp;Mark As Released</a>
+                        <?php
+                    }
+                    ?>
+                    <a href="<?php echo site_url('station/pdfreleaseinstructioninfo/' . $ri['ri_id']); ?>" target="_blank" class="btn btn-danger btn-sm" ><i class="fa fa-file-pdf-o"></i>&nbsp;&nbsp;Export PDF</a>
                 </div>
             </div>
         </div>
@@ -35,7 +42,15 @@
                     </div>
 
                     <div class="card-close">
-                        <a href="#" data-toggle="modal" data-target="#addPoInRi" class="btn btn-sm btn-info"> <i class="fa fa-plus"></i>&nbsp;&nbsp;Add LPO in RI</a>
+
+                        <?php
+                        if ($ri['ri_status'] == 'NEW') {
+                            ?>
+                            <a href="#" data-toggle="modal" data-target="#addPoInRi" class="btn btn-sm btn-info"> <i class="fa fa-plus"></i>&nbsp;&nbsp;Add LPO in RI</a>
+                            <?php
+                        }
+                        ?>
+
                     </div>
 
                     <div class="card-body">
@@ -72,6 +87,34 @@
                                     <div class="form-group">
                                         <label>Customer</label>
                                         <p><?php echo strtoupper($ri['customer_name']); ?></p>
+                                    </div>
+                                </div>
+
+                                <div class="col col-sm-6 col-md-6 col-12 col-lg-4">
+                                    <div class="form-group">
+                                        <label>RI Status</label>
+                                        <?php
+                                        switch ($ri['ri_status']) {
+                                            case 'NEW':
+                                                ?>
+                                                <h4><span class="badge badge-info">NEW</span></h4>
+                                                <?php
+                                                break;
+
+                                            case 'RELEASED':
+                                                ?>
+                                                <h4><span class="badge badge-success">RELEASED</span></h4>
+                                                <?php
+                                                break;
+
+                                            default:
+                                                ?>
+                                                <h4><span class="badge badge-info"><?php echo $ri['ri_status']; ?></span></h4>
+                                                <?php
+                                                break;
+                                        }
+                                        ?>
+                                        </p>
                                     </div>
                                 </div>
 
@@ -112,74 +155,107 @@
                     <div style="padding:10px 0"></div>
                     <div class="card-body no-padding">
 
-                        <table id="purchase_orders" class="table table-striped credit_sales table-hover table-light" style="width:100%">
-                            <thead>
-                                <tr>
-                                    <th>Order No.</th>
-                                    <th>Order Date</th>
-                                    <th>Driver</th>
-                                    <th nowrap="nowrap">Truck No</th>
-                                    <?php
-                                    foreach ($ri_fuel_types as $i => $rift) {
-                                        $total[$i] = 0;
-                                        ?>
-                                        <th><?php echo strtoupper($rift['fuel_type_group_name']); ?></th>
-                                        <?php
-                                    }
-                                    ?>
-                                    <th>Delivery Point</th>
-                                    <th style="width:10px;"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php
-                                foreach ($ri_orders as $po) {
-                                    ?>
+                        <?php
+                        if ($ri_orders) {
+                            ?>
+                            <table id="purchase_orders" class="table table-striped credit_sales table-hover table-light" style="width:100%">
+                                <thead>
                                     <tr>
-                                        <td><?php echo $po['po_number']; ?></td>
-                                        <td nowrap="nowrap"><?php echo $po['po_date']; ?></td>
-                                        <td nowrap="nowrap"><?php echo $po['po_driver_name'] . '<br/>' . $po['po_driver_license']; ?></td>
-                                        <td nowrap="nowrap"><?php echo $po['po_truck_number']; ?></td>
+                                        <th>Order No.</th>
+                                        <th>Order Date</th>
+                                        <th>Driver</th>
+                                        <th nowrap="nowrap">Truck No</th>
                                         <?php
                                         foreach ($ri_fuel_types as $i => $rift) {
+                                            $total[$i] = 0;
                                             ?>
-                                            <td>
-                                                <?php
-                                                if ($rift['fuel_type_group_id'] == $po['fuel_type_group_id']) {
-                                                    $total[$i] += $po['po_volume'];
-                                                    echo $po['po_volume'];
-                                                }
-                                                ?>
-                                            </td>
+                                            <th><?php echo strtoupper($rift['fuel_type_group_name']); ?></th>
                                             <?php
                                         }
                                         ?>
-                                        <td nowrap="nowrap"><?php echo $po['station_name']; ?></td>
-                                        <td>
-                                            <a href="<?php echo site_url('station/removepofromri/' . $po['po_id']); ?>" class="btn btn-outline-danger btn-sm confirm" title="Remove Purchase Order From Release Instruction."><i class="fa fa-trash-o"></i></a>
-                                        </td>
+                                        <th>Delivery Point</th>
+                                        <?php
+                                        if (in_array($ri['ri_status'], ['NEW'])) {
+                                            ?>
+                                            <th style="width:10px;"></th>
+                                            <?php
+                                        }
+                                        ?>
+
                                     </tr>
+                                </thead>
+                                <tbody>
                                     <?php
-                                }
-                                ?>
+                                    foreach ($ri_orders as $po) {
+                                        ?>
+                                        <tr>
+                                            <td><?php echo $po['po_number']; ?></td>
+                                            <td nowrap="nowrap"><?php echo $po['po_date']; ?></td>
+                                            <td nowrap="nowrap"><?php echo $po['po_driver_name'] . '<br/>' . $po['po_driver_license']; ?></td>
+                                            <td nowrap="nowrap"><?php echo $po['po_truck_number']; ?></td>
+                                            <?php
+                                            foreach ($ri_fuel_types as $i => $rift) {
+                                                ?>
+                                                <td>
+                                                    <?php
+                                                    if ($rift['fuel_type_group_id'] == $po['fuel_type_group_id']) {
+                                                        $total[$i] += $po['po_volume'];
+                                                        echo $po['po_volume'];
+                                                    }
+                                                    ?>
+                                                </td>
+                                                <?php
+                                            }
+                                            ?>
+                                            <td nowrap="nowrap"><?php echo $po['station_name']; ?></td>
+                                            <?php
+                                            if (in_array($ri['ri_status'], ['NEW'])) {
+                                                ?>
+                                                <td>
+                                                    <a href="<?php echo site_url('station/removepofromri/' . $po['po_id']); ?>" class="btn btn-outline-danger btn-sm confirm" title="Remove Purchase Order From Release Instruction."><i class="fa fa-trash-o"></i></a>
+                                                </td>
+                                                <?php
+                                            }
+                                            ?>
 
-                            <tfoot>
-                                <tr>
-                                    <th colspan="4">Total</th>
-                                    <?php
-                                    foreach ($ri_fuel_types as $i => $rift) {
-
-                                        echo '<th>' . $total[$i] . '</th>';
+                                        </tr>
+                                        <?php
                                     }
                                     ?>
-                                    <th></th>
-                                    <th></th>
-                                </tr>
-                            </tfoot>
+
+                                <tfoot>
+                                    <tr>
+                                        <th colspan="4">Total</th>
+                                        <?php
+                                        foreach ($ri_fuel_types as $i => $rift) {
+
+                                            echo '<th>' . $total[$i] . '</th>';
+                                        }
+                                        ?>
+                                        <th></th>
+                                        <?php
+                                        if (in_array($ri['ri_status'], ['NEW'])) {
+                                            ?>
+                                            <th></th>
+                                            <?php
+                                        }
+                                        ?>
+
+                                    </tr>
+                                </tfoot>
 
 
-                            </tbody>
-                        </table>
+                                </tbody>
+                            </table>
+                            <?php
+                        } else {
+                            ?>
+                            <p style="padding: 100px 0;" class="text-center has-shadow">Release instruction has no order added yet</p>
+                            <?php
+                        }
+                        ?>
+
+
                     </div>
                 </div>
             </div>

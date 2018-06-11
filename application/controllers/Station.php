@@ -196,7 +196,7 @@ class Station extends CI_Controller {
 
         $ri_id = $this->uri->segment(3);
 
-        $cols = ['u.user_name','ri.ri_id','ri.ri_number','ri.ri_loading_date','depo.depo_name','seller.pc_name seller_name','customer.pc_name customer_name', 'customer.pc_contact_text','customer.pc_logo','customer.pc_slogan'];
+        $cols = ['u.user_name','ri.ri_status','ri.ri_id','ri.ri_number','ri.ri_loading_date','depo.depo_name','seller.pc_name seller_name','customer.pc_name customer_name', 'customer.pc_contact_text','customer.pc_logo','customer.pc_slogan'];
         $ri = $this->purchase->getReleaseInstructionInfo($ri_id,$cols);
 
         if (!$ri) {
@@ -316,6 +316,9 @@ class Station extends CI_Controller {
                 case 'UNRELEASED':
                     $status .= "<h4><span class='badge badge-warning'>UNRELEASED</span></h4>";
                     break;
+                case 'RELEASED':
+                    $status .= "<h4><span class='badge badge-info'>RELEASED</span></h4>";
+                    break;
             }
 
 
@@ -390,6 +393,9 @@ class Station extends CI_Controller {
                     break;
                 case 'LOADED':
                     $status .= "<h4><span class='badge badge-success'>LOADED</span></h4>";
+                    break;
+                case 'RELEASED':
+                    $status .= "<h4><span class='badge badge-success'>RELEASED</span></h4>";
                     break;
                 case 'UNRELEASED':
                     $status .= "<h4><span class='badge badge-warning'>UNRELEASED</span></h4>";
@@ -601,7 +607,8 @@ class Station extends CI_Controller {
         $po_ids = $this->input->post('po_id');
 
         $po_data = [
-            'po_ri_id' => $ri['ri_id']
+            'po_ri_id' => $ri['ri_id'],
+            'po_status' => 'RELEASED'
         ];
 
         if ($this->purchase->updatePo($po_data, NULL,$po_ids)) {
@@ -632,11 +639,35 @@ class Station extends CI_Controller {
             $this->setSessMsg('Purchase order may have been removed from release instruction.', 'info','station/releaseinstructions');
         }
         
-        if($this->purchase->updatePo(['po_ri_id' => NULL],['po_id' => $po['po_id']])){
+        if($this->purchase->updatePo(['po_ri_id' => NULL,'po_status' => 'UNRELEASED'],['po_id' => $po['po_id']])){
             $this->setSessMsg('Purchase order removed successfully.', 'success', 'station/releaseinstructioninfo/'. $po['po_ri_id']);
         }else{
             $this->setSessMsg('Something went wrong. Please try again', 'warning','station/releaseinstructioninfo/'. $po['po_ri_id']);
         }
+    }
+    
+    public function markRiAsReleased() {
+        
+        $this->checkStatus(1,1,1);
+        
+        $ri_id = $this->uri->segment(3);
+        $ri  = $this->purchase->getReleaseInstructionInfo($ri_id, ['ri.ri_id','ri.ri_status']);
+        
+        if(!$ri){
+            $this->setSessMsg('Release instruction was not found or it may have been removed from the system', 'error', 'station/releaseinstructions');
+        }
+        
+        if(!in_array($ri['ri_status'], ['NEW'])){
+            $this->setSessMsg('Release instruction is not in a right status to be marked as released.', 'error','station/releaseinstructioninfo/'. $ri['ri_id']);
+        }
+        
+        if($this->purchase->updateRi(['ri_status' => 'RELEASED'], ['ri_id' => $ri['ri_id']])){
+            $this->setSessMsg('Release instruction marked as RELEASED successfully', 'suucess','station/releaseinstructioninfo/'. $ri['ri_id']);
+        }else{
+            $this->setSessMsg('Something went wrong. Please try again', 'error','station/releaseinstructioninfo/'. $ri['ri_id']);
+        }
+        
+        
     }
 
 }

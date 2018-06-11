@@ -92,7 +92,7 @@ if (in_array('modal_add_vessel', $modals)) {
 if (in_array('modal_add_stock_loading', $modals)) {
     ?>
     <div id="addStockLoading"  role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" class="modal fade text-left">
-        <div role="document" class="modal-dialog">
+        <div role="document" class="modal-dialog modal-lg">
             <form id="add_loading_form" class="modal-content" action="<?php echo site_url('depots/submitstockloading'); ?>">
                 <div class="modal-header">
                     <h4 id="exampleModalLabel" class="modal-title"> Add Stock Loading</h4>
@@ -101,16 +101,13 @@ if (in_array('modal_add_stock_loading', $modals)) {
                 <div class="modal-body">
 
                     <div class="row">
-                        <div class="col-lg-12">
+                        <div class="col-lg-6">
                             <div class="form-group" id="loading_date">
                                 <label>Loading Date</label>
                                 <input autocomplete="off" readonly="" placeholder="Enter stock loading date" id="_vesselaycan" class="form-control min_date" name="loading_date"  value="">
                             </div>
                         </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-lg-12">
+                        <div class="col-lg-6">
                             <div class="form-group" id="invoice_number">
                                 <label>Invoice Number</label>
                                 <input autocomplete="off" placeholder="Enter the invoice number" id="_volume_received" class="form-control" name="invoice_number"  value="">
@@ -118,8 +115,9 @@ if (in_array('modal_add_stock_loading', $modals)) {
                         </div>
                     </div>
 
+
                     <div class="row">
-                        <div class="col-lg-12">
+                        <div class="col-lg-6">
                             <div class="form-group" id="loading_vessel_id">
                                 <label>Select Vessel</label>
                                 <select style="width: 100%" name="loading_vessel_id">
@@ -134,9 +132,7 @@ if (in_array('modal_add_stock_loading', $modals)) {
                                 </select>
                             </div>
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-lg-12">
+                        <div class="col-lg-6">
                             <div class="form-group" id="loading_po_id">
                                 <label>Purchase Order</label>
                                 <select style="width: 100%" name="loading_po_id">
@@ -146,27 +142,27 @@ if (in_array('modal_add_stock_loading', $modals)) {
                         </div>
                     </div>
 
+
                     <div class="row">
-                        <div class="col-lg-12">
+
+                        <div class="col-lg-6">
                             <div class="form-group" id="loading_volume_ordered">
                                 <label>Volume Ordered</label>
                                 <input autocomplete="off" readonly="" placeholder="Enter volume ordered" id="_volume_received" class="form-control volume" name="loading_volume_ordered"  value="">
                             </div>
                         </div>
-                    </div>
 
-
-                    <div class="row">
-                        <div class="col-lg-12">
+                        <div class="col-lg-6">
                             <div class="form-group" id="volume_loaded">
                                 <label>Volume Loaded</label>
                                 <input autocomplete="off" placeholder="Enter colume received"  class="form-control volume" name="volume_loaded"  value="">
                             </div>
                         </div>
+
                     </div>
-                    
+
                     <div class="row">
-                        <div class="col-lg-12">
+                        <div class="col-lg-6">
                             <div class="form-group" id="conversion_factor">
                                 <label>Conversion Factor</label>
                                 <input autocomplete="off" placeholder="Enter the conversion factor"  class="form-control volume" name="conversion_factor"  value="">
@@ -226,7 +222,7 @@ if (in_array('modal_add_purchase_order', $modals)) {
                         <?php
                         foreach ($fuel_types_group as $key => $ftg) {
                             ?>
-                                                                            <option value="<?php echo $ftg['fuel_type_group_id'] ?>"><?php echo $ftg['fuel_type_group_generic_name'] . ' - ' . $ftg['fuel_type_group_name']; ?></option>
+                                                                                <option value="<?php echo $ftg['fuel_type_group_id'] ?>"><?php echo $ftg['fuel_type_group_generic_name'] . ' - ' . $ftg['fuel_type_group_name']; ?></option>
                             <?php
                         }
                         ?>
@@ -360,18 +356,18 @@ if (in_array('modal_add_purchase_order_hq', $modals)) {
                                     <?php
                                     foreach ($delivery_points as $key => $s) {
                                         ?>
-                                    <option value="<?php echo $s['station_id'] ?>"><?php echo strtoupper($s['station_name']); ?></option>
+                                        <option value="<?php echo $s['station_id'] ?>"><?php echo strtoupper($s['station_name']); ?></option>
                                         <?php
                                     }
                                     ?>
                                 </select>
                             </div>
                         </div>
-                        
+
 
                     </div>
 
-                 
+
 
 
                     <div class="row">
@@ -510,7 +506,7 @@ if (in_array('modal_add_po_in_ri', $modals)) {
     ?>
     <div id="addPoInRi"  role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" class="modal fade text-left">
         <div role="document" class="modal-dialog">
-            <form id="add_po_in_ri_form" class="modal-content" action="<?php echo site_url('station/submitpoinri/'. $ri_id); ?>">
+            <form id="add_po_in_ri_form" class="modal-content" action="<?php echo site_url('station/submitpoinri/' . $ri_id); ?>">
                 <div class="modal-header">
                     <h4 id="exampleModalLabel" class="modal-title"> Add LPO In Release Instruction</h4>
                     <button type="button" data-dismiss="modal" aria-label="Close" class="close"><span aria-hidden="true">×</span></button>
@@ -526,7 +522,7 @@ if (in_array('modal_add_po_in_ri', $modals)) {
                                     <?php
                                     foreach ($pos as $key => $po) {
                                         ?>
-                                        <option value="<?php echo $po['po_id'] ?>"><?php echo $po['po_number'] . ' - ' . $po['po_driver_name'] .' - '.$po['po_truck_number']. ' - '. $po['fuel_type_group_name']; ?></option>
+                                        <option value="<?php echo $po['po_id'] ?>"><?php echo $po['po_number'] . ' - ' . $po['po_driver_name'] . ' - ' . $po['po_truck_number'] . ' - ' . $po['fuel_type_group_name']; ?></option>
                                         <?php
                                     }
                                     ?>
@@ -546,19 +542,73 @@ if (in_array('modal_add_po_in_ri', $modals)) {
     <?php
 }
 
+// CLOSE VESSEL
+if (in_array('modal_close_vessel', $modals)) {
+    ?>
+    <div id="closeVessel"  role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" class="modal fade text-left">
+        <div role="document" class="modal-dialog">
+            <form id="close_vessel_form" class="modal-content" action="">
+                <div class="modal-header">
+                    <h4 id="exampleModalLabel" class="modal-title"> Close Vessel</h4>
+                    <button type="button" data-dismiss="modal" aria-label="Close" class="close"><span aria-hidden="true">×</span></button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="form-group" id="close_vs_vessel_name">
+                                <label>Vessel Name</label>
+                                <input placeholder="Vessel Name" readonly=""  class="form-control" name="close_vs_vessel_name" autocomplete="off" value="">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="form-group" id="close_vs_available_volume">
+                                <label>Vessel Available Volume</label>
+                                <input placeholder="Available Volume" readonly=""  class="form-control" name="close_vs_available_volume" autocomplete="off" value="">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="form-group" id="close_vs_remain_transfered_to">
+                                <label>Remains Transfered To</label>
+                                <select style="width: 100%;" name="close_vs_remain_transfered_to">
+
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <p class="text-info"><strong>Note:</strong> Closing this vessel will automaticaly open another vessel if remains transfered to field is selected</p>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" data-dismiss="modal" class="btn btn-secondary pull-left">Close</button>
+                    <button type="submit" class="btn btn-success"><i class="fa fa-plus-circle"></i>&nbsp;Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <?php
+}
 ?>
 
 <script type="text/javascript">
+
     $(document).ready(function () {
 
         $('select[name=ftg_id]').select2({placeholder: 'Select product type'});
         $('select[name=po_station_id]').select2({placeholder: 'Select station'});
         $('select[name=loading_po_id],#_po_ids').select2({placeholder: 'Select purchase order'}); // Purchase Order
         $('select[name=po_depo_id], select[name=depo_id]').select2({placeholder: 'Select depot'});
-        $('select[name=po_vessel_id], select[name=loading_vessel_id]').select2({placeholder: 'Select vessel'});
+        $('select[name=po_vessel_id], select[name=loading_vessel_id],select[name=close_vs_remain_transfered_to]').select2({placeholder: 'Select vessel'});
 
 
-        $(document).on('submit', '#create_order_form,#add_vessel_form,#add_loading_form,#add_release_instruction_form,#add_po_in_ri_form', function (e) {
+        $(document).on('submit', '#create_order_form,#add_vessel_form,#add_loading_form,#add_release_instruction_form,#add_po_in_ri_form,#close_vessel_form', function (e) {
             e.preventDefault();
             var post_data = $(this).serializeArray();
             submitAjaxForm(post_data, $(this).attr('action'));
@@ -570,6 +620,87 @@ if (in_array('modal_add_po_in_ri', $modals)) {
             field = $(this).attr('name');
             value = $(this).val()
             cacheAjaxFields({field: field, value: value}, $(this).prop("tagName"));
+
+        });
+
+        // Request Form
+
+        $(document).on('click', '.request_form', function (e) {
+
+            e.preventDefault();
+
+            url = $(this).attr('href');
+
+            $.blockUI({message: `<div id="loader-wrapper"><div id="loader"></div></div>`}); // Block user interdace during submitting
+
+            // Ajax request itself
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: {}, // post data that are passed
+                success: function (data, status) {
+
+                    // Check if response have server error
+                    if (data.status.error == true) {
+                        // Check type of error if its pop 
+                        if (data.status.error_type == 'pop') {
+                            // Pop an error
+                            $.alert(data.status.error_msg);
+                        }
+
+                    } else {
+
+                        if (data.status.redirect == true) {
+
+                            window.location.href = data.status.redirect_url;
+
+                        } else if (data.status.pop_form == true) {
+
+                            switch (data.status.form_type) {
+
+                                // Populate close vessel form
+                                case 'closeVessel':
+
+                                    $('input[name=close_vs_vessel_name]').val(data.status.form_data.vessel_name);
+                                    $('input[name=close_vs_available_volume]').val(data.status.form_data.vessel_balance);
+                                    $("select[name=close_vs_remain_transfered_to]").empty().select2({
+                                        placeholder: 'Select vessel',
+                                        data: data.status.form_data.vessels
+                                    });
+                                    $('#close_vessel_form').attr('action',data.status.form_url);
+                                    break;
+
+                            }
+
+                            $('#' + data.status.form_type).modal('show');
+
+                        }
+                    }
+                    $.unblockUI(); // Ublock UI coz we got the response
+
+                },
+
+                // Holly molly, we may have some errors
+                error: function (xhr, desc, err) {
+
+                    console.log(xhr);
+                    console.log("Details: " + desc + "\nError:" + err);// just log to see whats going on
+
+                    $.unblockUI(); // ublock UI so they can be able to try again
+                    $.alert({
+                        title: 'Something went wrong!',
+                        content: '<br/>' + err + '<br/>' + 'Please try again.',
+                        confirm: function () {
+                            // $.alert('Confirmed!'); // shorthand.
+                        }
+                    });
+                },
+
+                complete: function () {
+                    //$('.disabled_field').attr('disabled', 'disabled');
+                },
+                timeout: 10000
+            });
 
         });
 
@@ -678,7 +809,7 @@ if (in_array('modal_add_po_in_ri', $modals)) {
                         switch (field) {
                             case  'po_depo_id':
                                 $("select[name=po_vessel_id]").empty().select2({
-                                    placeholder: 'Select Vessel',
+                                    placeholder: 'Select vessel',
                                     data: data.vessels
                                 });
                                 break;

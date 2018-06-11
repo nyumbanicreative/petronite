@@ -56,7 +56,12 @@
                                     <td><?php echo $sl['sl_invoice_number']; ?></td>
                                     <td><?php echo $sl['vessel_name']; ?></td>
                                     <td><?php echo $sl['fuel_type_group_generic_name'] .' - '.$sl['fuel_type_group_name'] ?></td>
-                                    <td><?php echo $sl['sl_volume_loaded']; ?></td>
+                                    <td class="text-nowrap">
+                                        <?php 
+                                        echo 'Order&nbsp;:&nbsp;&nbsp;<strong>'.$sl['sl_volume_loaded']. '</strong><br/>';
+                                        echo 'Loaded&nbsp;:&nbsp;&nbsp;<strong>'.$sl['po_volume']. '</strong><br/>';
+                                        ?>
+                                    </td>
                                     <td class="text-nowrap">
                                         <?php
                                         echo 'Truck&nbsp;No&nbsp;:&nbsp;&nbsp;<strong>'.$sl['po_truck_number']. '</strong><br/>';

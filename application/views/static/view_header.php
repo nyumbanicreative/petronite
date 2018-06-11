@@ -149,7 +149,7 @@
                                 console.log('Confirmation cancelled');
                             }, somethingElse: {
                                 text: 'Confirm',
-                                btnClass: 'btn-danger',
+                                btnClass: 'btn-success',
                                 keys: ['enter', 'shift'],
                                 action: function () {
                                     window.location.href = url;

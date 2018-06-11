@@ -220,7 +220,7 @@ class Maintenance extends CI_Controller {
             case 'loading_vessel_id':
 
                 $pos [] = ['text' => '', 'id' => ''];
-                $released_pos = $this->purchase->getPurchaseOrders(['po.po_vessel_id' => $value,'po.po_status' => 'RELEASED']);
+                $released_pos = $this->purchase->getPurchaseOrders(['po.po_vessel_id' => $value,'ri.ri_status' => 'RELEASED','po.po_status' => 'RELEASED']);
 
                 if (!$released_pos) {
                     cus_json_error('No purchase order has been requested for this vessel');
