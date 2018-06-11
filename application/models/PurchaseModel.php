@@ -12,7 +12,7 @@ Class PurchaseModel extends CI_Model {
     
     // Release Instructions 
     var $tbl_release_instruction = 'release_instructions ri';
-    var $cols_select_release_instruction = ['ri.ri_id', 'ri.ri_number', 'ri.ri_loading_date', 'ri.ri_status', 'ri.ri_number', 'ri.ri_depo_id', 'depo.depo_name'];
+    var $cols_select_release_instruction = ['auth.user_name authorizer','ri.ri_id', 'ri.ri_number', 'ri.ri_loading_date', 'ri.ri_status', 'ri.ri_number', 'ri.ri_depo_id', 'depo.depo_name'];
     var $cols_search_release_instruction = ['ri.ri_number'];
     var $cols_order_release_instruction = ['ri.ri_loading_date'];
     var $col_order_by_release_instruction = ['ri.ri_number' => 'DESC'];
@@ -265,6 +265,7 @@ Class PurchaseModel extends CI_Model {
         $this->db->from($this->tbl_release_instruction)
                 ->join('depots depo', 'depo.depo_id = ri.ri_depo_id', 'INNER')
                 ->join('users u', 'u.user_id = ri.ri_user_id', 'INNER')
+                ->join('users auth', 'auth.user_id = ri.ri_authorizer_id', 'INNER')
                 ->where('ri.ri_admin_id', $this->admin_id);
 
         $i = 0;
@@ -312,6 +313,7 @@ Class PurchaseModel extends CI_Model {
         $this->db->select($this->cols_select_release_instruction);
         $this->db->from($this->tbl_release_instruction)
                 ->where('ri.ri_admin_id', $this->admin_id);
+                
         return $this->db->count_all_results();
     }
 
@@ -333,6 +335,7 @@ Class PurchaseModel extends CI_Model {
         $res = $this->db->from('release_instructions ri')
                 ->join('depots depo', 'depo.depo_id = ri.ri_depo_id', 'INNER')
                 ->join('users u', 'u.user_id = ri.ri_user_id', 'INNER')
+                ->join('users auth', 'auth.user_id = ri.ri_authorizer_id', 'INNER')
                 ->join('petronite_customers seller', 'seller.pc_admin_id = depo.depo_admin_id', 'INNER')
                 ->join('petronite_customers customer', 'customer.pc_admin_id = ri.ri_admin_id', 'INNER')
                 ->limit(1)

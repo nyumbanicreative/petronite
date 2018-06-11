@@ -179,7 +179,8 @@ class Station extends CI_Controller {
             ],
             'modals_data' => [// Modals data
                 'modals' => ['modal_add_release_instruction'], // Put array of popup modals which you want them to appear on current page
-                'depots' => $this->depo->getDepots(['depo.depo_admin_id' => $this->admin_id]) // Get station depots for creating purchase order
+                'depots' => $this->depo->getDepots(['depo.depo_admin_id' => $this->admin_id]), // Get station depots for creating purchase order
+                'authorizers' => $this->usr->getUsersList(['user_admin_id' => $this->admin_id, 'user_role <>' => 'attendant'])
             ],
             'header_data' => [],
             'footer_data' => [],
@@ -196,17 +197,17 @@ class Station extends CI_Controller {
 
         $ri_id = $this->uri->segment(3);
 
-        $cols = ['u.user_name','ri.ri_status','ri.ri_id','ri.ri_number','ri.ri_loading_date','depo.depo_name','seller.pc_name seller_name','customer.pc_name customer_name', 'customer.pc_contact_text','customer.pc_logo','customer.pc_slogan'];
-        $ri = $this->purchase->getReleaseInstructionInfo($ri_id,$cols);
+        $cols = ['u.user_name', 'ri.ri_status', 'ri.ri_id', 'ri.ri_number', 'ri.ri_loading_date', 'depo.depo_name', 'seller.pc_name seller_name', 'customer.pc_name customer_name', 'customer.pc_contact_text', 'customer.pc_logo', 'customer.pc_slogan'];
+        $ri = $this->purchase->getReleaseInstructionInfo($ri_id, $cols);
 
         if (!$ri) {
             $this->setSessMsg('Release instruction was not found or it may havebeen removed from the system', 'error', 'station/releaseinstructions');
         }
 
-        $cols = ['po.po_id','po.po_date','po.po_number','po.po_volume','ftg.fuel_type_group_id','ftg.fuel_type_group_name','po.po_driver_name','po.po_driver_license','po.po_truck_number','st.station_name','po.po_status'];
+        $cols = ['po.po_id', 'po.po_date', 'po.po_number', 'po.po_volume', 'ftg.fuel_type_group_id', 'ftg.fuel_type_group_name', 'po.po_driver_name', 'po.po_driver_license', 'po.po_truck_number', 'st.station_name', 'po.po_status'];
         $ri_orders = $this->purchase->getPurchaseOrders(['po.po_ri_id' => $ri['ri_id']], null, $cols);
-        
-       
+
+
         $stations = $this->stn->getUserStations($this->user_id, $this->admin_id);
         $station_ids = array_column($stations, 'station_id');
 
@@ -235,31 +236,30 @@ class Station extends CI_Controller {
 
         $this->load->view('view_base', $data);
     }
-    
+
     public function pdfReleaseInstructionInfo() {
 
         ini_set('memory_limit', '50M'); // boost the memory limit if it's low ;)
-        
         // check session status of the user
         $this->checkStatus(1, 1, 1);
 
         $ri_id = $this->uri->segment(3);
 
-        $cols = ['u.user_name','ri.ri_id','ri.ri_number','ri.ri_loading_date','depo.depo_name','seller.pc_name seller_name','customer.pc_name customer_name', 'customer.pc_contact_text','customer.pc_logo','customer.pc_slogan'];
-        $ri = $this->purchase->getReleaseInstructionInfo($ri_id,$cols);
+        $cols = ['u.user_name', 'ri.ri_id', 'ri.ri_number', 'ri.ri_loading_date', 'depo.depo_name', 'seller.pc_name seller_name', 'customer.pc_name customer_name', 'customer.pc_contact_text', 'customer.pc_logo', 'customer.pc_slogan'];
+        $ri = $this->purchase->getReleaseInstructionInfo($ri_id, $cols);
 
         if (!$ri) {
             $this->setSessMsg('Release instruction was not found or it may havebeen removed from the system', 'error', 'station/releaseinstructions');
         }
 
-        $cols = ['po.po_id','po.po_date','po.po_number','po.po_volume','ftg.fuel_type_group_id','ftg.fuel_type_group_name','po.po_driver_name','po.po_driver_license','po.po_truck_number','st.station_name','po.po_status'];
+        $cols = ['po.po_id', 'po.po_date', 'po.po_number', 'po.po_volume', 'ftg.fuel_type_group_id', 'ftg.fuel_type_group_name', 'po.po_driver_name', 'po.po_driver_license', 'po.po_truck_number', 'st.station_name', 'po.po_status'];
         $ri_orders = $this->purchase->getPurchaseOrders(['po.po_ri_id' => $ri['ri_id']], null, $cols);
-        
-        $ri_fuel_types = $this->purchase->getRiFuelTypes($ri['ri_id']);
-  
 
-        $data = ['ri_orders' => $ri_orders,'ri' => $ri, 'ri_vessels' => $this->purchase->getRiVessels($ri['ri_id']),'ri_fuel_types' => $ri_fuel_types];
-        
+        $ri_fuel_types = $this->purchase->getRiFuelTypes($ri['ri_id']);
+
+
+        $data = ['ri_orders' => $ri_orders, 'ri' => $ri, 'ri_vessels' => $this->purchase->getRiVessels($ri['ri_id']), 'ri_fuel_types' => $ri_fuel_types];
+
         $html = $this->load->view('export/view_export_release_instruction', $data, true); // render the view into HTML
 
 
@@ -406,6 +406,7 @@ class Station extends CI_Controller {
             $row[] = $ri->ri_number;
             $row[] = $ri->ri_loading_date;
             $row[] = $ri->depo_name;
+            $row[] = $ri->authorizer;
 
             $row[] = $status;
 
@@ -521,7 +522,8 @@ class Station extends CI_Controller {
 
         $validations = [
                 ['field' => 'loading_date', 'label' => 'Loading Date', 'rules' => 'trim|required|callback_validateRILoadingDate', 'errors' => ['required' => 'Select the order date.']],
-                ['field' => 'depo_id', 'label' => 'Depot', 'rules' => 'trim|required']
+                ['field' => 'depo_id', 'label' => 'Depot', 'rules' => 'trim|required'],
+                ['field' => 'auth_id', 'label' => 'Authorizer', 'rules' => 'trim|required']
         ];
 
         $this->form_validation->set_rules($validations);
@@ -542,7 +544,8 @@ class Station extends CI_Controller {
                 'ri_admin_id' => $this->admin_id,
                 'ri_depo_id' => $this->input->post('depo_id'),
                 'ri_user_id' => $this->user_id,
-                'ri_status' => 'NEW'
+                'ri_status' => 'NEW',
+                'ri_authorizer_id' => $this->input->post('auth_id')
             ];
 
             $res = $this->purchase->saveReleaseInstruction(['ri_data' => $ri_data]);
@@ -596,13 +599,13 @@ class Station extends CI_Controller {
                     "form_errors" => validation_errors_array()
                 ]
             ]);
-            
+
             die();
         }
 
         $stations = $this->stn->getUserStations($this->user_id, $this->admin_id);
         $station_ids = array_column($stations, 'station_id');
-        
+
 
         $po_ids = $this->input->post('po_id');
 
@@ -611,8 +614,8 @@ class Station extends CI_Controller {
             'po_status' => 'RELEASED'
         ];
 
-        if ($this->purchase->updatePo($po_data, NULL,$po_ids)) {
-            
+        if ($this->purchase->updatePo($po_data, NULL, $po_ids)) {
+
             $this->setSessMsg('Purchase order added in release instruction successfully!', 'success');
             echo json_encode([
                 'status' => [
@@ -625,49 +628,46 @@ class Station extends CI_Controller {
             cus_json_error('Something went wrong please refresh the page');
         }
     }
-    
-    
+
     public function removePoFromRi() {
-        
-        $this->checkStatus(1,1,1);
-        
+
+        $this->checkStatus(1, 1, 1);
+
         $po_id = $this->uri->segment(3);
-        
-        $po = $this->purchase->getPurchaseOrders(['po_id' => $po_id],1,['po.po_id','po.po_ri_id']);
-        
-        if(!$po){
-            $this->setSessMsg('Purchase order may have been removed from release instruction.', 'info','station/releaseinstructions');
+
+        $po = $this->purchase->getPurchaseOrders(['po_id' => $po_id], 1, ['po.po_id', 'po.po_ri_id']);
+
+        if (!$po) {
+            $this->setSessMsg('Purchase order may have been removed from release instruction.', 'info', 'station/releaseinstructions');
         }
-        
-        if($this->purchase->updatePo(['po_ri_id' => NULL,'po_status' => 'UNRELEASED'],['po_id' => $po['po_id']])){
-            $this->setSessMsg('Purchase order removed successfully.', 'success', 'station/releaseinstructioninfo/'. $po['po_ri_id']);
-        }else{
-            $this->setSessMsg('Something went wrong. Please try again', 'warning','station/releaseinstructioninfo/'. $po['po_ri_id']);
+
+        if ($this->purchase->updatePo(['po_ri_id' => NULL, 'po_status' => 'UNRELEASED'], ['po_id' => $po['po_id']])) {
+            $this->setSessMsg('Purchase order removed successfully.', 'success', 'station/releaseinstructioninfo/' . $po['po_ri_id']);
+        } else {
+            $this->setSessMsg('Something went wrong. Please try again', 'warning', 'station/releaseinstructioninfo/' . $po['po_ri_id']);
         }
     }
-    
+
     public function markRiAsReleased() {
-        
-        $this->checkStatus(1,1,1);
-        
+
+        $this->checkStatus(1, 1, 1);
+
         $ri_id = $this->uri->segment(3);
-        $ri  = $this->purchase->getReleaseInstructionInfo($ri_id, ['ri.ri_id','ri.ri_status']);
-        
-        if(!$ri){
+        $ri = $this->purchase->getReleaseInstructionInfo($ri_id, ['ri.ri_id', 'ri.ri_status']);
+
+        if (!$ri) {
             $this->setSessMsg('Release instruction was not found or it may have been removed from the system', 'error', 'station/releaseinstructions');
         }
-        
-        if(!in_array($ri['ri_status'], ['NEW'])){
-            $this->setSessMsg('Release instruction is not in a right status to be marked as released.', 'error','station/releaseinstructioninfo/'. $ri['ri_id']);
+
+        if (!in_array($ri['ri_status'], ['NEW'])) {
+            $this->setSessMsg('Release instruction is not in a right status to be marked as released.', 'error', 'station/releaseinstructioninfo/' . $ri['ri_id']);
         }
-        
-        if($this->purchase->updateRi(['ri_status' => 'RELEASED'], ['ri_id' => $ri['ri_id']])){
-            $this->setSessMsg('Release instruction marked as RELEASED successfully', 'suucess','station/releaseinstructioninfo/'. $ri['ri_id']);
-        }else{
-            $this->setSessMsg('Something went wrong. Please try again', 'error','station/releaseinstructioninfo/'. $ri['ri_id']);
+
+        if ($this->purchase->updateRi(['ri_status' => 'RELEASED'], ['ri_id' => $ri['ri_id']])) {
+            $this->setSessMsg('Release instruction marked as RELEASED successfully', 'suucess', 'station/releaseinstructioninfo/' . $ri['ri_id']);
+        } else {
+            $this->setSessMsg('Something went wrong. Please try again', 'error', 'station/releaseinstructioninfo/' . $ri['ri_id']);
         }
-        
-        
     }
 
 }

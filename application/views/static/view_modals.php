@@ -487,6 +487,24 @@ if (in_array('modal_add_release_instruction', $modals)) {
                             </div>
                         </div>
                     </div>
+                    
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="form-group" id="auth_id">
+                                <label>RI Authorizer</label>
+                                <select style="width: 100%" name="auth_id">
+                                    <option value=""></option>
+                                    <?php
+                                    foreach ($authorizers as $key => $auth) {
+                                        ?>
+                                        <option value="<?php echo $auth['user_id'] ?>"><?php echo $auth['user_name']; ?></option>
+                                        <?php
+                                    }
+                                    ?>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" data-dismiss="modal" class="btn btn-secondary pull-left">Close</button>
@@ -602,6 +620,7 @@ if (in_array('modal_close_vessel', $modals)) {
     $(document).ready(function () {
 
         $('select[name=ftg_id]').select2({placeholder: 'Select product type'});
+        $('select[name=auth_id]').select2({placeholder: 'Select user'});
         $('select[name=po_station_id]').select2({placeholder: 'Select station'});
         $('select[name=loading_po_id],#_po_ids').select2({placeholder: 'Select purchase order'}); // Purchase Order
         $('select[name=po_depo_id], select[name=depo_id]').select2({placeholder: 'Select depot'});

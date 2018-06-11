@@ -31,6 +31,7 @@
                                     <th>Loading Date</th>
                                     <th>Depot</th>
                                     <th>Status</th>
+                                    <th>Authorizer</th>
                                     <th style="width:10px;"></th>
                                 </tr>
                             </thead>

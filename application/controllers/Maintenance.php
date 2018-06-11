@@ -205,7 +205,7 @@ class Maintenance extends CI_Controller {
             case 'po_depo_id':
 
                 $vessels [] = ['text' => '', 'id' => ''];
-                $depo_vessels = $this->depo->getStockVessels(['vessel_depot_id' => $value]);
+                $depo_vessels = $this->depo->getStockVessels(['vessel_depot_id' => $value, 'vessel_status <>' => 'CLOSED']);
                 if (!$depo_vessels) {
                     cus_json_error('Currently there is no active vessel for a selected depot');
                 }

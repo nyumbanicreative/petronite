@@ -67,7 +67,7 @@ Class UserModel extends CI_Model {
         }
         $res = $this->db
                 ->from('users u')
-                ->order_by('u.user_email')
+                ->order_by('u.user_name')
                 ->get();
 
         return $res->result_array();

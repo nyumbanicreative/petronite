@@ -23,9 +23,13 @@
                         ?>
                         <a href="<?php echo site_url('station/markriasreleased/' . $ri['ri_id']); ?>"  class="btn btn-sm btn-primary confirm" title="Mark This Release Instruction As Released"> <i class="fa fa-check-circle-o"></i>&nbsp;&nbsp;Mark As Released</a>
                         <?php
+                    }else{
+                        ?>
+                        <a href="<?php echo site_url('station/pdfreleaseinstructioninfo/' . $ri['ri_id']); ?>" target="_blank" class="btn btn-danger btn-sm" ><i class="fa fa-file-pdf-o"></i>&nbsp;&nbsp;Export PDF</a>
+                        <?php
                     }
                     ?>
-                    <a href="<?php echo site_url('station/pdfreleaseinstructioninfo/' . $ri['ri_id']); ?>" target="_blank" class="btn btn-danger btn-sm" ><i class="fa fa-file-pdf-o"></i>&nbsp;&nbsp;Export PDF</a>
+                    
                 </div>
             </div>
         </div>

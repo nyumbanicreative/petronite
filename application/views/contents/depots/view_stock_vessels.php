@@ -91,10 +91,12 @@
                                                         <a href="<?php //echo site_url('inventory/edithallitem/' . $att['att_id']);     ?>"  class="dropdown-item edit_item"> <i class="fa fa-edit"></i>&nbsp;&nbsp;Edit Details</a>
                                                         <a href="<?php //echo site_url('inventory/deletehallitem/' . $att['att_id']);     ?>" class="dropdown-item edit text-danger"> <i class="fa fa-trash"></i>&nbsp;&nbsp;Delete</a>
                                                         <?php
-                                                    } else {
+                                                    } elseif($sv['vessel_status'] == 'OPENED') {
                                                         ?>
                                                         <a href="<?php echo site_url('depots/requestclosevesselform/' . $sv['vessel_id']); ?>"  class="dropdown-item edit_item text-success request_form"> <i class="fa fa-lock"></i>&nbsp;&nbsp;Close Loading</a>
                                                         <?php
+                                                    }else{
+                                                        
                                                     }
                                                     ?>
 

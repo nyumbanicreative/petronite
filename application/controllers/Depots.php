@@ -164,7 +164,7 @@ class Depots extends CI_Controller {
             ],
             'modals_data' => [
                 'modals' => ['modal_add_stock_loading'],
-                'vessels' => $this->depo->getStockVessels(['vessel_depot_id' => $this->depo_id, 'vessel_status' => 'RECEIVED'])
+                'vessels' => $this->depo->getStockVessels(['vessel_depot_id' => $this->depo_id, 'vessel_status' => 'OPENED'])
             ],
             'header_data' => [],
             'footer_data' => [],
@@ -356,6 +356,7 @@ class Depots extends CI_Controller {
             cus_json_error($opened_vessel['vessel_name'] . ' should be closed before opening of ' . $vessel['vessel_name']);
         }
 
+       
         echo json_encode([
             'status' => [
                 'error' => FALSE,
@@ -472,19 +473,35 @@ class Depots extends CI_Controller {
         } else {
 
             $selected_vessel_id = $this->input->post('close_vs_remain_transfered_to');
+            $vessel_remains_transfered_to_vessel_id = NULL;
             
-            $data['vessel_data'] = ['vessel_status' => 'CLOSED'];
-            $data['vessel_id'] = $vessel['vessel_id'];
+            $unreleased_po = $this->purchase->getPurchaseOrders(['po.po_vessel_id' => $vessel['vessel_id'],'po.po_status' => 'RELEASED']);
+            
+            if($unreleased_po){
+                $data['unreleased_pos'] = array_column($unreleased_po, 'po_id');
+            }
+            
+            
+            
+            if($unreleased_po AND empty($selected_vessel_id)){
+                cus_json_error('There is unloaded orders that should be tranfered to another vessel. Therefore you should select a vessel or add new');
+            }
 
             if (!empty($selected_vessel_id)) {
+                
                 $selected_vessel = $this->depo->getStockVessels(['vessel_id' => $selected_vessel_id, 'vessel_depot_id' => $this->depo_id], 1);
 
                 if (!$selected_vessel) {
                     cus_json_error('Vessel was not found or it may have been removed from the system');
                 }
+                $vessel_remains_transfered_to_vessel_id = $selected_vessel['vessel_id'];
+                
                 $data['selected_vessel_data'] = ['vessel_status' => 'OPENED', 'vessel_balance' => $vessel['vessel_balance'] + $selected_vessel['vessel_balance']];
                 $data['selected_vessel_id'] = $selected_vessel['vessel_id'];
             }
+            
+            $data['vessel_data'] = ['vessel_status' => 'CLOSED', 'vessel_remains_transfered_to_vessel_id' => $vessel_remains_transfered_to_vessel_id];
+            $data['vessel_id'] = $vessel['vessel_id'];
 
 
             if ($this->depo->closeVessel($data)) {

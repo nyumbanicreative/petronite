@@ -150,6 +150,10 @@ Class DepotsModel extends CI_Model {
             $this->db->where('vessel_id',$data['selected_vessel_id'])->update('vessels',$data['selected_vessel_data']);
         }
         
+        if(isset($data['unreleased_pos'])){
+            $this->db->where_in('po_id',$data['unreleased_pos'])->update('purchase_order',['po_vessel_id' => $data['selected_vessel_id']]);
+        }
+        
         $this->db->trans_complete();
         
         if($this->db->trans_status() === FALSE){
