@@ -383,6 +383,24 @@ Class PurchaseModel extends CI_Model {
         $this->db->update('release_instructions', $data);
         return $this->db->affected_rows();
     }
+    
+    public function updateVessel($data, $cond = null, $where_in_vessel = null) {
+
+        if ($cond == null AND $where_in_vessel == NULL) {
+            return false;
+        }
+
+        if ($cond !== NULL) {
+            $this->db->where($cond);
+        }
+
+        if (null !== $where_in_vessel) {
+            $this->db->where_in('vessel_id', $where_in_vessel);
+        }
+
+        $this->db->update('vessels', $data);
+        return $this->db->affected_rows();
+    }
 
     public function getRiVessels($ri_id) {
         $res = $this->db->from('vessels vs')
