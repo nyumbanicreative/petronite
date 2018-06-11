@@ -348,7 +348,7 @@ class Station extends CI_Controller {
             $actions .= '</div>'
                     . '</div>';
 
-            $row[] = $actions;
+            $row[] = '';//$actions;
 
             $data[] = $row;
         }

@@ -70,6 +70,7 @@
                                         ?>
                                     </td>
                                     <td>
+<!--                                        
                                         <div class="dropdown">
                                             <button type="button" id="closeCard2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-info btn-sm"><i class="fa fa-ellipsis-v"></i></button>
                                             <div aria-labelledby="closeCard2" class="dropdown-menu dropdown-menu-right has-shadow">
@@ -78,6 +79,7 @@
                                                 <a href="<?php //echo site_url('inventory/deletehallitem/' . $att['att_id']);  ?>" class="dropdown-item edit text-danger"> <i class="fa fa-trash"></i>&nbsp;&nbsp;Delete</a>
                                             </div>
                                         </div>
+                                        -->
                                     </td>
                                 </tr>
                                 <?php

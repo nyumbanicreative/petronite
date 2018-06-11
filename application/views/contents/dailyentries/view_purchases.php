@@ -16,7 +16,7 @@
                     <a href="<?php echo site_url('user/dashboard'); ?>"class="btn btn-primary btn-sm" data-target="#myModal"><i class="fa fa-dashboard"></i>&nbsp;Dashboard</a>
                 </div>
                 <div class="btn-group pull-right" role="group" aria-label="Basic example">
-                    <a href="<?php echo  site_url('dailyentries/purchaseorders'); ?>" class="btn btn-info btn-sm" ><i class="fa fa-list-ol"></i>&nbsp;&nbsp;Purchase Orders</a>
+                    <!--<a href="<?php echo  site_url('dailyentries/purchaseorders'); ?>" class="btn btn-info btn-sm" ><i class="fa fa-list-ol"></i>&nbsp;&nbsp;Purchase Orders</a>-->
                     <!--<button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#myModal"><i class="fa fa-plus-square"></i>&nbsp;Assign Pump</button>-->
                 </div>
             </div>
