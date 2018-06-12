@@ -165,5 +165,19 @@ Class DepotsModel extends CI_Model {
             return TRUE;
         }
     }
+    
+    
+    public function getVesselStockLoadings($vessel_id) {
+        
+        $this->db->where('sl.sl_vessel_id',$vessel_id);
+        
+        $res = $this->db->from('stock_loading sl')
+                ->join('purchase_order po','po.po_id = sl.sl_po_id','INNER')
+                ->join('users u','u.user_id = sl.sl_user_id','INNER')
+                ->join('stations st', 'st.station_id = po.po_station_id', 'INNER')
+                ->order_by('sl.sl_timestamp')->get();
+        
+        return $res->result_array();
+    }
   
 }

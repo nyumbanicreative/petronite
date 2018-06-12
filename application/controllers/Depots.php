@@ -65,6 +65,9 @@ class Depots extends CI_Controller {
             cus_json_error('Select a valid customer');
         }
     }
+    
+    
+    // Normal Pages
 
     public function index() {
 
@@ -173,93 +176,63 @@ class Depots extends CI_Controller {
 
         $this->load->view('view_base', $data);
     }
+    
+    public function vesselStockLoading($param) {
+        
+        // Check user statuses
+        $this->checkStatus(1, 1, 1);
 
-    public function submitNewVessel() {
+        if (empty($this->depo_id)) {
+            $this->setSessMsg('Select a depot', 'error', 'depots/index');
+        }
+        
+        $vessel_id = $this->uri->segment(3);
+        
+        
+        $vessel = $this->depo->getStockVessels(['vessel_depot_id' => $this->depo_id,'vessel_id' => $vessel_id], 1);
+        
+        if(!$vessel){
+            $this->setSessMsg('Vessel was not found or it may have been removed from the system','error','depots/stockvessels');
+        }
+        
+        $opening_balance = $vessel['vessel_received_volume'];
+        
+        $vessel_successor = $this->depo->getStockVessels(['vessel_depot_id' => $this->depo_id,'vessel_remains_transfered_to_vessel_id' => $vessel['vessel_id']], 1);
+        if($vessel_successor){
+            $opening_balance += $vessel_successor['vessel_balance'];
+        }
 
-        header('Access-allow-control-origin: *');
-        header('Content-type: text/json');
+        $stock_loadings = $this->depo->getVesselStockLoadings($vessel['vessel_id']);
 
-        $this->checkStatusJson(1, 1, 1);
-
-        $validations = [
-                ['field' => 'vessel_name', 'label' => 'Vessel Name', 'rules' => 'trim|required', 'errors' => ['required' => 'Enter the vessel name.']],
-                ['field' => 'ftg_id', 'label' => 'Product Type', 'rules' => 'trim|required'],
-                ['field' => 'vesselaycan', 'label' => 'Vessel Laycan', 'rules' => 'trim|required'],
-                ['field' => 'date_received', 'label' => 'Date Received', 'rules' => 'trim|required'],
-                ['field' => 'volume_ordered', 'label' => 'Volume Ordered', 'rules' => 'trim|required'],
-                ['field' => 'volume_received', 'label' => 'Volume Received', 'rules' => 'trim|required']
+        $data = [
+            'menu' => 'menu/view_depot_menu',
+            'content' => 'contents/depots/view_vessel_stock_loading',
+            'menu_data' => ['curr_menu' => 'STOCK_CONTROL', 'curr_sub_menu' => 'STOCK_CONTROL'],
+            'content_data' => [
+                'module_name' => 'Vessel Stock Loadings',
+                'customer' => $this->customer,
+                'vessel' => $vessel,
+                'stock_loading' => $stock_loadings,
+                'opening_balance' => $opening_balance
+            ],
+            'modals_data' => [
+                'modals' => ['modal_add_stock_loading'],
+                'vessels' => $this->depo->getStockVessels(['vessel_depot_id' => $this->depo_id, 'vessel_status' => 'OPENED'])
+            ],
+            'header_data' => [],
+            'footer_data' => [],
+            'top_bar_data' => []
         ];
 
-        $this->form_validation->set_rules($validations);
-
-        if ($this->form_validation->run() === FALSE) {
-            echo json_encode([
-                'status' => [
-                    'error' => TRUE,
-                    'error_type' => 'display',
-                    "form_errors" => validation_errors_array()
-                ]
-            ]);
-        } else {
-
-            $received_volume = $this->input->post('volume_received');
-            $vessel_data = [
-                'vessel_name' => $this->input->post('vessel_name'),
-                'vessel_fuel_type_group_id' => $this->input->post('ftg_id'),
-                'vessel_laycan' => date('Y-m-d', strtotime($this->input->post('vesselaycan'))), // Should convert to mysql date
-                'vessel_received_on' => date('Y-m-d', strtotime($this->input->post('date_received'))),
-                'vessel_ordered_volume' => $this->input->post('volume_ordered'),
-                'vessel_received_volume' => $received_volume,
-                'vessel_user_id' => $this->user_id,
-                'vessel_status' => 'RECEIVED',
-                'vessel_depot_id' => $this->depo_id,
-                'vessel_balance' => $received_volume
-            ];
-
-
-            $res = $this->depo->saveNewVessel(['vessel_data' => $vessel_data]);
-
-            if ($res) {
-                $this->setSessMsg('Vsessel added succesffuly', 'success');
-
-                echo json_encode([
-                    'status' => [
-                        'error' => FALSE,
-                        'redirect' => true,
-                        'redirect_url' => site_url('depots/stockvessels')
-                    ]
-                ]);
-            } else {
-                cus_json_error('Unable to add new vessel, please refresh the page and try again.');
-            }
-        }
+        $this->load->view('view_base', $data);
+        
     }
+    
+    
+    
 
-    public function validateLoadingDate($l_date) {
-        return TRUE;
-    }
-
-    public function validateLoadingInvoiceNumber($invoice_number) {
-        return TRUE;
-    }
-
-    public function validateLoadingVesselId($vessel_id) {
-        $volume_loaded = $this->input->post('volume_loaded');
-
-        $vessel = $this->depo->getStockVessels(['vessel_id' => $vessel_id], 1);
-
-
-        if (!empty($volume_loaded) AND $vessel) {
-
-            if ($volume_loaded > $vessel['vessel_balance']) {
-                $this->form_validation->set_message('validateLoadingVesselId', 'Available balance for this vessel is not enough to be loaded to a selected order');
-                return FALSE;
-            }
-        }
-
-        return TRUE;
-    }
-
+    
+    // Ajax Requests
     public function submitStockLoading() {
 
         header('Access-allow-control-origin: *');
@@ -413,31 +386,6 @@ class Depots extends CI_Controller {
         ]);
     }
 
-    public function validateRemainsTransferedTo($selected_vessel_id) {
-
-        $vessel_id = $this->uri->segment(3);
-
-        $vessel = $this->depo->getStockVessels(['vessel_id' => $vessel_id, 'vessel_depot_id' => $this->depo_id], 1);
-
-        if (!$vessel) {
-            $this->form_validation->set_message('validateRemainsTransferedTo', 'Vessel to be closed was not found or it may have been removed from the system');
-            return FALSE;
-        }
-
-        if (empty($selected_vessel_id) AND $vessel['vessel_balance'] > 0) {
-            $this->form_validation->set_message('validateRemainsTransferedTo', 'The remains transfered to field is required');
-            return FALSE;
-        }
-
-        $selected_vessel = $this->depo->getStockVessels(['vessel_id' => $selected_vessel_id, 'vessel_depot_id' => $this->depo_id], 1);
-
-        if (!$selected_vessel) {
-            $this->form_validation->set_message('validateRemainsTransferedTo', 'Vessel was not found or it may have been removed from the system');
-            return FALSE;
-        }
-
-        return TRUE;
-    }
 
     public function submitCloseVessel() {
 
@@ -514,6 +462,122 @@ class Depots extends CI_Controller {
                 cus_json_error('Something went wrong. Nothing was updated please try again');
             }
         }
+    }
+    
+    
+    
+    // Form Validations
+
+    public function submitNewVessel() {
+
+        header('Access-allow-control-origin: *');
+        header('Content-type: text/json');
+
+        $this->checkStatusJson(1, 1, 1);
+
+        $validations = [
+                ['field' => 'vessel_name', 'label' => 'Vessel Name', 'rules' => 'trim|required', 'errors' => ['required' => 'Enter the vessel name.']],
+                ['field' => 'ftg_id', 'label' => 'Product Type', 'rules' => 'trim|required'],
+                ['field' => 'vesselaycan', 'label' => 'Vessel Laycan', 'rules' => 'trim|required'],
+                ['field' => 'date_received', 'label' => 'Date Received', 'rules' => 'trim|required'],
+                ['field' => 'volume_ordered', 'label' => 'Volume Ordered', 'rules' => 'trim|required'],
+                ['field' => 'volume_received', 'label' => 'Volume Received', 'rules' => 'trim|required']
+        ];
+
+        $this->form_validation->set_rules($validations);
+
+        if ($this->form_validation->run() === FALSE) {
+            echo json_encode([
+                'status' => [
+                    'error' => TRUE,
+                    'error_type' => 'display',
+                    "form_errors" => validation_errors_array()
+                ]
+            ]);
+        } else {
+
+            $received_volume = $this->input->post('volume_received');
+            $vessel_data = [
+                'vessel_name' => $this->input->post('vessel_name'),
+                'vessel_fuel_type_group_id' => $this->input->post('ftg_id'),
+                'vessel_laycan' => date('Y-m-d', strtotime($this->input->post('vesselaycan'))), // Should convert to mysql date
+                'vessel_received_on' => date('Y-m-d', strtotime($this->input->post('date_received'))),
+                'vessel_ordered_volume' => $this->input->post('volume_ordered'),
+                'vessel_received_volume' => $received_volume,
+                'vessel_user_id' => $this->user_id,
+                'vessel_status' => 'RECEIVED',
+                'vessel_depot_id' => $this->depo_id,
+                'vessel_balance' => $received_volume
+            ];
+
+
+            $res = $this->depo->saveNewVessel(['vessel_data' => $vessel_data]);
+
+            if ($res) {
+                $this->setSessMsg('Vsessel added succesffuly', 'success');
+
+                echo json_encode([
+                    'status' => [
+                        'error' => FALSE,
+                        'redirect' => true,
+                        'redirect_url' => site_url('depots/stockvessels')
+                    ]
+                ]);
+            } else {
+                cus_json_error('Unable to add new vessel, please refresh the page and try again.');
+            }
+        }
+    }
+
+    public function validateLoadingDate($l_date) {
+        return TRUE;
+    }
+
+    public function validateLoadingInvoiceNumber($invoice_number) {
+        return TRUE;
+    }
+
+    public function validateLoadingVesselId($vessel_id) {
+        $volume_loaded = $this->input->post('volume_loaded');
+
+        $vessel = $this->depo->getStockVessels(['vessel_id' => $vessel_id], 1);
+
+
+        if (!empty($volume_loaded) AND $vessel) {
+
+            if ($volume_loaded > $vessel['vessel_balance']) {
+                $this->form_validation->set_message('validateLoadingVesselId', 'Available balance for this vessel is not enough to be loaded to a selected order');
+                return FALSE;
+            }
+        }
+
+        return TRUE;
+    }
+    
+    public function validateRemainsTransferedTo($selected_vessel_id) {
+
+        $vessel_id = $this->uri->segment(3);
+
+        $vessel = $this->depo->getStockVessels(['vessel_id' => $vessel_id, 'vessel_depot_id' => $this->depo_id], 1);
+
+        if (!$vessel) {
+            $this->form_validation->set_message('validateRemainsTransferedTo', 'Vessel to be closed was not found or it may have been removed from the system');
+            return FALSE;
+        }
+
+        if (empty($selected_vessel_id) AND $vessel['vessel_balance'] > 0) {
+            $this->form_validation->set_message('validateRemainsTransferedTo', 'The remains transfered to field is required');
+            return FALSE;
+        }
+
+        $selected_vessel = $this->depo->getStockVessels(['vessel_id' => $selected_vessel_id, 'vessel_depot_id' => $this->depo_id], 1);
+
+        if (!$selected_vessel) {
+            $this->form_validation->set_message('validateRemainsTransferedTo', 'Vessel was not found or it may have been removed from the system');
+            return FALSE;
+        }
+
+        return TRUE;
     }
 
 }

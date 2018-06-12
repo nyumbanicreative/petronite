@@ -96,7 +96,9 @@
                                                         <a href="<?php echo site_url('depots/requestclosevesselform/' . $sv['vessel_id']); ?>"  class="dropdown-item edit_item text-success request_form"> <i class="fa fa-lock"></i>&nbsp;&nbsp;Close Loading</a>
                                                         <?php
                                                     }else{
-                                                        
+                                                        ?>
+                                                        <a href="<?php echo site_url('depots/vesselstockloading/' . $sv['vessel_id']); ?>"  class="dropdown-item edit_item text-info"> <i class="fa fa-eye"></i>&nbsp;&nbsp;View Report</a>
+                                                        <?php
                                                     }
                                                     ?>
 
