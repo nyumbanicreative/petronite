@@ -94,6 +94,7 @@
                                                     } elseif($sv['vessel_status'] == 'OPENED') {
                                                         ?>
                                                         <a href="<?php echo site_url('depots/requestclosevesselform/' . $sv['vessel_id']); ?>"  class="dropdown-item edit_item text-success request_form"> <i class="fa fa-lock"></i>&nbsp;&nbsp;Close Loading</a>
+                                                        <a href="<?php echo site_url('depots/vesselstockloading/' . $sv['vessel_id']); ?>"  class="dropdown-item edit_item text-info"> <i class="fa fa-eye"></i>&nbsp;&nbsp;View Report</a>
                                                         <?php
                                                     }else{
                                                         ?>
@@ -134,7 +135,7 @@
             "aaSorting": [],
             responsive: true,
             fixedHeader: {headerOffset: 70},
-            searching: false,
+            searching: true,
             lengthChange: false,
             "pageLength": 100,
             columnDefs: [
@@ -201,11 +202,6 @@
                 timeout: 10000
             });
 
-        });
-
-
-        $('#search_shifts').keyup(function () {
-            s_table.search($(this).val()).draw();
         });
 
         s_table.responsive.recalc();

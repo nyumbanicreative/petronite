@@ -18,7 +18,7 @@
                 </div>
 
                 <div class="pull-right">
-                    <a href="<?php echo site_url('depots/pdfvesselstockloading/' . $vessel['vessel_id']); ?>" target="_blank" class="btn btn-secondary btn-sm" ><i class="fa fa-file-excel-o"></i>&nbsp;&nbsp;Export Excel</a>
+                    <a href="<?php echo site_url('depots/excelvesselstockloading/' . $vessel['vessel_id']); ?>" target="_blank" class="btn btn-secondary btn-sm" ><i class="fa fa-file-excel-o"></i>&nbsp;&nbsp;Export Excel</a>
                 </div>
             </div>
         </div>

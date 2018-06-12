@@ -38,11 +38,12 @@
     </head>
     <body>
         <div>
-            <h1 style="display: inline-block; text-align:center;margin: 0;padding: 0; font-size:32px; "><img src="<?php echo base_url(); ?>assets/img/<?php echo $ri['pc_logo']; ?>" style="width: 90px;"/>&nbsp;&nbsp;<?php echo strtoupper($ri['customer_name']); ?></h1><?php
-            if (!empty($ri['pc_slogan'])) {
-                echo '<p style="padding:0;margin: 0; text-align: center;">"' . strtoupper($ri['pc_slogan']) . '"</p>';
-            }
-            ?>
+            
+            <div style="text-align: center;">
+                <img src="<?php echo base_url(); ?>assets/img/afroiltopbanner.jpg" style="height:100%;"/>
+            </div>
+            
+            
             <hr/>
 
             <table style="overflow: hidden; margin-top: 50px;width: 100%;">

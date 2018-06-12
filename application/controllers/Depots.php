@@ -65,8 +65,7 @@ class Depots extends CI_Controller {
             cus_json_error('Select a valid customer');
         }
     }
-    
-    
+
     // Normal Pages
 
     public function index() {
@@ -176,29 +175,29 @@ class Depots extends CI_Controller {
 
         $this->load->view('view_base', $data);
     }
-    
+
     public function vesselStockLoading($param) {
-        
+
         // Check user statuses
         $this->checkStatus(1, 1, 1);
 
         if (empty($this->depo_id)) {
             $this->setSessMsg('Select a depot', 'error', 'depots/index');
         }
-        
+
         $vessel_id = $this->uri->segment(3);
-        
-        
-        $vessel = $this->depo->getStockVessels(['vessel_depot_id' => $this->depo_id,'vessel_id' => $vessel_id], 1);
-        
-        if(!$vessel){
-            $this->setSessMsg('Vessel was not found or it may have been removed from the system','error','depots/stockvessels');
+
+
+        $vessel = $this->depo->getStockVessels(['vessel_depot_id' => $this->depo_id, 'vessel_id' => $vessel_id], 1);
+
+        if (!$vessel) {
+            $this->setSessMsg('Vessel was not found or it may have been removed from the system', 'error', 'depots/stockvessels');
         }
-        
+
         $opening_balance = $vessel['vessel_received_volume'];
-        
-        $vessel_successor = $this->depo->getStockVessels(['vessel_depot_id' => $this->depo_id,'vessel_remains_transfered_to_vessel_id' => $vessel['vessel_id']], 1);
-        if($vessel_successor){
+
+        $vessel_successor = $this->depo->getStockVessels(['vessel_depot_id' => $this->depo_id, 'vessel_remains_transfered_to_vessel_id' => $vessel['vessel_id']], 1);
+        if ($vessel_successor) {
             $opening_balance += $vessel_successor['vessel_balance'];
         }
 
@@ -225,13 +224,8 @@ class Depots extends CI_Controller {
         ];
 
         $this->load->view('view_base', $data);
-        
     }
-    
-    
-    
 
-    
     // Ajax Requests
     public function submitStockLoading() {
 
@@ -337,7 +331,7 @@ class Depots extends CI_Controller {
                     'redirect_url' => site_url('depots/stockvessels')
                 ]
             ]);
-        }else{
+        } else {
             cus_json_error('Something went wrong. Vessel was not opened');
         }
     }
@@ -385,7 +379,6 @@ class Depots extends CI_Controller {
             ]
         ]);
     }
-
 
     public function submitCloseVessel() {
 
@@ -463,9 +456,7 @@ class Depots extends CI_Controller {
             }
         }
     }
-    
-    
-    
+
     // Form Validations
 
     public function submitNewVessel() {
@@ -553,7 +544,7 @@ class Depots extends CI_Controller {
 
         return TRUE;
     }
-    
+
     public function validateRemainsTransferedTo($selected_vessel_id) {
 
         $vessel_id = $this->uri->segment(3);
@@ -578,6 +569,222 @@ class Depots extends CI_Controller {
         }
 
         return TRUE;
+    }
+
+    public function excelVesselStockLoading() {
+
+        // Chek if user is logged in
+
+        $this->checkStatus(1, 1, 1);
+
+        // Check user statuses
+        $this->checkStatus(1, 1, 1);
+
+        if (empty($this->depo_id)) {
+            $this->setSessMsg('Select a depot', 'error', 'depots/index');
+        }
+
+        $vessel_id = $this->uri->segment(3);
+
+
+        $vessel = $this->depo->getStockVessels(['vessel_depot_id' => $this->depo_id, 'vessel_id' => $vessel_id], 1);
+
+        if (!$vessel) {
+            $this->setSessMsg('Vessel was not found or it may have been removed from the system', 'error', 'depots/stockvessels');
+        }
+
+        $opening_balance = $vessel['vessel_received_volume'];
+
+        $vessel_successor = $this->depo->getStockVessels(['vessel_depot_id' => $this->depo_id, 'vessel_remains_transfered_to_vessel_id' => $vessel['vessel_id']], 1);
+        if ($vessel_successor) {
+            $opening_balance += $vessel_successor['vessel_balance'];
+        }
+
+        $stock_loadings = $this->depo->getVesselStockLoadings($vessel['vessel_id']);
+
+
+        // Creating Excel File
+        require_once APPPATH . '/third_party/Phpexcel/Bootstrap.php';
+
+        
+        
+        
+        // Create new Spreadsheet object
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        
+        // Top Barner
+//        $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
+//        $drawing->setName('Logo');
+//        $drawing->setDescription('Logo');
+//        $drawing->setPath( './assets/img/afroiltopbanner.jpg');
+//        $drawing->setHeight(36);
+
+        //$drawing->setWorksheet($spreadsheet->getActiveSheet());
+
+        // Set document properties
+        $spreadsheet->getProperties()->setCreator('nyumbanicreative.com')
+                ->setLastModifiedBy($this->session->userdata['logged_in']['user_name'])
+                ->setTitle('Vessel Stock Loading')
+                ->setSubject('Vessel Stock Loading generated in ' . SYSTEM_NAME)
+                ->setDescription('Vessel Stock Loading generated in ' . SYSTEM_NAME);
+
+        // add style to the header
+        $styleArray = array(
+            'font' => array(
+                'bold' => true, 'size' => 15
+            ),
+            'alignment' => array(
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+            ),
+            "borders" => [
+                "outline" => [
+                    "style" => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    "color" => ["argb" => "00000000"],
+                ],
+                'inside' => [
+                    'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    'color' => ['argb' => '00000000'],
+                ]
+            ],
+            'fill' => array(
+                'type' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'color' => array('rgb' => 'FFFF00')
+            )
+        );
+
+        $styleHeaderArray = [
+            'font' => ['bold' => TRUE],
+            'borders' => [
+                'outline' => [
+                    'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    'color' => ['argb' => '00000000'],
+                ],
+                'inside' => [
+                    'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    'color' => ['argb' => '00000000'],
+                ],
+            ]
+        ];
+
+        $styleDataArray = [
+            "borders" => [
+                "outline" => [
+                    "style" => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    "color" => ["argb" => "00000000"],
+                ],
+                'inside' => [
+                    'style' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    'color' => ['argb' => '00000000'],
+                ]
+            ]
+        ];
+
+
+
+        $spreadsheet->getActiveSheet()->getStyle('A2:N2')->applyFromArray($styleArray);
+        $spreadsheet->getActiveSheet()->mergeCells('A2:N2');
+        $spreadsheet->getActiveSheet()->getStyle('A3:N3')->applyFromArray($styleHeaderArray);
+        $spreadsheet->getActiveSheet()->getStyle('A4:L4')->applyFromArray($styleHeaderArray);
+        $spreadsheet->getActiveSheet()->getStyle('L4:N4')->applyFromArray($styleHeaderArray);
+        $spreadsheet->getActiveSheet()->getStyle('A3:L3')->getAlignment()->setWrapText(true);
+
+        $spreadsheet->getActiveSheet()->getColumnDimension('A')->setWidth(5);
+        $spreadsheet->getActiveSheet()->getColumnDimension('B')->setWidth(10);
+        $spreadsheet->getActiveSheet()->getColumnDimension('C')->setWidth(12);
+        $spreadsheet->getActiveSheet()->getColumnDimension('D')->setWidth(20);
+        $spreadsheet->getActiveSheet()->getColumnDimension('E')->setWidth(12);
+        $spreadsheet->getActiveSheet()->getColumnDimension('F')->setWidth(12);
+        $spreadsheet->getActiveSheet()->getColumnDimension('G')->setWidth(12);
+        $spreadsheet->getActiveSheet()->getColumnDimension('H')->setWidth(12);
+        $spreadsheet->getActiveSheet()->getColumnDimension('I')->setWidth(12);
+        $spreadsheet->getActiveSheet()->getColumnDimension('J')->setWidth(12);
+        $spreadsheet->getActiveSheet()->getColumnDimension('K')->setWidth(12);
+        $spreadsheet->getActiveSheet()->getColumnDimension('L')->setWidth(12);
+        $spreadsheet->getActiveSheet()->getColumnDimension('M')->setWidth(12);
+        $spreadsheet->getActiveSheet()->getColumnDimension('N')->setWidth(15);
+
+
+
+        //Merge rows
+        foreach (range('A', 'K') as $columnID) {
+            $spreadsheet->getActiveSheet()->mergeCells($columnID . "3:" . $columnID . "4");
+        }
+
+        $spreadsheet->setActiveSheetIndex(0)->setCellValue("A2", "EX-VESSEL:  " . strtoupper($vessel['vessel_name']) . " \t\t\t\t LAYCAN:  " . cus_nice_date($vessel['vessel_laycan']) . " \t\t\t\t RECEIVED ON:  " . cus_nice_date($vessel['vessel_received_on']));
+
+        // set the names of header cells
+        $spreadsheet->setActiveSheetIndex(0)
+                ->setCellValue("A3", "S/N")
+                ->setCellValue("B3", "DATE")
+                ->setCellValue("C3", 'PRODUCTS')
+                ->setCellValue("D3", "TRUCK \nREG NUMBER")
+                ->setCellValue("E3", "ORDER")
+                ->setCellValue("F3", "INVOICE NUMBER")
+                ->setCellValue("G3", "OBS VOLUME \nLOADED(L)")
+                ->setCellValue("H3", "CONVERSION \nFACTOR")
+                ->setCellValue("I3", "AT 20 VOL \nLOADED")
+                ->setCellValue("J3", "AVAILABLE \nVOL @20")
+                ->setCellValue("K3", "STOCK TRANSFER \nNOTE NO.")
+                ->setCellValue("L4", 'NOTE NO')
+                ->setCellValue("M4", 'DATE')
+                ->setCellValue("N4", 'LOCATION')
+                ->setCellValue("J5", $opening_balance)
+        ;
+
+        $spreadsheet->getActiveSheet()->mergeCells('L3:N3');
+        $spreadsheet->setActiveSheetIndex(0)->setCellValue("L3", 'DELIVERY');
+        $spreadsheet->getActiveSheet()->getStyle("A5:N5")->applyFromArray($styleDataArray);
+
+
+        // Add some data
+        $x = 6;
+        foreach ($stock_loadings as $index => $sl) {
+
+            $spreadsheet->getActiveSheet()->getStyle("A$x:N$x")->applyFromArray($styleDataArray);
+            $spreadsheet->setActiveSheetIndex(0)
+                    ->setCellValue("A$x", ($index + 1))
+                    ->setCellValue("B$x", cus_nice_date($sl['sl_date']))
+                    ->setCellValue("C$x", "")
+                    ->setCellValue("D$x", $sl['po_truck_number'])
+                    ->setCellValue("E$x", $sl['po_volume'])
+                    ->setCellValue("F$x", $sl['sl_invoice_number'])
+                    ->setCellValue("G$x", $sl['sl_volume_loaded'])
+                    ->setCellValue("H$x", $sl['sl_conversion_factor'])
+                    ->setCellValue("I$x", ($sl['sl_volume_loaded'] * $sl['sl_conversion_factor']))
+                    ->setCellValue("J$x", $sl['sl_balance_after'])
+                    ->setCellValue("N$x", $sl['station_name']);
+            $x++;
+        }
+
+
+
+        // Rename worksheet
+        $spreadsheet->getActiveSheet()->setTitle('Vessel Stock Loading');
+
+        // set right to left direction
+        //$spreadsheet->getActiveSheet()->setRightToLeft(true);
+        // Set active sheet index to the first sheet, so Excel opens this as the first sheet
+        $spreadsheet->setActiveSheetIndex(0);
+
+        // Redirect output to a client’s web browser (Excel2007)
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="stock_loading_sheet.xlsx"');
+        header('Cache-Control: max-age=0');
+        // If you're serving to IE 9, then the following may be needed
+        header('Cache-Control: max-age=1');
+
+        // If you're serving to IE over SSL, then the following may be needed
+        header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+        header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT'); // always modified
+        header('Cache-Control: cache, must-revalidate'); // HTTP/1.1
+        header('Pragma: public'); // HTTP/1.0
+
+        $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Excel2007');
+        $writer->save('php://output');
+        exit;
+
+        //  create new file and remove Compatibility mode from word title
     }
 
 }

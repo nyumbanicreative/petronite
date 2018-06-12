@@ -106,7 +106,7 @@
             "aaSorting": [],
             responsive: true,
             fixedHeader: {headerOffset: 70},
-            searching: false,
+            searching: true,
             lengthChange: false,
             "pageLength": 100,
             columnDefs: [
@@ -114,11 +114,6 @@
                 {responsivePriority: 2, targets: -1},
                 {responsivePriority: 3, targets: 1}
             ]
-        });
-
-
-        $('#search_shifts').keyup(function () {
-            s_table.search($(this).val()).draw();
         });
 
         s_table.responsive.recalc();

@@ -228,6 +228,19 @@
                     console.log('New date range selected: ' + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD') + ' (predefined range: ' + label + ')');
                 });
 
+
+
+                // When ajax stsrts block UI
+                /*
+                $(document).ajaxStart(function () {
+                    $.blockUI({message: '<h1><img src="busy.gif" /> Just a moment...</h1>'});
+                });
+                
+                //When ajax stops, ublock UI
+                $(document).ajaxStop($.unblockUI); 
+                
+                */
+
             });
         </script>
 
