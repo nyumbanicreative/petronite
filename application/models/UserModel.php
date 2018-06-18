@@ -80,9 +80,7 @@ Class UserModel extends CI_Model {
 
         $this->db->insert('users', $user_data);
 
-        $user_id = $this->db->insert_id();
-
-        $this->db->where('user_id', $user_id)->update('users', ['user_admin_id' => $user_id]);
+        //$user_id = $this->db->insert_id();$this->db->where('user_id', $user_id)->update('users', ['user_admin_id' => $user_id]);
 
         $this->db->trans_complete();
 

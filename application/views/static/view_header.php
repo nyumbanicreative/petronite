@@ -232,14 +232,14 @@
 
                 // When ajax stsrts block UI
                 /*
-                $(document).ajaxStart(function () {
-                    $.blockUI({message: '<h1><img src="busy.gif" /> Just a moment...</h1>'});
-                });
-                
-                //When ajax stops, ublock UI
-                $(document).ajaxStop($.unblockUI); 
-                
-                */
+                 $(document).ajaxStart(function () {
+                 $.blockUI({message: '<h1><img src="busy.gif" /> Just a moment...</h1>'});
+                 });
+                 
+                 //When ajax stops, ublock UI
+                 $(document).ajaxStop($.unblockUI); 
+                 
+                 */
 
             });
         </script>
@@ -354,6 +354,11 @@
                     -ms-transform: rotate(360deg);  /* IE 9 */
                     transform: rotate(360deg);  /* Firefox 16+, IE 10+, Opera */
                 }
+            }
+
+            .dataTables_wrapper .dataTables_length, .dataTables_wrapper .dataTables_filter, .dataTables_wrapper .dataTables_info, .dataTables_wrapper .dataTables_processing, .dataTables_wrapper .dataTables_paginate {
+                color: #333;
+                padding: 15px 0px 20px;
             }
 
         </style>

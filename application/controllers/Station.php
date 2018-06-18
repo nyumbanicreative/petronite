@@ -390,7 +390,7 @@ class Station extends CI_Controller {
 
 
             if ($p->po_status == 'UNRELEASED') {
-                $actions .= '<a href="' . site_url('station/editpurchaseorder/' . $p->po_id) . '" class="dropdown-item text-danger confirm"> <i class="fa fa-trash"></i>&nbsp;&nbsp;Delete LPO</a>';
+                $actions .= '<!-- <a href="' . site_url('station/editpurchaseorder/' . $p->po_id) . '" class="dropdown-item text-danger confirm"> <i class="fa fa-trash"></i>&nbsp;&nbsp;Delete LPO</a> -->';
             }
 
             $actions .= '<a href="' . site_url('station/pdfpurchaseorderinfo/' . $p->po_id) . '" target="_blank" class="dropdown-item text-secondary"> <i class="fa fa-file-pdf-o"></i>&nbsp;&nbsp;Export PDF</a>';

@@ -97,3 +97,12 @@ define('DESIGNED_BY_URL', 'http://nyumbanicreative.com');
 define('SYSTEM_LOG','PETRONITE');
 define('CURRENCY','TZS');
 define('PRECIDING_ZEROZ',7);
+
+const USER_ROLES = [
+    ['key' => 'admin','value' => 'Admin'],
+    ['key' => 'attendant','value' => 'Attendant'],
+    ['key' => 'dataentry','value' => 'Data Entry'],
+    ['key' => 'driver','value' => 'Driver'],
+    ['key' => 'manager','value' => 'Manager'],
+    ['key' => 'station_manager','value' => 'Station Manager'],
+];

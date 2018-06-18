@@ -1,4 +1,97 @@
 <?php
+
+//ADDING NEW USER MODAL
+if (in_array('modal_add_user', $modals)) {
+    ?>
+    <div id="addUser"  role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" class="modal fade text-left">
+        <div role="document" class="modal-dialog modal-lg">
+            <form id="add_user_form" class="modal-content" action="<?php echo site_url('admin/submitnewuser'); ?>">
+                <div class="modal-header">
+                    <h4 id="exampleModalLabel" class="modal-title"> Add New User</h4>
+                    <button type="button" data-dismiss="modal" aria-label="Close" class="close"><span aria-hidden="true">×</span></button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="form-group" id="full_name">
+                                <label>Full Name</label>
+                                <input autocomplete="off" placeholder="Enter Full Name"  class="form-control" name="full_name" autocomplete="off" value="">
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="form-group" id="user_name">
+                                <label>Username</label>
+                                <input autocomplete="off" placeholder="Enter Username" class="form-control" name="user_name" autocomplete="off" value="">
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="form-group" id="driving_license">
+                                <label>Driving License</label>
+                                <input autocomplete="off" placeholder="Enter Driving License" class="form-control" name="driving_license" autocomplete="off" value="">
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="form-group" id="user_role">
+                                <label>User Role</label>
+                                <select style="width: 100%" name="user_role">
+                                    <option value=""></option>
+                                    <?php
+                                    foreach ($user_roles as $ur) {
+                                        ?>
+                                        <option value="<?php echo $ur['key']; ?>"><?php echo ucwords(strtolower($ur['value'])); ?></option>
+                                        <?php
+                                    }
+                                    ?>
+                                </select>
+                            </div>
+                        </div>
+                        
+                    </div>
+
+
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="form-group" id="user_phone">
+                                <label>User Phone</label>
+                                <input autocomplete="off" placeholder="Enter Driving License"  class="form-control" name="user_phone" autocomplete="off" value="">
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="form-group" id="user_email">
+                                <label>User Email</label>
+                                <input autocomplete="off" placeholder="Enter Driving License"  class="form-control" name="user_email" autocomplete="off" value="">
+                            </div>
+                        </div>
+                        
+                    </div>
+
+
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="form-group" id="user_address">
+                                <label>User Address</label>
+                                <input autocomplete="off" placeholder="Enter Driving License"  class="form-control" name="user_address" autocomplete="off" value="">
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" data-dismiss="modal" class="btn btn-secondary pull-left">Close</button>
+
+                    <button type="submit" class="btn btn-success"><i class="fa fa-plus-circle"></i>&nbsp;Add User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <?php
+}
+
 //ADDING NEW VESSEL MODAL
 if (in_array('modal_add_vessel', $modals)) {
     ?>
@@ -834,6 +927,7 @@ if (in_array('modal_close_vessel', $modals)) {
 
         $('select[name=ftg_id]').select2({placeholder: 'Select product type'});
         $('select[name=auth_id]').select2({placeholder: 'Select user'});
+        $('select[name=user_role]').select2({placeholder: 'Select user role'});
         $('select[name=edit_driver_id],select[name=driver_id]').select2({placeholder: 'Select driver'});
         $('select[name=po_station_id],select[name=edit_po_station_id]').select2({placeholder: 'Select station'});
         $('select[name=loading_po_id],#_po_ids').select2({placeholder: 'Select purchase order'}); // Purchase Order
@@ -841,7 +935,7 @@ if (in_array('modal_close_vessel', $modals)) {
         $('select[name=po_vessel_id], select[name=loading_vessel_id],select[name=close_vs_remain_transfered_to],select[name=edit_po_vessel_id]').select2({placeholder: 'Select vessel'});
 
 
-        $(document).on('submit', '#create_order_form,#add_vessel_form,#add_loading_form,#add_release_instruction_form,#add_po_in_ri_form,#close_vessel_form,#edit_order_form', function (e) {
+        $(document).on('submit', '#create_order_form,#add_vessel_form,#add_loading_form,#add_release_instruction_form,#add_po_in_ri_form,#close_vessel_form,#edit_order_form,#add_user_form', function (e) {
             e.preventDefault();
             var post_data = $(this).serializeArray();
             submitAjaxForm(post_data, $(this).attr('action'));
