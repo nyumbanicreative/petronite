@@ -56,7 +56,7 @@ class Settings
      *
      * @var string
      */
-    private static $zipClass = self::ZIPARCHIVE;
+    private static $zipClass = self::PCLZIP;
 
     /**
      * Name of the external Library used for rendering charts

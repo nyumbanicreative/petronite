@@ -2,6 +2,7 @@
 
 $content_data['error_msg'] = "";
 $content_data['success_msg'] = "";
+$content_data['current_url'] = '?url='. urlencode(current_url()) .'?'.$_SERVER['QUERY_STRING'];
 
 
 // Profile Data Above Menu

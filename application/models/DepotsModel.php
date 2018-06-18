@@ -88,8 +88,15 @@ Class DepotsModel extends CI_Model {
         return $this->db->affected_rows();
     }
 
-    public function getStockLoadings($cond = null, $limit = null) {
+    public function getStockLoadings($cond = null, $limit = null, $cols = null) {
 
+        if(null !== $cols){
+            $this->db->select($cols);
+        }else{
+            $this->db->select('*,d.user_fullname po_driver_name, d.user_driving_license po_driver_license');
+        }
+        
+        
         if ($cond !== null) {
             $this->db->where($cond);
         }
@@ -101,6 +108,7 @@ Class DepotsModel extends CI_Model {
         $res = $this->db
                 ->from('stock_loading sl')
                 ->join('purchase_order po', 'po.po_id = sl.sl_po_id', 'INNER')
+                ->join('users d','d.user_id = po.po_driver_id','INNER')
                 ->join('vessels vs', 'vs.vessel_id = sl.sl_vessel_id', 'INNER')
                 ->join('users u', 'u.user_id = sl.sl_user_id', 'INNER')
                 ->join('fuel_types_group ftg', 'ftg.fuel_type_group_id = vs.vessel_fuel_type_group_id')
@@ -167,13 +175,19 @@ Class DepotsModel extends CI_Model {
     }
     
     
-    public function getVesselStockLoadings($vessel_id) {
+    public function getVesselStockLoadings($vessel_id, $cols = null) {
         
+        if(null !== $cols){
+            $this->db->select($cols);
+        }else{
+            $this->db->select('*, d.user_fullname po_driver_name');
+        }
         $this->db->where('sl.sl_vessel_id',$vessel_id);
         
         $res = $this->db->from('stock_loading sl')
                 ->join('purchase_order po','po.po_id = sl.sl_po_id','INNER')
                 ->join('users u','u.user_id = sl.sl_user_id','INNER')
+                ->join('users d','d.user_id = po.po_driver_id','INNER')
                 ->join('stations st', 'st.station_id = po.po_station_id', 'INNER')
                 ->order_by('sl.sl_timestamp')->get();
         

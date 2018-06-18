@@ -151,10 +151,11 @@ class Station extends CI_Controller {
                 'customer' => $this->customer
             ],
             'modals_data' => [// Modals data
-                'modals' => ['modal_add_purchase_order_hq'], // Put array of popup modals which you want them to appear on current page
+                'modals' => ['modal_add_purchase_order_hq', 'modal_edit_purchase_order_hq'], // Put array of popup modals which you want them to appear on current page
                 'fuel_types_group' => $this->mnt->getFuelTypesGroup(), // Pass data for popup modals here
                 'station_depots' => $this->depo->getDepots(['depo.depo_admin_id' => $this->admin_id]), // Get station depots for creating purchase order
-                'delivery_points' => $this->stn->getUserStations($this->user_id, $this->admin_id)
+                'delivery_points' => $this->stn->getUserStations($this->user_id, $this->admin_id),
+                'drivers' => $this->usr->getUsersList(['user_admin_id' => $this->admin_id, 'user_role' => 'driver'])
             ],
             'header_data' => [],
             'footer_data' => [],
@@ -204,7 +205,7 @@ class Station extends CI_Controller {
             $this->setSessMsg('Release instruction was not found or it may havebeen removed from the system', 'error', 'station/releaseinstructions');
         }
 
-        $cols = ['po.po_id', 'po.po_date', 'po.po_number', 'po.po_volume', 'ftg.fuel_type_group_id', 'ftg.fuel_type_group_name', 'po.po_driver_name', 'po.po_driver_license', 'po.po_truck_number', 'st.station_name', 'po.po_status'];
+        $cols = ['po.po_id', 'po.po_date', 'po.po_number', 'po.po_volume', 'ftg.fuel_type_group_id', 'ftg.fuel_type_group_name', 'd.user_fullname po_driver_name', 'd.user_driving_license po_driver_license', 'po.po_truck_number', 'st.station_name', 'po.po_status'];
         $ri_orders = $this->purchase->getPurchaseOrders(['po.po_ri_id' => $ri['ri_id']], null, $cols);
 
 
@@ -225,9 +226,11 @@ class Station extends CI_Controller {
                 'ri_fuel_types' => $this->purchase->getRiFuelTypes($ri['ri_id'])
             ],
             'modals_data' => [// Modals data
-                'modals' => ['modal_add_po_in_ri'], // Put array of popup modals which you want them to appear on current page
+                'modals' => ['modal_add_po_in_ri', 'modal_edit_purchase_order_hq'], // Put array of popup modals which you want them to appear on current page
                 'ri_id' => $ri['ri_id'],
-                'pos' => $this->purchase->getPurchaseOrders(['po.po_ri_id' => NULL], NULL, ['po.po_id', 'po.po_number', 'po.po_driver_name', 'po.po_truck_number', 'ftg.fuel_type_group_name'], ['po.po_station_id' => $station_ids])
+                'pos' => $this->purchase->getPurchaseOrders(['po.po_ri_id' => NULL], NULL, ['po.po_id', 'po.po_number', 'd.user_fullname po_driver_name', 'po.po_truck_number', 'ftg.fuel_type_group_name'], ['po.po_station_id' => $station_ids]),
+                'station_depots' => $this->depo->getDepots(['depo.depo_admin_id' => $this->admin_id]), // Get station depots for creating purchase order
+                'delivery_points' => $this->stn->getUserStations($this->user_id, $this->admin_id)
             ],
             'header_data' => [],
             'footer_data' => [],
@@ -252,13 +255,13 @@ class Station extends CI_Controller {
             $this->setSessMsg('Release instruction was not found or it may havebeen removed from the system', 'error', 'station/releaseinstructions');
         }
 
-        $cols = ['po.po_id', 'po.po_date', 'po.po_number', 'po.po_volume', 'ftg.fuel_type_group_id', 'ftg.fuel_type_group_name', 'po.po_driver_name', 'po.po_driver_license', 'po.po_truck_number', 'st.station_name', 'po.po_status'];
+        $cols = ['po.po_id', 'po.po_date', 'po.po_number', 'po.po_volume', 'ftg.fuel_type_group_id', 'ftg.fuel_type_group_name', 'd.user_fullname po_driver_name', 'd.user_driving_license po_driver_license', 'po.po_truck_number', 'st.station_name', 'po.po_status'];
         $ri_orders = $this->purchase->getPurchaseOrders(['po.po_ri_id' => $ri['ri_id']], null, $cols);
 
         $ri_fuel_types = $this->purchase->getRiFuelTypes($ri['ri_id']);
 
 
-        $data = ['ri_orders' => $ri_orders, 'ri' => $ri, 'ri_vessels' => $this->purchase->getRiVessels($ri['ri_id']), 'ri_fuel_types' => $ri_fuel_types];
+        $data = ['ri_orders' => $ri_orders, 'ri' => $ri, 'ri_vessels' => $this->purchase->getRiVessels($ri['ri_id']), 'ri_fuel_types' => $ri_fuel_types, 'contact_text' => $ri['pc_contact_text']];
 
         $html = $this->load->view('export/view_export_release_instruction', $data, true); // render the view into HTML
 
@@ -267,8 +270,47 @@ class Station extends CI_Controller {
 
         $pdf = $this->pdf->load();
 
+        $pdf->SetFooter('|Powered By Pentronite<br>www.petronite.com|');
+        //$pdf->SetFooter($ri['pc_contact_text']); // Add a footer for good measure ;)
 
-        $pdf->SetFooter($ri['pc_contact_text']); // Add a footer for good measure ;)
+        $pdf->WriteHTML($html); // write the HTML into the PDF
+
+        $pdf->Output();
+        return;
+    }
+
+    public function pdfPurchaseOrderInfo() {
+
+        ini_set('memory_limit', '50M'); // boost the memory limit if it's low ;)
+        // check session status of the user
+        $this->checkStatus(1, 1, 1);
+
+        $po_id = $this->uri->segment(3);
+
+        $po = $this->purchase->getPurchaseOrders(['po.po_id' => $po_id], 1);
+
+
+        if (!$po) {
+            $this->setSessMsg('Purchase order was not found or it may havebeen removed from the system', 'error', 'station/purchaseorders');
+        }
+
+        $qty_in_words = '';
+
+        if (class_exists('NumberFormatter')) {
+            $f = new NumberFormatter('en', NumberFormatter::SPELLOUT);
+            $qty_in_words = ucwords($f->format(round($po['po_volume']))) . ' Litres Of ' . $po['fuel_type_group_generic_name'] . ' Only';
+        }
+        
+        $data = ['po' => $po, 'contact_text' => $po['pc_contact_text'], 'qty_in_words' => $qty_in_words];
+
+        $html = $this->load->view('export/view_export_purchase_order', $data, true); // render the view into HTML
+
+
+        $this->load->library('pdf');
+
+        $pdf = $this->pdf->load('c', 'A5');
+
+        $pdf->SetFooter('|Powered By Pentronite<br>www.petronite.com|'); // Add a footer for good measure ;)
 
         $pdf->WriteHTML($html); // write the HTML into the PDF
 
@@ -340,15 +382,23 @@ class Station extends CI_Controller {
                         <div aria-labelledby="closeCard2" class="dropdown-menu dropdown-menu-right has-shadow">
                                                 ';
 
-            $actions .= '
-                <a href="' . site_url('applicant/applicantdetails/' . $p->po_id) . '" class="dropdown-item text-success applicant_details"> <i class="fa fa-check-circle-o"></i>&nbsp;&nbsp;Approval</a>
-                <a href="#" class="dropdown-item"> <i class="fa fa-file-pdf-o"></i>&nbsp;&nbsp;PDF Preview</a>
-                                            ';
+            $actions .= '<a href="' . site_url('station/editpurchaseorder/' . $p->po_id) . '" class="dropdown-item text-success"> <i class="fa fa-list"></i>&nbsp;&nbsp;PO Details</a>';
+
+            if ($p->po_status == 'UNRELEASED' OR ( $p->po_status == 'RELEASED' AND $p->ri_status == 'NEW')) {
+                $actions .= '<a href="' . site_url('station/requesteditpoform/' . $p->po_id) . '" class="dropdown-item text-info request_form"> <i class="fa fa-edit"></i>&nbsp;&nbsp;Edit LPO</a>';
+            }
+
+
+            if ($p->po_status == 'UNRELEASED') {
+                $actions .= '<a href="' . site_url('station/editpurchaseorder/' . $p->po_id) . '" class="dropdown-item text-danger confirm"> <i class="fa fa-trash"></i>&nbsp;&nbsp;Delete LPO</a>';
+            }
+
+            $actions .= '<a href="' . site_url('station/pdfpurchaseorderinfo/' . $p->po_id) . '" target="_blank" class="dropdown-item text-secondary"> <i class="fa fa-file-pdf-o"></i>&nbsp;&nbsp;Export PDF</a>';
 
             $actions .= '</div>'
                     . '</div>';
 
-            $row[] = '';//$actions;
+            $row[] = $actions;
 
             $data[] = $row;
         }
@@ -364,6 +414,46 @@ class Station extends CI_Controller {
 
         //output to json format
         echo json_encode($output);
+    }
+
+    public function requestEditPoForm() {
+
+        header('Access-Control-Allow-Origin: *');
+        header('Content-type: text/json');
+
+
+        // Check user session as usual
+        $this->checkStatusJson(1, 1, 1);
+
+        $po_id = $this->uri->segment(3);
+
+        $po = $this->purchase->getPurchaseOrders(['po_id' => $po_id], 1);
+
+        if (!$po) {
+            cus_json_error('Purchase order was not found or it may have been removed form the system');
+        }
+
+        $depo_vessels = $this->depo->getStockVessels(['vessel_depot_id' => $po['po_depo_id'], 'vessel_status <>' => 'CLOSED']);
+
+        foreach ($depo_vessels as $dv) {
+            $vessels[] = ['text' => $dv['vessel_name'], 'id' => $dv['vessel_id']];
+        }
+
+        $data['po'] = $po;
+        $data['vessels'] = $vessels;
+
+        echo json_encode([
+            'status' => [
+                'error' => FALSE,
+                'redirect' => FALSE,
+                'pop_form' => TRUE,
+                'form_type' => 'editPurchaseOrder',
+                'form_url' => site_url('station/submiteditorderhq/' . $po['po_id']),
+                'form_data' => $data
+            ]
+        ]);
+
+        die();
     }
 
     public function ajaxreleaseinstructions() {
@@ -457,8 +547,7 @@ class Station extends CI_Controller {
                 ['field' => 'po_depo_id', 'label' => 'Depo', 'rules' => 'trim|required'],
                 ['field' => 'volume_ordered', 'label' => 'Volume ordered', 'rules' => 'trim|required|numeric'],
                 ['field' => 'truck_number', 'label' => 'Truck Number', 'rules' => 'trim|required'],
-                ['field' => 'driver_name', 'label' => 'Driver Name', 'rules' => 'trim|required'],
-                ['field' => 'driver_license', 'label' => 'Driver License', 'rules' => 'trim|required'],
+                ['field' => 'driver_id', 'label' => 'Driver', 'rules' => 'trim|required'],
                 ['field' => 'po_vessel_id', 'label' => 'Vessel', 'rules' => 'trim|required']
         ];
 
@@ -488,14 +577,13 @@ class Station extends CI_Controller {
                 'po_user_id' => $this->user_id,
                 'po_truck_number' => $this->input->post('truck_number'),
                 'po_volume' => $this->input->post('volume_ordered'),
-                'po_driver_name' => $this->input->post('driver_name'),
+                'po_driver_id' => $this->input->post('driver_id'),
                 'po_status' => 'UNRELEASED',
                 'po_vessel_id' => $vessel['vessel_id'],
-                'po_fuel_type_group_id' => $vessel['vessel_fuel_type_group_id'],
-                'po_driver_license' => $this->input->post('driver_license')
+                'po_fuel_type_group_id' => $vessel['vessel_fuel_type_group_id']
             ];
 
-            $res = $this->purchase->savePurchaseOrder(['order_data' => $order_data]);
+            $res = $this->purchase->savePurchaseOrder(['order_data' => $order_data], $this->admin_id);
 
             if ($res) {
                 $this->setSessMsg('Order created succesffuly', 'success');
@@ -509,6 +597,78 @@ class Station extends CI_Controller {
                 ]);
             } else {
                 cus_json_error('Unable to create new order please refresh the page and try again.');
+            }
+        }
+    }
+
+    public function submitEditOrderHq() {
+
+        header('Access-allow-control-origin: *');
+        header('Content-type: text/json');
+
+        $this->checkStatusJson(1, 1, 1);
+
+        $po_id = $this->uri->segment(3);
+
+        $po = $this->purchase->getPurchaseOrders(['po_id' => $po_id], 1);
+
+        if (!$po) {
+            cus_json_error('Purchase order was not found or it may have been removed form the system');
+        }
+
+        $validations = [
+                ['field' => 'edit_order_date', 'label' => 'Order Date', 'rules' => 'trim|required|callback_validateOrderDate', 'errors' => ['required' => 'Select the order date.']],
+                ['field' => 'edit_po_station_id', 'label' => 'Delivery Point', 'rules' => 'trim|required|callback_validatePoStationId'],
+                ['field' => 'edit_po_depo_id', 'label' => 'Depo', 'rules' => 'trim|required'],
+                ['field' => 'edit_volume_ordered', 'label' => 'Volume ordered', 'rules' => 'trim|required|numeric'],
+                ['field' => 'edit_truck_number', 'label' => 'Truck Number', 'rules' => 'trim|required'],
+                ['field' => 'edit_driver_id', 'label' => 'Driver', 'rules' => 'trim|required'],
+                ['field' => 'edit_po_vessel_id', 'label' => 'Vessel', 'rules' => 'trim|required']
+        ];
+
+        $this->form_validation->set_rules($validations);
+
+        if ($this->form_validation->run() === FALSE) {
+            echo json_encode([
+                'status' => [
+                    'error' => TRUE,
+                    'error_type' => 'display',
+                    "form_errors" => validation_errors_array()
+                ]
+            ]);
+        } else {
+
+            $vessel_id = $this->input->post('edit_po_vessel_id');
+            $vessel = $this->depo->getStockVessels(['v.vessel_id' => $vessel_id], 1);
+
+            if (!$vessel) {
+                cus_json_error('Vessel details can not be found');
+            }
+
+            $order_data = [
+                'po_date' => date('Y-m-d', strtotime($this->input->post('edit_order_date'))),
+                'po_depo_id' => $this->input->post('edit_po_depo_id'),
+                'po_station_id' => $this->input->post('edit_po_station_id'),
+                'po_truck_number' => $this->input->post('edit_truck_number'),
+                'po_volume' => $this->input->post('edit_volume_ordered'),
+                'po_driver_id' => $this->input->post('edit_driver_id'),
+                'po_vessel_id' => $vessel['vessel_id']
+            ];
+
+            $res = $this->purchase->saveEditPurchaseOrder(['order_data' => $order_data], $po['po_id']);
+
+            if ($res) {
+                $this->setSessMsg('Order edited succesffuly', 'success');
+
+                echo json_encode([
+                    'status' => [
+                        'error' => FALSE,
+                        'redirect' => true,
+                        'redirect_url' => site_url('station/purchaseorders')
+                    ]
+                ]);
+            } else {
+                cus_json_error('Unable to edit purchase order. please refresh the page and try again.');
             }
         }
     }

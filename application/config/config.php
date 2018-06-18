@@ -25,6 +25,7 @@ date_default_timezone_set('Africa/Dar_es_Salaam');
 |
 */
 $config['base_url'] = 'http://localhost:8888/petronite';
+//$config['base_url'] = 'https://petronite.nyumbanicreative.com/new';
 
 /*
 |--------------------------------------------------------------------------
@@ -224,7 +225,7 @@ $config['allow_get_array'] = TRUE;
 | your log files will fill up very fast.
 |
 */
-$config['log_threshold'] = [1,3,5];
+$config['log_threshold'] = [1,5];
 
 /*
 |--------------------------------------------------------------------------

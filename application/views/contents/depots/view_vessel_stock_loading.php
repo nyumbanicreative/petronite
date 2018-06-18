@@ -14,7 +14,7 @@
         <div class="row">
             <div class="col-lg-12">
                 <div class="btn-group pull-left" role="group" aria-label="Basic example">
-                    <a href="<?php echo site_url('depots/stockvessels'); ?>"class="btn btn-primary btn-sm" data-target="#myModal"><i class="fa fa-arrow-circle-left"></i>&nbsp;Back</a>
+                    <a href="<?php echo $this->input->get('url'); ?>"class="btn btn-primary btn-sm" data-target="#myModal"><i class="fa fa-arrow-circle-left"></i>&nbsp;Back</a>
                 </div>
 
                 <div class="pull-right">
@@ -39,7 +39,7 @@
                         <?php
                         if ($vessel['vessel_status'] == 'OPENED') {
                             ?>
-                            <a href="#" data-toggle="modal" data-target="#addPoInRi" class="btn btn-sm btn-info"> <i class="fa fa-plus"></i>&nbsp;&nbsp;Add Loading</a>
+                            <a href="#" data-toggle="modal" data-target="#addStockLoadingSingle" class="btn btn-sm btn-info"> <i class="fa fa-plus"></i>&nbsp;&nbsp;Add Loading</a>
                             <?php
                         }
                         ?>

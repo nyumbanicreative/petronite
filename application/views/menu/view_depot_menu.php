@@ -21,7 +21,7 @@
         
         <li class="<?php echo ($curr_menu == 'REPORT') ? "active" : "" ?>"><a href="#stn" aria-expanded="<?php echo ($curr_menu == 'REPORT') ? "true" : "false" ?>" data-toggle="collapse"><i class="fa fa-line-chart"></i>Reports </a>
             <ul id="stn" class="<?php echo ($curr_sub_menu == 'REPORT') ? "" : "collapse" ?> list-unstyled">
-                <li><a href="<?php echo site_url('depots'); ?>">Stock Control Report</a></li>
+                <li><a href="<?php echo site_url('depots/stockcontrolreport'); ?>">Stock Control Report</a></li>
             </ul>
         </li>
        

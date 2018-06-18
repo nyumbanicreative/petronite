@@ -58,7 +58,7 @@
                                         <td><?php echo $sv['vessel_received_on']; ?></td>
                                         <td>
                                             <?php
-                                            echo 'Ordered&nbsp;:&nbsp;&nbsp;<strong>' . $sv['vessel_ordered_volume'] . '</strong><br/>';
+                                            echo 'Arrived&nbsp;:&nbsp;&nbsp;<strong>' . $sv['vessel_ordered_volume'] . '</strong><br/>';
                                             echo 'Received&nbsp;:&nbsp;<strong>' . $sv['vessel_received_volume'] . '</strong>';
                                             ?>
                                         </td>
@@ -94,11 +94,11 @@
                                                     } elseif($sv['vessel_status'] == 'OPENED') {
                                                         ?>
                                                         <a href="<?php echo site_url('depots/requestclosevesselform/' . $sv['vessel_id']); ?>"  class="dropdown-item edit_item text-success request_form"> <i class="fa fa-lock"></i>&nbsp;&nbsp;Close Loading</a>
-                                                        <a href="<?php echo site_url('depots/vesselstockloading/' . $sv['vessel_id']); ?>"  class="dropdown-item edit_item text-info"> <i class="fa fa-eye"></i>&nbsp;&nbsp;View Report</a>
+                                                        <a href="<?php echo site_url('depots/vesselstockloading/' . $sv['vessel_id']). $current_url; ?>"  class="dropdown-item edit_item text-info"> <i class="fa fa-search"></i>&nbsp;&nbsp;View Loading</a>
                                                         <?php
                                                     }else{
                                                         ?>
-                                                        <a href="<?php echo site_url('depots/vesselstockloading/' . $sv['vessel_id']); ?>"  class="dropdown-item edit_item text-info"> <i class="fa fa-eye"></i>&nbsp;&nbsp;View Report</a>
+                                                        <a href="<?php echo site_url('depots/vesselstockloading/' . $sv['vessel_id']). $current_url; ?>"  class="dropdown-item edit_item text-info"> <i class="fa fa-search"></i>&nbsp;&nbsp;View Loading</a>
                                                         <?php
                                                     }
                                                     ?>

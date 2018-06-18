@@ -92,6 +92,75 @@ class Depots extends CI_Controller {
         $this->load->view('view_base', $data);
     }
 
+    public function stockControlReport() {
+
+        // Check user statuses
+        $this->checkStatus(1, 1, 1);
+
+
+        $filter = NULL;
+        $total_volume_received = 0;
+
+        $filter['v.vessel_depot_id'] = $this->depo_id;
+
+        $date_range = $this->input->post('date_range');
+        $fuel_type = $this->input->post('fuel_type');
+
+        if (!empty($date_range)) {
+
+            $date_range_segments = explode('to', $date_range);
+            if (sizeof($date_range_segments) == 2) {
+                $filter = ["DATE(v.vessel_received_on) >= " => trim($date_range_segments[0]), " DATE(v.vessel_received_on) <=  " => trim($date_range_segments[1])];
+            }
+        }
+
+        if ($fuel_type > 0) {
+            $filter['v.vessel_fuel_type_group_id'] = $fuel_type;
+        }
+
+        $vessels = $this->depo->getStockVessels($filter);
+
+        $fuel_types = $this->mnt->getFuelTypesGroup();
+
+        $selected_date_range = !empty($date_range) ? $date_range : 'From The Begining';
+
+        $selected_fuel_type = 0;
+        $selected_fuel_type_name = 'All Types';
+
+
+        foreach ($fuel_types as $ft) {
+            if ($ft['fuel_type_group_id'] == $fuel_type) {
+                $selected_fuel_type = $ft['fuel_type_group_id'];
+                $selected_fuel_type_name = $ft['fuel_type_group_generic_name'] . ' - ' . $ft['fuel_type_group_name'];
+            }
+        }
+
+        foreach ($vessels as $v) {
+            $total_volume_received += $v['vessel_received_volume'];
+        }
+
+        $data = [
+            'menu' => 'menu/view_depot_menu',
+            'content' => 'contents/depots/view_stock_control_report',
+            'menu_data' => ['curr_menu' => 'REPORT', 'curr_sub_menu' => 'REPORT'],
+            'content_data' => [
+                'module_name' => 'Stock Control Report',
+                'customer' => $this->customer,
+                'vessels' => $vessels,
+                'fuel_types' => $fuel_types,
+                'selected_date_range' => $selected_date_range,
+                'selected_fuel_type_name' => $selected_fuel_type_name,
+                'selected_fuel_type' => $selected_fuel_type,
+                'total_volume_received' => $total_volume_received
+            ],
+            'header_data' => [],
+            'footer_data' => [],
+            'top_bar_data' => []
+        ];
+
+        $this->load->view('view_base', $data);
+    }
+
     public function setDepot() {
 
         // Check user statuses
@@ -215,8 +284,9 @@ class Depots extends CI_Controller {
                 'opening_balance' => $opening_balance
             ],
             'modals_data' => [
-                'modals' => ['modal_add_stock_loading'],
-                'vessels' => $this->depo->getStockVessels(['vessel_depot_id' => $this->depo_id, 'vessel_status' => 'OPENED'])
+                'modals' => ['modal_add_stock_loading_single'],
+                'vessel_id' => $vessel['vessel_id'],
+                'orders' => $this->purchase->getPurchaseOrders(['po.po_vessel_id' => $vessel['vessel_id'], 'ri.ri_status' => 'RELEASED', 'po.po_status' => 'RELEASED'])
             ],
             'header_data' => [],
             'footer_data' => [],
@@ -239,6 +309,7 @@ class Depots extends CI_Controller {
                 ['field' => 'invoice_number', 'label' => 'Invoice Number', 'rules' => 'trim|required|callback_validateLoadingInvoiceNumber'],
                 ['field' => 'loading_vessel_id', 'label' => 'Stock Vessel', 'rules' => 'trim|required|callback_validateLoadingVesselId'],
                 ['field' => 'volume_loaded', 'label' => 'Volume Loaded', 'rules' => 'trim|required|numeric'],
+                ['field' => 'transfer_note', 'label' => 'Transfer Note Number', 'rules' => 'trim|required'],
                 ['field' => 'loading_po_id', 'label' => 'Purchase Order', 'rules' => 'trim|required'],
                 ['field' => 'conversion_factor', 'label' => 'Conversion Factor', 'rules' => 'trim|required|numeric']
         ];
@@ -269,15 +340,93 @@ class Depots extends CI_Controller {
             $loading_data = [
                 'sl_date' => date('Y-m-d', strtotime($this->input->post('loading_date'))),
                 'sl_po_id' => $po_id,
-                'sl_vessel_id' => $vessel_id,
+                'sl_vessel_id' => $vessel['vessel_id'],
                 'sl_volume_loaded' => $volume_loaded,
-                'sl_vessel_id' => $this->input->post('loading_vessel_id'),
-                'sl_vessel_id' => $this->input->post('loading_vessel_id'),
                 'sl_balance_before' => $vessel['vessel_balance'],
                 'sl_balance_after' => $balance_after,
                 'sl_user_id' => $this->user_id,
                 'sl_invoice_number' => $this->input->post('invoice_number'),
-                'sl_conversion_factor' => $conversion_factor
+                'sl_conversion_factor' => $conversion_factor,
+                'sl_transfer_note' => $this->input->post('transfer_note')
+            ];
+
+            $vessel_data = ['vessel_balance' => $balance_after];
+
+            $po_data = ['po_status' => 'LOADED'];
+
+            $data = [
+                'loading_data' => $loading_data,
+                'vessel_data' => $vessel_data,
+                'vessel_id' => $vessel['vessel_id'],
+                'po_data' => $po_data,
+                'po_id' => $po_id
+            ];
+
+            $res = $this->depo->saveLoading($data);
+
+            if ($res) {
+                echo json_encode(['status' => ['error' => false, 'redirect' => true, 'redirect_url' => site_url('depots/stockloading')]]);
+            } else {
+                cus_json_error('Something went wrong, Stock Loading was not saved, Please try again', 'error', 'depots/stockloading');
+            }
+        }
+    }
+
+    public function submitStockLoadingSingle() {
+
+        header('Access-allow-control-origin: *');
+        header('Content-type: text/json');
+
+        $this->checkStatusJson(1, 1, 1);
+
+        $vessel_id = $this->uri->segment(3);
+
+        $vessel = $this->depo->getStockVessels(['vessel_id' => $vessel_id], 1);
+
+        if (!$vessel) {
+            cus_json_error('Vessel was not found or it may have been removed from the system');
+        }
+
+        $validations = [
+                ['field' => 'loading_date', 'label' => 'Loading Date', 'rules' => 'trim|required|callback_validateLoadingDate'],
+                ['field' => 'invoice_number', 'label' => 'Invoice Number', 'rules' => 'trim|required|callback_validateLoadingInvoiceNumber'],
+                ['field' => 'volume_loaded', 'label' => 'Volume Loaded', 'rules' => 'trim|required|numeric'],
+                ['field' => 'loading_po_id', 'label' => 'Purchase Order', 'rules' => 'trim|required'],
+                ['field' => 'transfer_note', 'label' => 'Transfer Note Number', 'rules' => 'trim|required'],
+                ['field' => 'conversion_factor', 'label' => 'Conversion Factor', 'rules' => 'trim|required|numeric']
+        ];
+
+        $this->form_validation->set_rules($validations);
+
+        if ($this->form_validation->run() === FALSE) {
+            echo json_encode([
+                'status' => [
+                    'error' => TRUE,
+                    'error_type' => 'display',
+                    "form_errors" => validation_errors_array()
+                ]
+            ]);
+        } else {
+
+
+            $po_id = $this->input->post('loading_po_id');
+            $volume_loaded = $this->input->post('volume_loaded');
+            $conversion_factor = $this->input->post('conversion_factor');
+            $balance_after = $vessel['vessel_balance'] - ($volume_loaded * $conversion_factor);
+
+
+
+            $loading_data = [
+                'sl_date' => date('Y-m-d', strtotime($this->input->post('loading_date'))),
+                'sl_po_id' => $po_id,
+                'sl_vessel_id' => $vessel['vessel_id'],
+                'sl_volume_loaded' => $volume_loaded,
+                'sl_balance_before' => $vessel['vessel_balance'],
+                'sl_balance_after' => $balance_after,
+                'sl_user_id' => $this->user_id,
+                'sl_invoice_number' => $this->input->post('invoice_number'),
+                'sl_conversion_factor' => $conversion_factor,
+                'sl_transfer_note' => $this->input->post('transfer_note')
             ];
 
             $vessel_data = ['vessel_balance' => $balance_after];
@@ -606,21 +755,19 @@ class Depots extends CI_Controller {
         // Creating Excel File
         require_once APPPATH . '/third_party/Phpexcel/Bootstrap.php';
 
-        
-        
-        
+
+        //\PhpOffice\Settings::setZipClass(PHPExcel_Settings::PCLZIP);
+        //PHPExcel_Settings::setZipClass(PHPExcel_Settings::PCLZIP);
         // Create new Spreadsheet object
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
-        
+
         // Top Barner
 //        $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
 //        $drawing->setName('Logo');
 //        $drawing->setDescription('Logo');
 //        $drawing->setPath( './assets/img/afroiltopbanner.jpg');
 //        $drawing->setHeight(36);
-
         //$drawing->setWorksheet($spreadsheet->getActiveSheet());
-
         // Set document properties
         $spreadsheet->getProperties()->setCreator('nyumbanicreative.com')
                 ->setLastModifiedBy($this->session->userdata['logged_in']['user_name'])

@@ -23,13 +23,13 @@
                         ?>
                         <a href="<?php echo site_url('station/markriasreleased/' . $ri['ri_id']); ?>"  class="btn btn-sm btn-primary confirm" title="Mark This Release Instruction As Released"> <i class="fa fa-check-circle-o"></i>&nbsp;&nbsp;Mark As Released</a>
                         <?php
-                    }else{
+                    } else {
                         ?>
                         <a href="<?php echo site_url('station/pdfreleaseinstructioninfo/' . $ri['ri_id']); ?>" target="_blank" class="btn btn-danger btn-sm" ><i class="fa fa-file-pdf-o"></i>&nbsp;&nbsp;Export PDF</a>
                         <?php
                     }
                     ?>
-                    
+
                 </div>
             </div>
         </div>
@@ -216,7 +216,16 @@
                                             if (in_array($ri['ri_status'], ['NEW'])) {
                                                 ?>
                                                 <td>
-                                                    <a href="<?php echo site_url('station/removepofromri/' . $po['po_id']); ?>" class="btn btn-outline-danger btn-sm confirm" title="Remove Purchase Order From Release Instruction."><i class="fa fa-trash-o"></i></a>
+
+                                                    <div class="dropdown">
+                                                        <button type="button" id="closeCard2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-info btn-sm"><i class="fa fa-ellipsis-v"></i></button>
+                                                        <div aria-labelledby="closeCard2" class="dropdown-menu dropdown-menu-right has-shadow">
+                                                            <a href="<?php echo site_url('station/requesteditpoform/' . $po['po_id']); ?>"  class="dropdown-item text-info request_form"> <i class="fa fa-edit"></i>&nbsp;&nbsp;Edit LPO</a>
+                                                            <a href="<?php echo site_url('station/removepofromri/' . $po['po_id']); ?>" class="dropdown-item edit text-danger confirm" title="Remove purchase order from release instruction"> <i class="fa fa-trash"></i>&nbsp;&nbsp;Delete</a>
+                                                        </div>
+                                                    </div>
+
+
                                                 </td>
                                                 <?php
                                             }
@@ -273,8 +282,19 @@
 <script type="text/javascript">
 
     $(document).ready(function () {
-
-
+        $('#purchase_orders').DataTable({
+            "aaSorting": [],
+            responsive: true,
+            fixedHeader: {headerOffset: 70},
+            searching: false,
+            lengthChange: false,
+            "pageLength": 100,
+            columnDefs: [
+                {responsivePriority: 1, targets: 0},
+                {responsivePriority: 2, targets: -1},
+                {responsivePriority: 3, targets: 1}
+            ]
+        });
     });
 
 </script>

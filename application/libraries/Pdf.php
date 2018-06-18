@@ -14,23 +14,27 @@ class Pdf {
 	}
 
 
-	function load($param=NULL)
+	function load($param=NULL, $file_size = NULL)
 
 	{
 
 		include_once APPPATH.'/third_party/mpdf/mpdf.php';
 
 
-		if ($params == NULL)
+		if ($param == NULL)
 
 		{
 
 			$param = '"en-GB-x","A4","","",10,10,10,10,6,3';
 
 		}
+                
+                if($file_size == NULL){
+                    $file_size = 'A4';
+                }
 
 
-		return new mPDF($param);
+		return new mPDF($param, $file_size);
 
 	}
 

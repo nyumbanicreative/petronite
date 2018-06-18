@@ -43,6 +43,7 @@
                 <img src="<?php echo base_url(); ?>assets/img/afroiltopbanner.jpg" style="height:100%;"/>
             </div>
             
+            <p style="text-align:center;"><?php echo $contact_text; ?></p>
             
             <hr/>
 
