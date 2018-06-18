@@ -866,7 +866,7 @@ class Depots extends CI_Controller {
                 ->setCellValue("B3", "DATE")
                 ->setCellValue("C3", 'PRODUCTS')
                 ->setCellValue("D3", "TRUCK \nREG NUMBER")
-                ->setCellValue("E3", "ORDER")
+                ->setCellValue("E3", "ORDER No.")
                 ->setCellValue("F3", "INVOICE NUMBER")
                 ->setCellValue("G3", "OBS VOLUME \nLOADED(L)")
                 ->setCellValue("H3", "CONVERSION \nFACTOR")
@@ -892,14 +892,15 @@ class Depots extends CI_Controller {
             $spreadsheet->setActiveSheetIndex(0)
                     ->setCellValue("A$x", ($index + 1))
                     ->setCellValue("B$x", cus_nice_date($sl['sl_date']))
-                    ->setCellValue("C$x", "")
+                    ->setCellValue("C$x", $sl['fuel_type_group_name'])
                     ->setCellValue("D$x", $sl['po_truck_number'])
-                    ->setCellValue("E$x", $sl['po_volume'])
+                    ->setCellValue("E$x", $sl['po_number'])
                     ->setCellValue("F$x", $sl['sl_invoice_number'])
                     ->setCellValue("G$x", $sl['sl_volume_loaded'])
                     ->setCellValue("H$x", $sl['sl_conversion_factor'])
                     ->setCellValue("I$x", ($sl['sl_volume_loaded'] * $sl['sl_conversion_factor']))
                     ->setCellValue("J$x", $sl['sl_balance_after'])
+                    ->setCellValue("K$x", $sl['sl_transfer_note'])
                     ->setCellValue("N$x", $sl['station_name']);
             $x++;
         }

@@ -143,7 +143,7 @@
                                     <tr>
                                         <th>Loading Date</th>
                                         <th>Truck Number</th>
-                                        <th>Volume Ordered</th>
+                                        <th>Order No.</th>
                                         <th><?php ?> Invoice Number</th>
                                         <th>OBS Volume Loaded</th>
                                         <th>Conversion Factor</th>
@@ -160,7 +160,7 @@
                                         <tr>
                                             <td nowrap="nowrap"><?php echo $sl['sl_date']; ?></td>
                                             <td nowrap="nowrap"><?php echo $sl['po_truck_number'] .'<br/>'.$sl['po_driver_name']; ?></td>
-                                            <td nowrap="nowrap"><?php echo $sl['po_volume']; ?></td>
+                                            <td nowrap="nowrap"><?php echo $sl['po_number']; ?></td>
                                             <td nowrap="nowrap"><?php echo $sl['sl_invoice_number']; ?></td>
                                             
                                             <td nowrap="nowrap"><?php echo $sl['sl_volume_loaded']; ?></td>

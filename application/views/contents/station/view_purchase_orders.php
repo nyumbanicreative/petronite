@@ -32,7 +32,7 @@
                                     <th>Product</th>
                                     <th>Volume (Ltr)</th>
                                     <th>Driver</th>
-                                    <th>Truck Numer</th>
+                                    <th>Truck Number</th>
                                     <th>Order Status</th>
                                     <th>Delivery</th>
                                     <th style="width:10px;"></th>

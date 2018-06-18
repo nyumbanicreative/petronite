@@ -87,7 +87,8 @@
                             <thead>
                                 <tr>
                                     <th>Driver Name</th>
-                                    <th style="max-width: 500px;">Driver License</th>
+                                    <th>Driver License</th>
+                                    <th>Phone Number</th>
                                     <th>User Status</th>
                                     <th style="width:10px;"> </th>
                                 </tr>
@@ -97,8 +98,9 @@
                                 foreach ($customer_drivers as $i => $d) {
                                     ?>
                                     <tr>
-                                        <td><?php echo $d['user_name']; ?></td>
+                                        <td><?php echo $d['user_fullname']; ?></td>
                                         <td><?php echo $d['user_driving_license']; ?></td>
+                                        <td><?php echo $d['user_phone']; ?></td>
                                         <td>
                                             <?php
                                             if ($d['user_active'] == 1) {

@@ -186,6 +186,8 @@ Class DepotsModel extends CI_Model {
         
         $res = $this->db->from('stock_loading sl')
                 ->join('purchase_order po','po.po_id = sl.sl_po_id','INNER')
+                ->join('vessels vs','vs.vessel_id = po.po_vessel_id','INNER')
+                ->join('fuel_types_group ftg','ftg.fuel_type_group_id = vs.vessel_fuel_type_group_id','INNER')
                 ->join('users u','u.user_id = sl.sl_user_id','INNER')
                 ->join('users d','d.user_id = po.po_driver_id','INNER')
                 ->join('stations st', 'st.station_id = po.po_station_id', 'INNER')

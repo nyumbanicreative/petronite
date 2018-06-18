@@ -382,7 +382,7 @@ class Station extends CI_Controller {
                         <div aria-labelledby="closeCard2" class="dropdown-menu dropdown-menu-right has-shadow">
                                                 ';
 
-            $actions .= '<a href="' . site_url('station/editpurchaseorder/' . $p->po_id) . '" class="dropdown-item text-success"> <i class="fa fa-list"></i>&nbsp;&nbsp;PO Details</a>';
+            //$actions .= '<a href="' . site_url('station/editpurchaseorder/' . $p->po_id) . '" class="dropdown-item text-success"> <i class="fa fa-list"></i>&nbsp;&nbsp;PO Details</a>';
 
             if ($p->po_status == 'UNRELEASED' OR ( $p->po_status == 'RELEASED' AND $p->ri_status == 'NEW')) {
                 $actions .= '<a href="' . site_url('station/requesteditpoform/' . $p->po_id) . '" class="dropdown-item text-info request_form"> <i class="fa fa-edit"></i>&nbsp;&nbsp;Edit LPO</a>';

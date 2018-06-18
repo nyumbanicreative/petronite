@@ -34,11 +34,11 @@
                 text-align: left;
                 font-size: 14px;
             }
-            
+
             .order_info td, .order_info th{
                 border: 1px solid #000;
                 padding: 10px;
-                
+
             }
             .order_info td{
                 vertical-align: top;
@@ -51,10 +51,10 @@
             <div style="text-align: center;">
                 <img src="<?php echo base_url(); ?>assets/img/afroiltopbanner.jpg" style="height:100%;"/>
             </div>
-            
+
             <p style="text-align:center; font-size: 11px;"><?php echo $contact_text; ?></p>
-            
-            
+
+
             <hr/>
 
             <table style="overflow: hidden; margin-top: 10px; width: 100%;font-size:13px;">
@@ -66,9 +66,9 @@
                     <td class="align_left width-50 padding-10-0" colspan="2"><h4><span style="font-weight: normal">M/S:</span>&nbsp;&nbsp;<?php echo strtoupper($po['depo_name']); ?></h4></td>
                 </tr>
             </table>
-            
+
             <br/>
-            <p style="text-align: center;"><b>TIN:&nbsp;</b><?php echo $po['pc_tin_number']?></p>
+            <p style="text-align: center;"><b>TIN:&nbsp;</b><?php echo $po['pc_tin_number'] ?></p>
             <table class="order_info" style="width: 100%; border:1px solid #000; border-collapse: collapse; font-size: 14px;" >
                 <thead>
                     <tr>
@@ -80,22 +80,30 @@
                 <tbody>
                     <tr>
                         <td><?php echo strtoupper($po['fuel_type_group_generic_name']); ?></td>
-                        <td><?php echo $po['po_volume'];?></td>
+                        <td><?php echo $po['po_volume']; ?></td>
                         <td nowrap="nowrap">
-                            <b>TRUCK NO.</b>&nbsp;&nbsp;<?php echo $po['po_truck_number'];?><br/><br/>
-                            <p><?php echo $qty_in_words; ?></p>
+                            <b>TRUCK NO.</b>&nbsp;&nbsp;<?php echo $po['po_truck_number']; ?><br/>
+                            <?php
+                            if (!empty($qty_in_words)) {
+                                ?>
+                                <br/>
+                                <p><?php echo $qty_in_words; ?></p>
+                                <?php
+                            }
+                            ?>
+
                             <br/>
-                            
-                            <b>DRIVER.</b>&nbsp;&nbsp;<?php echo $po['po_driver_name'];?>
+
+                            <b>DRIVER.</b>&nbsp;&nbsp;<?php echo $po['po_driver_name']; ?>
                         </td>
                     </tr>
                 </tbody>
-                
+
             </table>
             <br/>
             <br/>
             <p>Signature&nbsp;&nbsp;.........................</p>
-            
+
         </div>
     </body>
 </html>
