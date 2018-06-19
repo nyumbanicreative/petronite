@@ -167,7 +167,7 @@
                                             <td nowrap="nowrap"><?php echo $sl['sl_conversion_factor']; ?></td>
                                             <td nowrap="nowrap"><?php echo ($sl['sl_conversion_factor'] * $sl['sl_volume_loaded']); ?></td>
                                             <td nowrap="nowrap"><?php echo $sl['sl_balance_after']; ?></td>
-                                            <td></td>
+                                            <td nowrap="nowrap"><?php echo $sl['sl_transfer_note']; ?></td>
                                             <td nowrap="nowrap">
                                                 <?php 
                                                 echo $sl['station_name']; 

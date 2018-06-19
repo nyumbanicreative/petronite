@@ -29,6 +29,7 @@
             <ul id="purchase" class="<?php echo ($curr_sub_menu == 'PURCHASE') ? "" : "collapse" ?> list-unstyled">
                 <li><a href="<?php echo site_url('station/purchaseorders'); ?>">Purchase Orders</a></li>
                 <li><a href="<?php echo site_url('station/releaseinstructions'); ?>">Release Instructions</a></li>
+                <!--<li><a href="<?php //echo site_url('station/orderdelivery'); ?>">Order Delivery</a></li>-->
             </ul>
         </li>
         <li class="<?php echo ($curr_menu == 'REPORTS') ? "active" : "" ?>"><a href="#rpts" aria-expanded="<?php echo ($curr_menu == 'REPORTS') ? "true" : "false" ?>" data-toggle="collapse"> <i class="fa fa-bar-chart"></i>Combined Reports</a>
@@ -43,6 +44,5 @@
             </ul>
         </li>
     </ul>
-
 </nav>
 <div class="content-inner">

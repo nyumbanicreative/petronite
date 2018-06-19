@@ -353,13 +353,16 @@ class Station extends CI_Controller {
                     $status .= "<h5><span class='badge badge-info'>NEW</span></h5>";
                     break;
                 case 'LOADED':
-                    $status .= "<h4><span class='badge badge-success'>LOADED</span></h4>";
+                    $status .= "<h4><span class='badge badge-info'>LOADED</span></h4>";
                     break;
                 case 'UNRELEASED':
-                    $status .= "<h4><span class='badge badge-warning'>UNRELEASED</span></h4>";
+                    $status .= "<h4><span class='badge badge-danger'>UNRELEASED</span></h4>";
                     break;
                 case 'RELEASED':
-                    $status .= "<h4><span class='badge badge-info'>RELEASED</span></h4>";
+                    $status .= "<h4><span class='badge badge-warning'>RELEASED</span></h4>";
+                    break;
+                case 'DELIVERED':
+                    $status .= "<h4><span class='badge badge-success'>DELIVERED</span></h4>";
                     break;
             }
 
@@ -671,6 +674,36 @@ class Station extends CI_Controller {
                 cus_json_error('Unable to edit purchase order. please refresh the page and try again.');
             }
         }
+    }
+    
+    public function orderDelivery() {
+        
+        // check session status of the user
+        $this->checkStatus(1, 1, 1);
+        
+        $orders = $this->purchase->getPurchaseOrders(['st.station_admin_id' => $this->admin_id,'po_status' => 'LOADED'], NULL, ['po.po_id','po.po_number']);
+
+        $data = [
+            'menu' => 'menu/view_stations_menu',
+            'content' => 'contents/station/view_order_delivery',
+            'menu_data' => ['curr_menu' => 'PURCHASE', 'curr_sub_menu' => 'PURCHASE'],
+            'content_data' => [
+                'module_name' => 'Orders Delivery',
+                'customer' => $this->customer
+            ],
+            'modals_data' => [// Modals data
+                'modals' => ['modal_add_order_delivery'], // Put array of popup modals which you want them to appear on current page
+                'depots' => $this->depo->getDepots(['depo.depo_admin_id' => $this->admin_id]), // Get station depots for creating purchase order
+                'authorizers' => $this->usr->getUsersList(['user_admin_id' => $this->admin_id, 'user_role <>' => 'attendant']),
+                'orders' => $orders
+            ],
+            'header_data' => [],
+            'footer_data' => [],
+            'top_bar_data' => []
+        ];
+
+        $this->load->view('view_base', $data);
+   
     }
 
     public function submitReleaseInstruction() {

@@ -191,6 +191,8 @@ Class DepotsModel extends CI_Model {
                 ->join('users u','u.user_id = sl.sl_user_id','INNER')
                 ->join('users d','d.user_id = po.po_driver_id','INNER')
                 ->join('stations st', 'st.station_id = po.po_station_id', 'INNER')
+                ->join('inventory_purchases ip','ip.inventory_purchase_od_id = po.po_id','LEFT OUTER')
+                ->join('order_delivery od','od.od_po_id = po.po_id','LEFT OUTER')
                 ->order_by('sl.sl_timestamp')->get();
         
         return $res->result_array();

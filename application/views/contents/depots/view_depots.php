@@ -27,7 +27,7 @@
                     <a href="<?php echo site_url('depots/setdepot/' . $d['depo_id']); ?>" class="card" style="border: 1px solid #f1f1f1;">
                         <img class="card-img-top" src="<?php echo base_url() . 'assets/img/depot.JPG' ?>" alt="Depot Image">
                         <div class="card-body" style="background: #fdfdfd;">
-                            <h5 class="card-title"><?php echo ucwords(strtolower($d['depo_name'])); ?></h5>
+                            <h5 class="card-title"><?php echo ucwords(strtoupper($d['depo_name'])); ?></h5>
                             <!--<a href="#" class="btn btn-primary">Sign in</a>-->
                         </div>
                         

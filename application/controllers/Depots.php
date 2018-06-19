@@ -888,7 +888,10 @@ class Depots extends CI_Controller {
         $x = 6;
         foreach ($stock_loadings as $index => $sl) {
 
+            $note_no = !empty($sl['od_id'])? 'OD_'.cus_preciding_zeros($sl['od_id']): "";
+            $del_date = !empty($sl['inventory_purchase_date'])? cus_nice_date($sl['inventory_purchase_date']): "";
             $spreadsheet->getActiveSheet()->getStyle("A$x:N$x")->applyFromArray($styleDataArray);
+            
             $spreadsheet->setActiveSheetIndex(0)
                     ->setCellValue("A$x", ($index + 1))
                     ->setCellValue("B$x", cus_nice_date($sl['sl_date']))
@@ -901,10 +904,47 @@ class Depots extends CI_Controller {
                     ->setCellValue("I$x", ($sl['sl_volume_loaded'] * $sl['sl_conversion_factor']))
                     ->setCellValue("J$x", $sl['sl_balance_after'])
                     ->setCellValue("K$x", $sl['sl_transfer_note'])
+                    ->setCellValue("L$x", $note_no)
+                    ->setCellValue("M$x", $del_date)
                     ->setCellValue("N$x", $sl['station_name']);
             $x++;
         }
+        
+        $x +=2;
+        
+        $spreadsheet->getActiveSheet()->mergeCells("A$x:E$x");
+        $spreadsheet->getActiveSheet()->getStyle("A$x:E$x")->applyFromArray($styleHeaderArray); 
+        
+        $spreadsheet->setActiveSheetIndex(0)->setCellValue("A$x", "FROM OUTTURN REPORT");$x++;
+        
+        $spreadsheet->getActiveSheet()->getStyle("A$x:E$x")->applyFromArray($styleDataArray);
+        $spreadsheet->getActiveSheet()->mergeCells("B$x:C$x");
+        $spreadsheet->setActiveSheetIndex(0)->setCellValue("B$x", "ARRIVED QUANTITY");
+        $spreadsheet->setActiveSheetIndex(0)->setCellValue("E$x", "XXXXXXXXXX"); $x++;
+        
+        $spreadsheet->getActiveSheet()->getStyle("A$x:E$x")->applyFromArray($styleDataArray);
+        $spreadsheet->getActiveSheet()->mergeCells("B$x:C$x");
+        $spreadsheet->setActiveSheetIndex(0)->setCellValue("A$x", "Less");
+        $spreadsheet->setActiveSheetIndex(0)->setCellValue("B$x", "SHIP TO SHORE LOSS");
+        $spreadsheet->setActiveSheetIndex(0)->setCellValue("E$x", ""); $x++;
 
+        
+        $spreadsheet->getActiveSheet()->getStyle("A$x:E$x")->applyFromArray($styleDataArray);
+        $spreadsheet->getActiveSheet()->mergeCells("B$x:C$x");
+        $spreadsheet->setActiveSheetIndex(0)->setCellValue("A$x", "");
+        $spreadsheet->setActiveSheetIndex(0)->setCellValue("B$x", "RECEIVED QUANTITY");
+        $spreadsheet->setActiveSheetIndex(0)->setCellValue("E$x", "XXXXXXXXXX"); $x++;
+        
+        $spreadsheet->getActiveSheet()->getStyle("A$x:E$x")->applyFromArray($styleDataArray);
+        $spreadsheet->setActiveSheetIndex(0)->setCellValue("A$x", "Less");
+        $spreadsheet->setActiveSheetIndex(0)->setCellValue("B$x", "MI LOSS");
+        $spreadsheet->setActiveSheetIndex(0)->setCellValue("E$x", "XXXXXXXXXX"); $x++;
+        
+        $spreadsheet->getActiveSheet()->getStyle("A$x:E$x")->applyFromArray($styleDataArray);
+        $spreadsheet->getActiveSheet()->mergeCells("B$x:C$x");
+        $spreadsheet->setActiveSheetIndex(0)->setCellValue("A$x", "");
+        $spreadsheet->setActiveSheetIndex(0)->setCellValue("B$x", "LOADED QUANTITY");
+        $spreadsheet->setActiveSheetIndex(0)->setCellValue("E$x", "XXXXXXXXXX"); $x++;
 
 
         // Rename worksheet

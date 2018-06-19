@@ -92,6 +92,105 @@ if (in_array('modal_add_user', $modals)) {
     <?php
 }
 
+
+//ADDING ORDER DELIVERY
+if (in_array('modal_add_order_delivery', $modals)) {
+    ?>
+    <div id="addOrderDelivery"  role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" class="modal fade text-left">
+        <div role="document" class="modal-dialog modal-lg">
+            <form id="add_user_form" class="modal-content" action="<?php echo site_url('admin/submitnewuser'); ?>">
+                <div class="modal-header">
+                    <h4 id="exampleModalLabel" class="modal-title"> Add New User</h4>
+                    <button type="button" data-dismiss="modal" aria-label="Close" class="close"><span aria-hidden="true">×</span></button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="row">
+                        
+                        <div class="col-lg-6">
+                            <div class="form-group" id="od_po_id">
+                                <label>Order No</label>
+                                <select style="width: 100%" name="od_po_id">
+                                    <option value=""></option>
+                                    <?php 
+                                        foreach ($orders as $o) {
+                                            ?>
+                                            <option value="<?php echo $o['po_id']; ?>"><?php echo $o['po_number']; ?></option>
+                                            <?php
+                                        }
+                                    ?>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-6">
+                            <div class="form-group" id="od_date">
+                                <label>Delivery Date</label>
+                                <input autocomplete="off" placeholder="Enter Username" class="form-control" name="user_name" autocomplete="off" value="">
+                            </div>
+                        </div>
+                        
+                    </div>
+
+
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="form-group" id="driving_license">
+                                <label>Driving License</label>
+                                <input autocomplete="off" placeholder="Enter Driving License" class="form-control" name="driving_license" autocomplete="off" value="">
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="form-group" id="user_role">
+                                <label>User Role</label>
+                                <select style="width: 100%" name="user_role">
+                                    <option value=""></option>
+                                    
+                                </select>
+                            </div>
+                        </div>
+                        
+                    </div>
+
+
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="form-group" id="user_phone">
+                                <label>User Phone</label>
+                                <input autocomplete="off" placeholder="Enter Driving License"  class="form-control" name="user_phone" autocomplete="off" value="">
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="form-group" id="user_email">
+                                <label>User Email</label>
+                                <input autocomplete="off" placeholder="Enter Driving License"  class="form-control" name="user_email" autocomplete="off" value="">
+                            </div>
+                        </div>
+                        
+                    </div>
+
+
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="form-group" id="user_address">
+                                <label>User Address</label>
+                                <input autocomplete="off" placeholder="Enter Driving License"  class="form-control" name="user_address" autocomplete="off" value="">
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" data-dismiss="modal" class="btn btn-secondary pull-left">Close</button>
+
+                    <button type="submit" class="btn btn-success"><i class="fa fa-plus-circle"></i>&nbsp;Add User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <?php
+}
+
 //ADDING NEW VESSEL MODAL
 if (in_array('modal_add_vessel', $modals)) {
     ?>
@@ -264,7 +363,7 @@ if (in_array('modal_add_stock_loading', $modals)) {
                         <div class="col-lg-6">
                             <div class="form-group" id="transfer_note">
                                 <label>Transfer Note Number</label>
-                                <input autocomplete="off" placeholder="Enter the transfer note number"  class="form-control volume" name="transfer_note"  value="">
+                                <input autocomplete="off" placeholder="Enter the transfer note number"  class="form-control" name="transfer_note"  value="">
                             </div>
                         </div>
                     </div>
@@ -360,7 +459,7 @@ if (in_array('modal_add_stock_loading_single', $modals)) {
                         <div class="col-lg-6">
                             <div class="form-group" id="transfer_note">
                                 <label>Transfer Note Number</label>
-                                <input autocomplete="off" placeholder="Enter the transfer note number"  class="form-control volume" name="transfer_note"  value="">
+                                <input autocomplete="off" placeholder="Enter the transfer note number"  class="form-control" name="transfer_note"  value="">
                             </div>
                         </div>
                         
@@ -930,7 +1029,7 @@ if (in_array('modal_close_vessel', $modals)) {
         $('select[name=user_role]').select2({placeholder: 'Select user role'});
         $('select[name=edit_driver_id],select[name=driver_id]').select2({placeholder: 'Select driver'});
         $('select[name=po_station_id],select[name=edit_po_station_id]').select2({placeholder: 'Select station'});
-        $('select[name=loading_po_id],#_po_ids').select2({placeholder: 'Select purchase order'}); // Purchase Order
+        $('select[name=loading_po_id],#_po_ids,select[name=od_po_id]').select2({placeholder: 'Select purchase order'}); // Purchase Order
         $('select[name=po_depo_id], select[name=depo_id],select[name=edit_po_depo_id]').select2({placeholder: 'Select depot'});
         $('select[name=po_vessel_id], select[name=loading_vessel_id],select[name=close_vs_remain_transfered_to],select[name=edit_po_vessel_id]').select2({placeholder: 'Select vessel'});
 
