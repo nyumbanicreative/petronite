@@ -18,7 +18,7 @@
 
 <section class="" style="min-height:550px;">
     <div class="container-fluid">
-        
+
         <div class="row">
             <?php
             foreach ($depots as $key => $d) {
@@ -30,7 +30,6 @@
                             <h5 class="card-title"><?php echo ucwords(strtoupper($d['depo_name'])); ?></h5>
                             <!--<a href="#" class="btn btn-primary">Sign in</a>-->
                         </div>
-                        
                     </a>
                 </div>
                 <?php
@@ -44,7 +43,7 @@
 <script type="text/javascript">
 
     $(document).ready(function () {
-        
+
     });
 
 </script>
