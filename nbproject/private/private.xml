@@ -3,24 +3,31 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/Applications/MAMP/htdocs/petronite/application/views/export/view_export_purchase_order.php</file>
-            <file>file:/Applications/MAMP/htdocs/petronite/application/views/contents/depots/view_stock_vessels.php</file>
-            <file>file:/Applications/MAMP/htdocs/petronite/application/views/static/view_modals.php</file>
-            <file>file:/Applications/MAMP/htdocs/petronite/application/views/export/view_export_release_instruction.php</file>
-            <file>file:/Applications/MAMP/htdocs/petronite/application/controllers/Maintenance.php</file>
-            <file>file:/Applications/MAMP/htdocs/petronite/application/controllers/Station.php</file>
             <file>file:/Applications/MAMP/htdocs/petronite/application/controllers/User.php</file>
-            <file>file:/Applications/MAMP/htdocs/petronite/application/views/contents/depots/view_vessel_stock_loading.php</file>
             <file>file:/Applications/MAMP/htdocs/petronite/application/controllers/Depots.php</file>
-            <file>file:/Applications/MAMP/htdocs/petronite/application/views/view_base.php</file>
-            <file>file:/Applications/MAMP/htdocs/petronite/application/config/constants.php</file>
-            <file>file:/Applications/MAMP/htdocs/petronite/application/views/contents/administrator/view_stations_users.php</file>
-            <file>file:/Applications/MAMP/htdocs/petronite/application/controllers/Admin.php</file>
             <file>file:/Applications/MAMP/htdocs/petronite/application/views/static/view_header.php</file>
-            <file>file:/Applications/MAMP/htdocs/petronite/application/models/UserModel.php</file>
-            <file>file:/Applications/MAMP/htdocs/petronite/application/controllers/Customers.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/views/menu/view_sys_menu.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/views/menu/view_stations_menu.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/controllers/Admin.php</file>
             <file>file:/Applications/MAMP/htdocs/petronite/application/views/contents/depots/view_stock_control_report.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/views/contents/depots/view_vessel_stock_loading.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/views/contents/depots/view_stock_loadings.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/config/constants.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/views/contents/depots/view_depots.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/views/contents/administrator/view_stations_users.php</file>
             <file>file:/Applications/MAMP/htdocs/petronite/application/libraries/Pdf.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/views/contents/station/view_purchase_orders.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/controllers/Station.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/models/DepotsModel.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/controllers/Customers.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/views/static/view_modals.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/controllers/Maintenance.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/views/contents/depots/view_stock_vessels.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/models/UserModel.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/views/export/view_export_release_instruction.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/views/view_base.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/views/export/view_export_purchase_order.php</file>
+            <file>file:/Applications/MAMP/htdocs/petronite/application/views/contents/station/view_order_delivery.php</file>
         </group>
     </open-files>
 </project-private>

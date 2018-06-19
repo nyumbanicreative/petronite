@@ -32,7 +32,7 @@
                             <thead>
                                 <tr>
                                     <th>User Name</th>
-                                    <th style="max-width: 500px;">Customer Stations</th>
+                                    <th style="max-width: 500px;">User Stations</th>
                                     <th>User Status</th>
                                     <th style="width:10px;"> </th>
                                 </tr>
