@@ -191,6 +191,29 @@
                                 <tbody>
                                     <?php
                                     foreach ($ri_orders as $po) {
+
+                                        $volume = "";
+                                        $delivery = "";
+                                        $status = "";
+                                        $order_qty = [];
+
+                                        if (cus_is_json('[' . $po['order_qty'] . ']')) {
+                                            $order_qty = json_decode('[' . $po['order_qty'] . ']');
+                                        }
+
+                                        foreach ($order_qty as $i => $oq) {
+                                            if ($i > 0) {
+                                                $volume .= '<br/>';
+                                            }
+                                            $volume .= $oq->product . ' - ' . $oq->poq_volume;
+                                        }
+
+                                        foreach ($order_qty as $i => $oq) {
+                                            if ($i > 0) {
+                                                $delivery .= '<br/>';
+                                            }
+                                            $delivery .= $oq->product . ' - ' . $oq->station_name;
+                                        }
                                         ?>
                                         <tr>
                                             <td><?php echo $po['po_number']; ?></td>
@@ -202,16 +225,18 @@
                                                 ?>
                                                 <td>
                                                     <?php
-                                                    if ($rift['fuel_type_group_id'] == $po['fuel_type_group_id']) {
-                                                        $total[$i] += $po['po_volume'];
-                                                        echo $po['po_volume'];
+                                                    foreach ($order_qty as $j => $oq) {
+                                                        if ($rift['fuel_type_group_id'] == $oq->poq_ftg_id) {
+                                                            $total[$i] += $oq->poq_volume;;
+                                                            echo $oq->poq_volume;
+                                                        }
                                                     }
                                                     ?>
                                                 </td>
                                                 <?php
                                             }
                                             ?>
-                                            <td nowrap="nowrap"><?php echo $po['station_name']; ?></td>
+                                            <td nowrap="nowrap"><?php echo $delivery; ?></td>
                                             <?php
                                             if (in_array($ri['ri_status'], ['NEW'])) {
                                                 ?>
@@ -220,7 +245,7 @@
                                                     <div class="dropdown">
                                                         <button type="button" id="closeCard2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-info btn-sm"><i class="fa fa-ellipsis-v"></i></button>
                                                         <div aria-labelledby="closeCard2" class="dropdown-menu dropdown-menu-right has-shadow">
-                                                            <a href="<?php echo site_url('station/requesteditpoform/' . $po['po_id']); ?>"  class="dropdown-item text-info request_form"> <i class="fa fa-edit"></i>&nbsp;&nbsp;Edit LPO</a>
+                                                            <!--<a href="<?php echo site_url('station/requesteditpoform/' . $po['po_id']); ?>"  class="dropdown-item text-info request_form"> <i class="fa fa-edit"></i>&nbsp;&nbsp;Edit LPO</a>-->
                                                             <a href="<?php echo site_url('station/removepofromri/' . $po['po_id']); ?>" class="dropdown-item edit text-danger confirm" title="Remove purchase order from release instruction"> <i class="fa fa-trash"></i>&nbsp;&nbsp;Delete</a>
                                                         </div>
                                                     </div>

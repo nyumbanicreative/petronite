@@ -59,7 +59,7 @@
                                     <td class="text-nowrap">
                                         <?php 
                                         echo 'Order&nbsp;:&nbsp;&nbsp;<strong>'.$sl['sl_volume_loaded']. '</strong><br/>';
-                                        echo 'Loaded&nbsp;:&nbsp;&nbsp;<strong>'.$sl['po_volume']. '</strong><br/>';
+                                        echo 'Loaded&nbsp;:&nbsp;&nbsp;<strong>'.$sl['poq_volume']. '</strong><br/>';
                                         ?>
                                     </td>
                                     <td class="text-nowrap">

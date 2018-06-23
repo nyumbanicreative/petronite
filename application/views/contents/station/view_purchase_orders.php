@@ -29,8 +29,7 @@
                                 <tr>
                                     <th>Order No.</th>
                                     <th>Order Date</th>
-                                    <th>Product</th>
-                                    <th>Volume (Ltr)</th>
+                                    <th>Order Volume (Ltr)</th>
                                     <th>Driver</th>
                                     <th>Truck Number</th>
                                     <th>Order Status</th>

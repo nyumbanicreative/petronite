@@ -181,7 +181,7 @@ class Station extends CI_Controller {
             'modals_data' => [// Modals data
                 'modals' => ['modal_add_release_instruction'], // Put array of popup modals which you want them to appear on current page
                 'depots' => $this->depo->getDepots(['depo.depo_admin_id' => $this->admin_id]), // Get station depots for creating purchase order
-                'authorizers' => $this->usr->getUsersList(['user_admin_id' => $this->admin_id, 'user_role <>' => 'attendant'])
+                'authorizers' => $this->usr->getUsersList("user_admin_id ='" . $this->admin_id . "' AND user_role NOT IN ('attendant','driver','developer','manager')")
             ],
             'header_data' => [],
             'footer_data' => [],
@@ -205,7 +205,7 @@ class Station extends CI_Controller {
             $this->setSessMsg('Release instruction was not found or it may havebeen removed from the system', 'error', 'station/releaseinstructions');
         }
 
-        $cols = ['po.po_id', 'po.po_date', 'po.po_number', 'po.po_volume', 'ftg.fuel_type_group_id', 'ftg.fuel_type_group_name', 'd.user_fullname po_driver_name', 'd.user_driving_license po_driver_license', 'po.po_truck_number', 'st.station_name', 'po.po_status'];
+        $cols = ['poq.order_qty', 'po.po_id', 'po.po_date', 'po.po_number', 'd.user_fullname po_driver_name', 'd.user_driving_license po_driver_license', 'po.po_truck_number', 'st.station_name'];
         $ri_orders = $this->purchase->getPurchaseOrders(['po.po_ri_id' => $ri['ri_id']], null, $cols);
 
 
@@ -228,7 +228,7 @@ class Station extends CI_Controller {
             'modals_data' => [// Modals data
                 'modals' => ['modal_add_po_in_ri', 'modal_edit_purchase_order_hq'], // Put array of popup modals which you want them to appear on current page
                 'ri_id' => $ri['ri_id'],
-                'pos' => $this->purchase->getPurchaseOrders(['po.po_ri_id' => NULL], NULL, ['po.po_id', 'po.po_number', 'd.user_fullname po_driver_name', 'po.po_truck_number', 'ftg.fuel_type_group_name'], ['po.po_station_id' => $station_ids]),
+                'pos' => $this->purchase->getPurchaseOrders(['po.po_ri_id' => NULL], NULL, ['po.po_id', 'poq.order_qty', 'po.po_number', 'd.user_fullname po_driver_name', 'po.po_truck_number'], ['po.po_station_id' => $station_ids]),
                 'station_depots' => $this->depo->getDepots(['depo.depo_admin_id' => $this->admin_id]), // Get station depots for creating purchase order
                 'delivery_points' => $this->stn->getUserStations($this->user_id, $this->admin_id)
             ],
@@ -236,6 +236,7 @@ class Station extends CI_Controller {
             'footer_data' => [],
             'top_bar_data' => []
         ];
+
 
         $this->load->view('view_base', $data);
     }
@@ -248,14 +249,14 @@ class Station extends CI_Controller {
 
         $ri_id = $this->uri->segment(3);
 
-        $cols = ['u.user_name', 'ri.ri_id', 'ri.ri_number', 'ri.ri_loading_date', 'depo.depo_name', 'seller.pc_name seller_name', 'customer.pc_name customer_name', 'customer.pc_contact_text', 'customer.pc_logo', 'customer.pc_slogan'];
+        $cols = ['u.user_name', 'ri.ri_status', 'ri.ri_id', 'ri.ri_number', 'ri.ri_loading_date', 'depo.depo_name', 'seller.pc_name seller_name', 'customer.pc_name customer_name', 'customer.pc_contact_text', 'customer.pc_logo', 'customer.pc_slogan', 'auth.user_name auth_name'];
         $ri = $this->purchase->getReleaseInstructionInfo($ri_id, $cols);
 
         if (!$ri) {
             $this->setSessMsg('Release instruction was not found or it may havebeen removed from the system', 'error', 'station/releaseinstructions');
         }
 
-        $cols = ['po.po_id', 'po.po_date', 'po.po_number', 'po.po_volume', 'ftg.fuel_type_group_id', 'ftg.fuel_type_group_name', 'd.user_fullname po_driver_name', 'd.user_driving_license po_driver_license', 'po.po_truck_number', 'st.station_name', 'po.po_status'];
+        $cols = ['poq.order_qty', 'po.po_id', 'po.po_date', 'po.po_number', 'po.po_volume', 'd.user_fullname po_driver_name', 'd.user_driving_license po_driver_license', 'po.po_truck_number'];
         $ri_orders = $this->purchase->getPurchaseOrders(['po.po_ri_id' => $ri['ri_id']], null, $cols);
 
         $ri_fuel_types = $this->purchase->getRiFuelTypes($ri['ri_id']);
@@ -265,12 +266,11 @@ class Station extends CI_Controller {
 
         $html = $this->load->view('export/view_export_release_instruction', $data, true); // render the view into HTML
 
-
         $this->load->library('pdf');
 
         $pdf = $this->pdf->load();
 
-        $pdf->SetFooter('|Powered By Pentronite<br>www.petronite.com|');
+        $pdf->SetFooter('|Powered By Petronite<br>www.petronite.com|');
         //$pdf->SetFooter($ri['pc_contact_text']); // Add a footer for good measure ;)
 
         $pdf->WriteHTML($html); // write the HTML into the PDF
@@ -296,11 +296,33 @@ class Station extends CI_Controller {
 
         $qty_in_words = '';
 
+        $order_qty = [];
+
+        if (cus_is_json('[' . $po['order_qty'] . ']')) {
+            $order_qty = json_decode('[' . $po['order_qty'] . ']');
+        }
+
+
         if (class_exists('NumberFormatter')) {
             $f = new NumberFormatter('en', NumberFormatter::SPELLOUT);
-            $qty_in_words = ucwords($f->format(round($po['po_volume']))) . ' Litres Of ' . $po['fuel_type_group_generic_name'] . ' Only';
+
+            foreach ($order_qty as $j => $oq) {
+                $qty_in_words .= $j > 0 ? ", " : " ";
+
+                if (AGO == $oq->poq_ftg_id) {
+                    $qty_in_words .= ucwords($f->format(round($oq->poq_volume))) . ' Litres Of <b>DIESEL</b>';
+                }elseif (PMS == $oq->poq_ftg_id) {
+                    $qty_in_words .= ucwords($f->format(round($oq->poq_volume))) . ' Litres Of <b>SUPER</b>';
+                }elseif (IK == $oq->poq_ftg_id) {
+                    $qty_in_words .= ucwords($f->format(round($oq->poq_volume))) . ' Litres Of <b>KEROSENE</b>';
+                }
+            }
+
+
+            $qty_in_words .= ' Only';
         }
-        
+
+
         $data = ['po' => $po, 'contact_text' => $po['pc_contact_text'], 'qty_in_words' => $qty_in_words];
 
         $html = $this->load->view('export/view_export_purchase_order', $data, true); // render the view into HTML
@@ -310,7 +332,7 @@ class Station extends CI_Controller {
 
         $pdf = $this->pdf->load('c', 'A5');
 
-        $pdf->SetFooter('|Powered By Pentronite<br>www.petronite.com|'); // Add a footer for good measure ;)
+        $pdf->SetFooter('|Powered By Petronite<br>www.petronite.com|'); // Add a footer for good measure ;)
 
         $pdf->WriteHTML($html); // write the HTML into the PDF
 
@@ -333,6 +355,7 @@ class Station extends CI_Controller {
         $stations = $this->stn->getUserStations($this->user_id, $this->admin_id);
         $station_ids = array_column($stations, 'station_id');
 
+
         $list = $this->purchase->get_datatables_purchase_order("", $station_ids);
 
 
@@ -340,41 +363,71 @@ class Station extends CI_Controller {
 
             $no++;
             $row = array();
-            $status = "";
+            $status = "<div class='text-nowrap'>";
             $driver = "";
+            $volume = "<div class='text-nowrap'>";
+            $delivery = "<div class='text-nowrap'>";
+            $order_qty = [];
+            $can_edit = FALSE;
+
+            if (cus_is_json('[' . $p->order_qty . ']')) {
+                $order_qty = json_decode('[' . $p->order_qty . ']');
+            }
+
+            foreach ($order_qty as $i => $oq) {
+                if ($i > 0) {
+                    $volume .= '<br/>';
+                }
+                $volume .= $oq->product . ' - ' . $oq->poq_volume;
+            }
+
+            foreach ($order_qty as $i => $oq) {
+                if ($i > 0) {
+                    $delivery .= '<br/>';
+                }
+                $delivery .= $oq->product . ' - ' . $oq->station_name;
+            }
+
+            $volume .= "</div>";
+            $delivery .= "</div>";
 
             $driver .= "<div class='text-nowrap'>";
             $driver .= $p->po_driver_name;
             $driver .= !empty($p->po_driver_license) ? '<br/>' . $p->po_driver_license : '';
             $driver .= "</div>";
 
-            switch ($p->po_status) {
-                case 'NEW':
-                    $status .= "<h5><span class='badge badge-info'>NEW</span></h5>";
-                    break;
-                case 'LOADED':
-                    $status .= "<h4><span class='badge badge-info'>LOADED</span></h4>";
-                    break;
-                case 'UNRELEASED':
-                    $status .= "<h4><span class='badge badge-danger'>UNRELEASED</span></h4>";
-                    break;
-                case 'RELEASED':
-                    $status .= "<h4><span class='badge badge-warning'>RELEASED</span></h4>";
-                    break;
-                case 'DELIVERED':
-                    $status .= "<h4><span class='badge badge-success'>DELIVERED</span></h4>";
-                    break;
+            foreach ($order_qty as $i => $oq) {
+
+                switch ($oq->poq_status) {
+                    case 'NEW':
+                        $status .= "<h5><span class='badge badge-info'>" . $oq->product . " - NEW</span></h5>";
+                        $can_edit = TRUE;
+                        break;
+                    case 'LOADED':
+                        $status .= "<h5><span class='badge badge-info'>" . $oq->product . " - LOADED</span></h5>";
+                        break;
+                    case 'UNRELEASED':
+                        $status .= "<h5><span class='badge badge-danger'>" . $oq->product . " - UNRELEASED</span></h5>";
+                        $can_edit = TRUE;
+                        break;
+                    case 'RELEASED':
+                        $status .= "<h5><span class='badge badge-warning'>" . $oq->product . " - RELEASED</span></h5>";
+                        break;
+                    case 'DELIVERED':
+                        $status .= "<h5><span class='badge badge-success'>" . $oq->product . " - DELIVERED</span></h5>";
+                        break;
+                }
             }
 
+            $status .= "</div>";
 
-            $row[] = $p->po_number;
-            $row[] = $p->po_date;
-            $row[] = $p->fuel_type_group_name;
-            $row[] = $p->po_volume;
+            $row[] = "<div class='text-nowrap'>" . $p->po_number . '</div>';
+            $row[] = "<div class='text-nowrap'>" . $p->po_date . '</div>';
+            $row[] = $volume;
             $row[] = $driver;
-            $row[] = $p->po_truck_number;
+            $row[] = "<div class='text-nowrap'>" . $p->po_truck_number . '</div>';
             $row[] = $status;
-            $row[] = $p->station_name;
+            $row[] = $delivery;
 
 
             $actions = "";
@@ -385,16 +438,15 @@ class Station extends CI_Controller {
                         <div aria-labelledby="closeCard2" class="dropdown-menu dropdown-menu-right has-shadow">
                                                 ';
 
-            //$actions .= '<a href="' . site_url('station/editpurchaseorder/' . $p->po_id) . '" class="dropdown-item text-success"> <i class="fa fa-list"></i>&nbsp;&nbsp;PO Details</a>';
-
-            if ($p->po_status == 'UNRELEASED' OR ( $p->po_status == 'RELEASED' AND $p->ri_status == 'NEW')) {
-                $actions .= '<a href="' . site_url('station/requesteditpoform/' . $p->po_id) . '" class="dropdown-item text-info request_form"> <i class="fa fa-edit"></i>&nbsp;&nbsp;Edit LPO</a>';
+           // $actions .= '<a href="' . site_url('station/editpurchaseorder/' . $p->po_id) . '" class="dropdown-item text-success"> <i class="fa fa-list"></i>&nbsp;&nbsp;PO Details</a>';
+            if ($can_edit) {
+                //$actions .= '<a href="' . site_url('station/requesteditpoform/' . $p->po_id) . '" class="dropdown-item text-info request_form"> <i class="fa fa-edit"></i>&nbsp;&nbsp;Edit LPO</a>';
             }
 
 
-            if ($p->po_status == 'UNRELEASED') {
-                $actions .= '<!-- <a href="' . site_url('station/editpurchaseorder/' . $p->po_id) . '" class="dropdown-item text-danger confirm"> <i class="fa fa-trash"></i>&nbsp;&nbsp;Delete LPO</a> -->';
-            }
+//            if ($p->po_status == 'UNRELEASED') {
+//                $actions .= '<!-- <a href="' . site_url('station/editpurchaseorder/' . $p->po_id) . '" class="dropdown-item text-danger confirm"> <i class="fa fa-trash"></i>&nbsp;&nbsp;Delete LPO</a> -->';
+//            }
 
             $actions .= '<a href="' . site_url('station/pdfpurchaseorderinfo/' . $p->po_id) . '" target="_blank" class="dropdown-item text-secondary"> <i class="fa fa-file-pdf-o"></i>&nbsp;&nbsp;Export PDF</a>';
 
@@ -548,10 +600,12 @@ class Station extends CI_Controller {
                 ['field' => 'order_date', 'label' => 'Order Date', 'rules' => 'trim|required|callback_validateOrderDate', 'errors' => ['required' => 'Select the order date.']],
                 ['field' => 'po_station_id', 'label' => 'Delivery Point', 'rules' => 'trim|required|callback_validatePoStationId'],
                 ['field' => 'po_depo_id', 'label' => 'Depo', 'rules' => 'trim|required'],
-                ['field' => 'volume_ordered', 'label' => 'Volume ordered', 'rules' => 'trim|required|numeric'],
+                ['field' => 'super_qty', 'label' => 'super quantity', 'rules' => 'trim|numeric|callback_validateSuperQty'],
+                ['field' => 'diesel_qty', 'label' => 'diesel quantity', 'rules' => 'trim|numeric|callback_validateDieselQty'],
+                ['field' => 'kerosene_qty', 'label' => 'kerosene quantity', 'rules' => 'trim|numeric|callback_validateKeroseneQty'],
                 ['field' => 'truck_number', 'label' => 'Truck Number', 'rules' => 'trim|required'],
                 ['field' => 'driver_id', 'label' => 'Driver', 'rules' => 'trim|required'],
-                ['field' => 'po_vessel_id', 'label' => 'Vessel', 'rules' => 'trim|required']
+                ['field' => 'po_vessel_id[]', 'label' => 'Vessel', 'rules' => 'trim|required|callback_validatePoVessels']
         ];
 
         $this->form_validation->set_rules($validations);
@@ -566,12 +620,47 @@ class Station extends CI_Controller {
             ]);
         } else {
 
-            $vessel_id = $this->input->post('po_vessel_id');
-            $vessel = $this->depo->getStockVessels(['v.vessel_id' => $vessel_id], 1);
+            $vessel_ids = $this->input->post('po_vessel_id');
+            $vessels = $this->depo->getStockVessels(NULL, NULL, $vessel_ids);
 
-            if (!$vessel) {
-                cus_json_error('Vessel details can not be found');
+            $super_qty = $this->input->post('super_qty');
+            $diesel_qty = $this->input->post('diesel_qty');
+            $kerosene_qty = $this->input->post('kerosene_qty');
+
+            if (empty($super_qty) AND empty($diesel_qty) AND empty($diesel_qty)) {
+                cus_json_error('Atleast one product (Diesel, Super or Kerosine) should have volume ordered');
             }
+
+            if (count($vessels) !== count($vessel_ids)) {
+                cus_json_error('One or more vessel was not found');
+            }
+
+            $po_qty_data = [];
+
+            if (!empty($super_qty)) {
+                $po_qty_data[] = [
+                    'poq_ftg_id' => PMS,
+                    'poq_volume' => $super_qty,
+                    'poq_station_id' => $this->input->post('po_station_id')
+                ];
+            }
+
+            if (!empty($kerosene_qty)) {
+                $po_qty_data[] = [
+                    'poq_ftg_id' => IK,
+                    'poq_volume' => $kerosene_qty,
+                    'poq_station_id' => $this->input->post('po_station_id')
+                ];
+            }
+
+            if (!empty($diesel_qty)) {
+                $po_qty_data[] = [
+                    'poq_ftg_id' => AGO,
+                    'poq_volume' => $diesel_qty,
+                    'poq_station_id' => $this->input->post('po_station_id')
+                ];
+            }
+
 
             $order_data = [
                 'po_date' => date('Y-m-d', strtotime($this->input->post('order_date'))),
@@ -580,13 +669,13 @@ class Station extends CI_Controller {
                 'po_user_id' => $this->user_id,
                 'po_truck_number' => $this->input->post('truck_number'),
                 'po_volume' => $this->input->post('volume_ordered'),
-                'po_driver_id' => $this->input->post('driver_id'),
-                'po_status' => 'UNRELEASED',
-                'po_vessel_id' => $vessel['vessel_id'],
-                'po_fuel_type_group_id' => $vessel['vessel_fuel_type_group_id']
+                'po_driver_id' => $this->input->post('driver_id')
+//                'po_status' => 'UNRELEASED',
+//                'po_vessel_id' => $vessel['vessel_id'],
+//                'po_fuel_type_group_id' => $vessel['vessel_fuel_type_group_id']
             ];
 
-            $res = $this->purchase->savePurchaseOrder(['order_data' => $order_data], $this->admin_id);
+            $res = $this->purchase->savePurchaseOrder(['order_data' => $order_data, 'po_qty_data' => $po_qty_data, 'vessels' => $vessels], $this->admin_id);
 
             if ($res) {
                 $this->setSessMsg('Order created succesffuly', 'success');
@@ -671,17 +760,17 @@ class Station extends CI_Controller {
                     ]
                 ]);
             } else {
-                cus_json_error('Unable to edit purchase order. please refresh the page and try again.');
+                cus_json_error('Nothing was updated');
             }
         }
     }
-    
+
     public function orderDelivery() {
-        
+
         // check session status of the user
         $this->checkStatus(1, 1, 1);
-        
-        $orders = $this->purchase->getPurchaseOrders(['st.station_admin_id' => $this->admin_id,'po_status' => 'LOADED'], NULL, ['po.po_id','po.po_number']);
+
+        $orders = $this->purchase->getPurchaseOrders(['st.station_admin_id' => $this->admin_id, 'po_status' => 'LOADED'], NULL, ['po.po_id', 'po.po_number']);
 
         $data = [
             'menu' => 'menu/view_stations_menu',
@@ -703,7 +792,6 @@ class Station extends CI_Controller {
         ];
 
         $this->load->view('view_base', $data);
-   
     }
 
     public function submitReleaseInstruction() {
@@ -856,11 +944,100 @@ class Station extends CI_Controller {
             $this->setSessMsg('Release instruction is not in a right status to be marked as released.', 'error', 'station/releaseinstructioninfo/' . $ri['ri_id']);
         }
 
-        if ($this->purchase->updateRi(['ri_status' => 'RELEASED'], ['ri_id' => $ri['ri_id']])) {
+        $pos = $this->purchase->getPurchaseOrders(['po_ri_id' => $ri['ri_id']], NULL, ['po_id']);
+
+        if (!$pos) {
+            $this->setSessMsg('Release instruction has no order added to be released', 'error', 'station/releaseinstructioninfo/' . $ri['ri_id']);
+        }
+
+        $po_ids = array_column($pos, 'po_id');
+
+
+
+        if ($this->purchase->updateRi(['ri_status' => 'RELEASED'], ['ri_id' => $ri['ri_id']], NULL, $po_ids)) {
             $this->setSessMsg('Release instruction marked as RELEASED successfully', 'suucess', 'station/releaseinstructioninfo/' . $ri['ri_id']);
         } else {
             $this->setSessMsg('Something went wrong. Please try again', 'error', 'station/releaseinstructioninfo/' . $ri['ri_id']);
         }
+    }
+
+    public function validateSuperQty($super_qty) {
+
+        $selected_vessels = $this->input->post('po_vessel_id[]');
+
+        if (!empty($super_qty) AND ! empty($selected_vessels)) {
+            $vessels = $this->depo->getStockVessels(NULL, NULL, $selected_vessels);
+            $vessels_fuel_types = array_column($vessels, 'fuel_type_group_id');
+
+            if (!in_array(PMS, $vessels_fuel_types)) {
+                $this->form_validation->set_message('validateSuperQty', 'If super is to be ordered you should select its vessel, otherwise clear this field');
+                return FALSE;
+            }
+        }
+
+        return TRUE;
+    }
+
+    public function validateDieselQty($diesel_qty) {
+
+        $selected_vessels = $this->input->post('po_vessel_id[]');
+
+        if (!empty($diesel_qty) AND ! empty($selected_vessels)) {
+            $vessels = $this->depo->getStockVessels(NULL, NULL, $selected_vessels);
+            $vessels_fuel_types = array_column($vessels, 'fuel_type_group_id');
+
+            if (!in_array(AGO, $vessels_fuel_types)) {
+                $this->form_validation->set_message('validateDieselQty', 'If diesel is to be ordered you should select its vessel, otherwise clear this field');
+                return FALSE;
+            }
+        }
+
+        return TRUE;
+    }
+
+    public function validateKeroseneQty($kerosene_qty) {
+
+        $selected_vessels = $this->input->post('po_vessel_id[]');
+
+        if (!empty($kerosene_qty) AND ! empty($selected_vessels)) {
+            $vessels = $this->depo->getStockVessels(NULL, NULL, $selected_vessels);
+            $vessels_fuel_types = array_column($vessels, 'fuel_type_group_id');
+
+            if (!in_array(IK, $vessels_fuel_types)) {
+                $this->form_validation->set_message('validateKeroseneQty', 'If kerosene is to be ordered you should select its vessel, otherwise clear this field');
+                return FALSE;
+            }
+        }
+
+        return TRUE;
+    }
+
+    public function validatePoVessels($vessel_id) {
+
+        $vessel = $this->depo->getStockVessels(['v.vessel_id' => $vessel_id], 1);
+        $diesel_qty = $this->input->post('diesel_qty');
+        $super_qty = $this->input->post('super_qty');
+        $kerosene_qty = $this->input->post('kerosene_qty');
+
+        if ($vessel AND ! empty($vessel_id)) {
+
+            if ($vessel['fuel_type_group_id'] == AGO AND empty($diesel_qty)) {
+                $this->form_validation->set_message('validatePoVessels', 'If ' . $vessel['vessel_name'] . ' - ' . $vessel['fuel_type_group_name'] . ' is selected, diesel qty field should not be empty, otherwise remove it');
+                return FALSE;
+            }
+
+            if ($vessel['fuel_type_group_id'] == PMS AND empty($super_qty)) {
+                $this->form_validation->set_message('validatePoVessels', 'If ' . $vessel['vessel_name'] . ' - ' . $vessel['fuel_type_group_name'] . ' is selected, super qty field should not be empty, otherwise remove it');
+                return FALSE;
+            }
+
+            if ($vessel['fuel_type_group_id'] == IK AND empty($kerosene_qty)) {
+                $this->form_validation->set_message('validatePoVessels', 'If ' . $vessel['vessel_name'] . ' - ' . $vessel['fuel_type_group_name'] . ' is selected, kerosene qty field should not be empty, otherwise remove it');
+                return FALSE;
+            }
+        }
+
+        return TRUE;
     }
 
 }

@@ -286,13 +286,14 @@ class Depots extends CI_Controller {
             'modals_data' => [
                 'modals' => ['modal_add_stock_loading_single'],
                 'vessel_id' => $vessel['vessel_id'],
-                'orders' => $this->purchase->getPurchaseOrders(['po.po_vessel_id' => $vessel['vessel_id'], 'ri.ri_status' => 'RELEASED', 'po.po_status' => 'RELEASED'])
+                'orders' => $this->purchase->getPoForVessel(['vs.vessel_id' =>$vessel['vessel_id'],'poq.poq_status' => 'RELEASED']) //$this->purchase->getPurchaseOrders(['po.po_vessel_id' => $vessel['vessel_id'], 'ri.ri_status' => 'RELEASED', 'po.po_status' => 'RELEASED'])
             ],
             'header_data' => [],
             'footer_data' => [],
             'top_bar_data' => []
         ];
-
+        
+   
         $this->load->view('view_base', $data);
     }
 
@@ -418,7 +419,7 @@ class Depots extends CI_Controller {
 
             $loading_data = [
                 'sl_date' => date('Y-m-d', strtotime($this->input->post('loading_date'))),
-                'sl_po_id' => $po_id,
+                'sl_poq_id' => $po_id,
                 'sl_vessel_id' => $vessel['vessel_id'],
                 'sl_volume_loaded' => $volume_loaded,
                 'sl_balance_before' => $vessel['vessel_balance'],
@@ -431,7 +432,7 @@ class Depots extends CI_Controller {
 
             $vessel_data = ['vessel_balance' => $balance_after];
 
-            $po_data = ['po_status' => 'LOADED'];
+            $po_data = ['poq_status' => 'LOADED'];
 
             $data = [
                 'loading_data' => $loading_data,

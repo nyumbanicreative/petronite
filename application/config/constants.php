@@ -106,3 +106,10 @@ const USER_ROLES = [
     ['key' => 'manager','value' => 'Manager'],
     ['key' => 'station_manager','value' => 'Station Manager'],
 ];
+
+
+// Fuel type grop constants
+
+define('AGO', 2);
+define('PMS', 3);
+define('IK', 4);

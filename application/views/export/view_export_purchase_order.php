@@ -78,10 +78,25 @@
                     </tr>
                 </thead>
                 <tbody>
+                    <?php
+                    $order_qty = [];
+
+                    if (cus_is_json('[' . $po['order_qty'] . ']')) {
+                        $order_qty = json_decode('[' . $po['order_qty'] . ']');
+                    }
+                    ?>
                     <tr>
-                        <td><?php echo strtoupper($po['fuel_type_group_generic_name']); ?></td>
-                        <td><?php echo $po['po_volume']; ?></td>
+                        <td nowrap="nowrap">DIESEL</td>
                         <td nowrap="nowrap">
+                            <?php
+                            foreach ($order_qty as $j => $oq) {
+                                if (AGO == $oq->poq_ftg_id) {
+                                    echo $oq->poq_volume;
+                                }
+                            }
+                            ?>
+                        </td>
+                        <td rowspan="3" >
                             <b>TRUCK NO.</b>&nbsp;&nbsp;<?php echo $po['po_truck_number']; ?><br/>
                             <?php
                             if (!empty($qty_in_words)) {
@@ -96,6 +111,31 @@
 
                             <b>DRIVER.</b>&nbsp;&nbsp;<?php echo $po['po_driver_name']; ?>
                         </td>
+                    </tr>
+                    <tr>
+                        <td>SUPER</td>
+                        <td>
+                            <?php
+                            foreach ($order_qty as $j => $oq) {
+                                if (PMS == $oq->poq_ftg_id) {
+                                    echo $oq->poq_volume;
+                                }
+                            }
+                            ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>KEROSENE</td>
+                        <td>
+                            <?php
+                            foreach ($order_qty as $j => $oq) {
+                                if (IK == $oq->poq_ftg_id) {
+                                    echo $oq->poq_volume;
+                                }
+                            }
+                            ?>
+                        </td>
+
                     </tr>
                 </tbody>
 

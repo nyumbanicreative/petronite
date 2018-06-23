@@ -211,7 +211,7 @@ class Maintenance extends CI_Controller {
                 }
 
                 foreach ($depo_vessels as $dv) {
-                    $vessels[] = ['text' => $dv['vessel_name'], 'id' => $dv['vessel_id']];
+                    $vessels[] = ['text' => $dv['vessel_name'] .' - '.$dv['fuel_type_group_name'], 'id' => $dv['vessel_id']];
                 }
                 $json = ['status' => ['error' => FALSE], 'vessels' => $vessels];
 
@@ -236,7 +236,7 @@ class Maintenance extends CI_Controller {
 
             case 'loading_po_id':
 
-                $po = $this->purchase->getPurchaseOrders(['po.po_id' => $value],1);
+                $po = $this->purchase->getPoForVessel(['poq.poq_id' => $value],1);
 
                 if (!$po) {
                     cus_json_error('Purchase order may have been removed from the system');

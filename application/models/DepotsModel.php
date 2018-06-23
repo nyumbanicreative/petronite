@@ -48,7 +48,7 @@ Class DepotsModel extends CI_Model {
         }
     }
 
-    public function getStockVessels($cond = null, $limit = null) {
+    public function getStockVessels($cond = null, $limit = null, $where_in = null) {
 
         if ($cond !== NULL) {
             $this->db->where($cond);
@@ -56,6 +56,10 @@ Class DepotsModel extends CI_Model {
 
         if ($limit == 1) {
             $this->db->limit(1);
+        }
+        
+        if($where_in !== NULL){
+            $this->db->where_in('v.vessel_id',$where_in);
         }
 
         $res = $this->db
@@ -107,9 +111,10 @@ Class DepotsModel extends CI_Model {
 
         $res = $this->db
                 ->from('stock_loading sl')
-                ->join('purchase_order po', 'po.po_id = sl.sl_po_id', 'INNER')
+                ->join('purchase_order_qty poq','poq.poq_id = sl.sl_poq_id')
+                ->join('purchase_order po', 'po.po_id = poq.poq_po_id', 'INNER')
                 ->join('users d','d.user_id = po.po_driver_id','INNER')
-                ->join('vessels vs', 'vs.vessel_id = sl.sl_vessel_id', 'INNER')
+                ->join('vessels vs', 'vs.vessel_id = sl.sl_vessel_id AND vs.vessel_id = poq.poq_vessel_id', 'INNER')
                 ->join('users u', 'u.user_id = sl.sl_user_id', 'INNER')
                 ->join('fuel_types_group ftg', 'ftg.fuel_type_group_id = vs.vessel_fuel_type_group_id')
                 ->order_by('sl.sl_date', 'DESC')
@@ -133,7 +138,7 @@ Class DepotsModel extends CI_Model {
         $this->db->insert('stock_loading', $data['loading_data']);
         $this->db->where('vessel_id', $data['vessel_id'])->update('vessels', $data['vessel_data']);
 
-        $this->db->where('po_id', $data['po_id'])->update('purchase_order', $data['po_data']);
+        $this->db->where('poq_id', $data['po_id'])->update('purchase_order_qty', $data['po_data']);
 
         $this->db->trans_complete();
 
@@ -185,12 +190,13 @@ Class DepotsModel extends CI_Model {
         $this->db->where('sl.sl_vessel_id',$vessel_id);
         
         $res = $this->db->from('stock_loading sl')
-                ->join('purchase_order po','po.po_id = sl.sl_po_id','INNER')
-                ->join('vessels vs','vs.vessel_id = po.po_vessel_id','INNER')
+                ->join('purchase_order_qty poq','poq.poq_id = sl.sl_poq_id','INNER')
+                ->join('purchase_order po','po.po_id = poq.poq_po_id','INNER')
+                ->join('vessels vs','vs.vessel_id = poq.poq_vessel_id','INNER')
                 ->join('fuel_types_group ftg','ftg.fuel_type_group_id = vs.vessel_fuel_type_group_id','INNER')
                 ->join('users u','u.user_id = sl.sl_user_id','INNER')
                 ->join('users d','d.user_id = po.po_driver_id','INNER')
-                ->join('stations st', 'st.station_id = po.po_station_id', 'INNER')
+                ->join('stations st', 'st.station_id = poq.poq_station_id', 'INNER')
                 ->join('inventory_purchases ip','ip.inventory_purchase_od_id = po.po_id','LEFT OUTER')
                 ->join('order_delivery od','od.od_po_id = po.po_id','LEFT OUTER')
                 ->order_by('sl.sl_timestamp')->get();

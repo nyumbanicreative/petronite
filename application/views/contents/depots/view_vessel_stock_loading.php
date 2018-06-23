@@ -172,9 +172,9 @@
                                                 <?php 
                                                 echo $sl['station_name']; 
                                                 
-                                                if($sl['po_status'] != 'DELIVERED'){
+                                                if($sl['poq_status'] == 'LOADED'){
                                                     echo '<br/>' . '<h5><span class="badge badge-warning">IN-TRANSIT</span></h5>';
-                                                }else{
+                                                }elseif($sl['poq_status'] == 'DELIVERED'){
                                                     echo '<br/>' . '<h5><span class="badge badge-success">DELIVERED</span></h5>';
                                                 }
                                                 ?>

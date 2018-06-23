@@ -1,5 +1,4 @@
 <?php
-
 //ADDING NEW USER MODAL
 if (in_array('modal_add_user', $modals)) {
     ?>
@@ -50,7 +49,7 @@ if (in_array('modal_add_user', $modals)) {
                                 </select>
                             </div>
                         </div>
-                        
+
                     </div>
 
 
@@ -67,7 +66,7 @@ if (in_array('modal_add_user', $modals)) {
                                 <input autocomplete="off" placeholder="Enter Driving License"  class="form-control" name="user_email" autocomplete="off" value="">
                             </div>
                         </div>
-                        
+
                     </div>
 
 
@@ -106,30 +105,30 @@ if (in_array('modal_add_order_delivery', $modals)) {
                 <div class="modal-body">
 
                     <div class="row">
-                        
+
                         <div class="col-lg-6">
                             <div class="form-group" id="od_po_id">
                                 <label>Order No</label>
                                 <select style="width: 100%" name="od_po_id">
                                     <option value=""></option>
-                                    <?php 
-                                        foreach ($orders as $o) {
-                                            ?>
-                                            <option value="<?php echo $o['po_id']; ?>"><?php echo $o['po_number']; ?></option>
-                                            <?php
-                                        }
+                                    <?php
+                                    foreach ($orders as $o) {
+                                        ?>
+                                        <option value="<?php echo $o['po_id']; ?>"><?php echo $o['po_number']; ?></option>
+                                        <?php
+                                    }
                                     ?>
                                 </select>
                             </div>
                         </div>
-                        
+
                         <div class="col-lg-6">
                             <div class="form-group" id="od_date">
                                 <label>Delivery Date</label>
                                 <input autocomplete="off" placeholder="Enter Username" class="form-control" name="user_name" autocomplete="off" value="">
                             </div>
                         </div>
-                        
+
                     </div>
 
 
@@ -145,11 +144,11 @@ if (in_array('modal_add_order_delivery', $modals)) {
                                 <label>User Role</label>
                                 <select style="width: 100%" name="user_role">
                                     <option value=""></option>
-                                    
+
                                 </select>
                             </div>
                         </div>
-                        
+
                     </div>
 
 
@@ -166,7 +165,7 @@ if (in_array('modal_add_order_delivery', $modals)) {
                                 <input autocomplete="off" placeholder="Enter Driving License"  class="form-control" name="user_email" autocomplete="off" value="">
                             </div>
                         </div>
-                        
+
                     </div>
 
 
@@ -385,7 +384,7 @@ if (in_array('modal_add_stock_loading_single', $modals)) {
     ?>
     <div id="addStockLoadingSingle"  role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" class="modal fade text-left">
         <div role="document" class="modal-dialog modal-lg">
-            <form id="add_loading_form" class="modal-content" action="<?php echo site_url('depots/submitstockloadingsingle/'. $vessel_id); ?>">
+            <form id="add_loading_form" class="modal-content" action="<?php echo site_url('depots/submitstockloadingsingle/' . $vessel_id); ?>">
                 <div class="modal-header">
                     <h4 id="exampleModalLabel" class="modal-title"> Add Stock Loading</h4>
                     <button type="button" data-dismiss="modal" aria-label="Close" class="close"><span aria-hidden="true">×</span></button>
@@ -414,12 +413,12 @@ if (in_array('modal_add_stock_loading_single', $modals)) {
                                 <label>Purchase Order</label>
                                 <select style="width: 100%" name="loading_po_id">
                                     <option value=""></option>
-                                    <?php 
-                                        foreach ($orders as $po) {
-                                            ?>
-                                    <option value="<?php echo $po['po_id']; ?>"><?php echo $po['po_number'] . ' - ' . $po['po_driver_name'] . ' ' . $po['po_truck_number']; ?></option>
-                                            <?php
-                                        }
+                                    <?php
+                                    foreach ($orders as $po) {
+                                        ?>
+                                        <option value="<?php echo $po['poq_id']; ?>"><?php echo $po['po_number'] . ' - ' . $po['po_driver_name'] . ' ' . $po['po_truck_number']; ?></option>
+                                        <?php
+                                    }
                                     ?>
                                 </select>
                             </div>
@@ -430,13 +429,13 @@ if (in_array('modal_add_stock_loading_single', $modals)) {
                                 <input autocomplete="off" readonly="" placeholder="Enter volume ordered" id="_volume_received" class="form-control volume" name="loading_volume_ordered"  value="">
                             </div>
                         </div>
-                        
+
                     </div>
 
 
                     <div class="row">
 
-                        
+
 
                         <div class="col-lg-6">
                             <div class="form-group" id="volume_loaded">
@@ -444,7 +443,7 @@ if (in_array('modal_add_stock_loading_single', $modals)) {
                                 <input autocomplete="off" placeholder="Enter colume received"  class="form-control volume" name="volume_loaded"  value="">
                             </div>
                         </div>
-                        
+
                         <div class="col-lg-6">
                             <div class="form-group" id="conversion_factor">
                                 <label>Conversion Factor</label>
@@ -455,14 +454,14 @@ if (in_array('modal_add_stock_loading_single', $modals)) {
                     </div>
 
                     <div class="row">
-                        
+
                         <div class="col-lg-6">
                             <div class="form-group" id="transfer_note">
                                 <label>Transfer Note Number</label>
                                 <input autocomplete="off" placeholder="Enter the transfer note number"  class="form-control" name="transfer_note"  value="">
                             </div>
                         </div>
-                        
+
                     </div>
 
                 </div>
@@ -507,25 +506,7 @@ if (in_array('modal_add_purchase_order', $modals)) {
 
                     </div>
 
-                    <div class="row">
 
-
-                        <!--                        <div class="col-md-6">
-                                                    <div class="form-group" id="ftg_id">
-                                                        <label>Fuel Type</label>
-                                                        <select style="width: 100%" name="ftg_id">
-                                                            <option value=""></option>
-                        <?php
-                        foreach ($fuel_types_group as $key => $ftg) {
-                            ?>
-                                                                                        <option value="<?php echo $ftg['fuel_type_group_id'] ?>"><?php echo $ftg['fuel_type_group_generic_name'] . ' - ' . $ftg['fuel_type_group_name']; ?></option>
-                            <?php
-                        }
-                        ?>
-                                                        </select>
-                                                    </div>
-                                                </div>-->
-                    </div>
 
 
                     <div class="row">
@@ -659,15 +640,8 @@ if (in_array('modal_add_purchase_order_hq', $modals)) {
                                 </select>
                             </div>
                         </div>
-
                     </div>
                     <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group" id="volume_ordered">
-                                <label>Volume in Ltrs</label>
-                                <input autocomplete="off" placeholder="Enter volume ordered" id="_volume_ordered" class="form-control volume" name="volume_ordered"  value="">
-                            </div>
-                        </div>
                         <div class="col-md-6">
                             <div class="form-group" id="driver_id">
                                 <label>Select Driver</label>
@@ -676,25 +650,45 @@ if (in_array('modal_add_purchase_order_hq', $modals)) {
                                     <?php
                                     foreach ($drivers as $key => $d) {
                                         ?>
-                                        <option value="<?php echo $d['user_id'] ?>"><?php echo strtoupper($d['user_fullname'] . ' - '.$d['user_driving_license']); ?></option>
+                                        <option value="<?php echo $d['user_id'] ?>"><?php echo strtoupper($d['user_fullname'] . ' - ' . $d['user_driving_license']); ?></option>
                                         <?php
                                     }
                                     ?>
                                 </select>
                             </div>
                         </div>
+                        <div class="col-md-6">
+                            <div class="form-group" id="truck_number">
+                                <label>Truck Number</label>
+                                <input autocomplete="off" placeholder="Enter the truck number" id="_truck_number" class="form-control" name="truck_number"  value="">
+                            </div>
+                        </div>
+
                     </div>
 
                     <div class="row">
                         <div class="col-md-6">
-                                <div class="form-group" id="truck_number">
-                                    <label>Truck Number</label>
-                                    <input autocomplete="off" placeholder="Enter the truck number" id="_truck_number" class="form-control" name="truck_number"  value="">
-                                </div>
+                            <div class="form-group" id="diesel_qty">
+                                <label>Diesel Quantity</label>
+                                <input autocomplete="off" placeholder="Enter volume ordered for diesel" id="_diesel_qty" class="form-control volume" name="diesel_qty"  value="">
                             </div>
-
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group" id="super_qty">
+                                <label>Super Quantity</label>
+                                <input autocomplete="off" placeholder="Enter volume ordered for super" id="_super_qty" class="form-control volume" name="super_qty"  value="">
+                            </div>
+                        </div>
                     </div>
 
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group" id="kerosene_qty">
+                                <label>Kerosene Quantity</label>
+                                <input autocomplete="off" placeholder="Enter volume ordered for kerosine" id="_kerosene_qty" class="form-control volume" name="kerosene_qty"  value="">
+                            </div>
+                        </div>
+                    </div>
                     <br/>
                     <h1 class="h5">Depot &amp; Vessel</h1>
                     <div class="row">
@@ -716,7 +710,7 @@ if (in_array('modal_add_purchase_order_hq', $modals)) {
                         <div class="col-md-6">
                             <div class="form-group" id="po_vessel_id">
                                 <label>Vessel</label>
-                                <select style="width: 100%" name="po_vessel_id">
+                                <select multiple="" style="width: 100%" id="_po_vessel_id" name="po_vessel_id[]">
                                     <option value=""></option>
                                 </select>
                             </div>
@@ -774,14 +768,9 @@ if (in_array('modal_edit_purchase_order_hq', $modals)) {
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group" id="edit_volume_ordered">
-                                <label>Volume in Ltrs</label>
-                                <input autocomplete="off" placeholder="Enter volume ordered" id="_volume_ordered" class="form-control volume" name="edit_volume_ordered"  value="">
-                            </div>
-                        </div>
+
                         <div class="col-md-6">
                             <div class="form-group" id="edit_driver_id">
                                 <label>Select Driver</label>
@@ -790,27 +779,43 @@ if (in_array('modal_edit_purchase_order_hq', $modals)) {
                                     <?php
                                     foreach ($drivers as $key => $d) {
                                         ?>
-                                        <option value="<?php echo $d['user_id'] ?>"><?php echo strtoupper($d['user_fullname'] . ' - '.$d['user_driving_license']); ?></option>
+                                        <option value="<?php echo $d['user_id'] ?>"><?php echo strtoupper($d['user_fullname'] . ' - ' . $d['user_driving_license']); ?></option>
                                         <?php
                                     }
                                     ?>
                                 </select>
                             </div>
                         </div>
-                        
+                        <div class="col-md-6">
+                            <div class="form-group" id="edit_truck_number">
+                                <label>Truck Number</label>
+                                <input autocomplete="off" placeholder="Enter the truck number" id="_truck_number" class="form-control" name="edit_truck_number"  value="">
+                            </div>
+                        </div>
 
                     </div>
-
-
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group" id="edit_diesel_qty">
+                                <label>Diesel Quantity</label>
+                                <input autocomplete="off" placeholder="Enter volume ordered for diesel" id="_diesel_qty" class="form-control volume" name="edit_diesel_qty"  value="">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group" id="edit_super_qty">
+                                <label>Super Quantity</label>
+                                <input autocomplete="off" placeholder="Enter volume ordered for super" id="_super_qty" class="form-control volume" name="edit_super_qty"  value="">
+                            </div>
+                        </div>
+                    </div>
 
                     <div class="row">
-                       
                         <div class="col-md-6">
-                                <div class="form-group" id="edit_truck_number">
-                                    <label>Truck Number</label>
-                                    <input autocomplete="off" placeholder="Enter the truck number" id="_truck_number" class="form-control" name="edit_truck_number"  value="">
-                                </div>
+                            <div class="form-group" id="edit_kerosene_qty">
+                                <label>Kerosene Quantity</label>
+                                <input autocomplete="off" placeholder="Enter volume ordered for kerosine" id="_kerosene_qty" class="form-control volume" name="edit_kerosene_qty"  value="">
                             </div>
+                        </div>
                     </div>
 
                     <br/>
@@ -834,7 +839,7 @@ if (in_array('modal_edit_purchase_order_hq', $modals)) {
                         <div class="col-md-6">
                             <div class="form-group" id="edit_po_vessel_id">
                                 <label>Vessel</label>
-                                <select style="width: 100%" name="edit_po_vessel_id">
+                                <select multiple="" style="width: 100%" id="_edit_po_vessel_id" name="edit_po_vessel_id[]">
                                     <option value=""></option>
                                 </select>
                             </div>
@@ -944,8 +949,21 @@ if (in_array('modal_add_po_in_ri', $modals)) {
                                     <option value=""></option>
                                     <?php
                                     foreach ($pos as $key => $po) {
+                                        $order_qty = [];
+                                        $products = "";
+
+                                        if (cus_is_json('[' . $po['order_qty'] . ']')) {
+                                            $order_qty = (array) json_decode('[' . $po['order_qty'] . ']');
+                                        }
+
+                                        foreach ($order_qty as $key => $oq) {
+                                            if ($key > 0) {
+                                                $products .= ', ';
+                                            }
+                                            $products .= $oq->product;
+                                        }
                                         ?>
-                                        <option value="<?php echo $po['po_id'] ?>"><?php echo $po['po_number'] . ' - ' . $po['po_driver_name'] . ' - ' . $po['po_truck_number'] . ' - ' . $po['fuel_type_group_name']; ?></option>
+                                        <option value="<?php echo $po['po_id'] ?>"><?php echo $po['po_number'] . ' - ' . $po['po_driver_name'] . ' - ' . $po['po_truck_number'] . ' (' . $products . ') '; ?></option>
                                         <?php
                                     }
                                     ?>
@@ -1031,7 +1049,7 @@ if (in_array('modal_close_vessel', $modals)) {
         $('select[name=po_station_id],select[name=edit_po_station_id]').select2({placeholder: 'Select station'});
         $('select[name=loading_po_id],#_po_ids,select[name=od_po_id]').select2({placeholder: 'Select purchase order'}); // Purchase Order
         $('select[name=po_depo_id], select[name=depo_id],select[name=edit_po_depo_id]').select2({placeholder: 'Select depot'});
-        $('select[name=po_vessel_id], select[name=loading_vessel_id],select[name=close_vs_remain_transfered_to],select[name=edit_po_vessel_id]').select2({placeholder: 'Select vessel'});
+        $('select[name=po_vessel_id],#_po_vessel_id,select[name=loading_vessel_id],select[name=close_vs_remain_transfered_to],#edit_po_vessel_id').select2({placeholder: 'Select vessel'});
 
 
         $(document).on('submit', '#create_order_form,#add_vessel_form,#add_loading_form,#add_release_instruction_form,#add_po_in_ri_form,#close_vessel_form,#edit_order_form,#add_user_form', function (e) {
@@ -1097,21 +1115,23 @@ if (in_array('modal_close_vessel', $modals)) {
 
                                     break;
 
-                                // Populate Edit LPO form
+                                    // Populate Edit LPO form
                                 case 'editPurchaseOrder':
-                                    
+
                                     $('select[name=edit_po_station_id]').val(data.status.form_data.po.po_station_id).trigger('change');
                                     $('select[name=edit_po_depo_id]').val(data.status.form_data.po.po_depo_id).trigger('change');
                                     $('select[name=edit_driver_id]').val(data.status.form_data.po.po_driver_id).trigger('change');
                                     $('input[name=edit_driver_name]').val(data.status.form_data.po.po_driver_name);
-                                    $('input[name=edit_volume_ordered]').val(data.status.form_data.po.po_volume);
+                                    $('input[name=edit_diesel_qty]').val(data.status.form_data.po.po_volume);
+                                    $('input[name=edit_super_qty').val(data.status.form_data.po.po_volume);
+                                    $('input[name=edit_kerosene_qty]').val(data.status.form_data.po.po_volume);
                                     $('input[name=edit_truck_number]').val(data.status.form_data.po.po_truck_number);
                                     $('input[name=edit_driver_license]').val(data.status.form_data.po.po_driver_license);
-                                    $("select[name=edit_po_vessel_id]").empty().select2({
+                                    $("#_edit_po_vessel_id").empty().select2({
                                         placeholder: 'Select vessel',
                                         data: data.status.form_data.vessels
                                     });
-                                    $('select[name=edit_po_vessel_id]').val(data.status.form_data.po.po_vessel_id).trigger('change');
+                                    $('#_edit_po_vessel_id').val(data.status.form_data.po.po_vessel_id).trigger('change');
                                     $('#edit_order_form').attr('action', data.status.form_url);
                                     break;
 
@@ -1253,7 +1273,7 @@ if (in_array('modal_close_vessel', $modals)) {
 
                         switch (field) {
                             case  'po_depo_id':
-                                $("select[name=po_vessel_id]").empty().select2({
+                                $("#_po_vessel_id").empty().select2({
                                     placeholder: 'Select vessel',
                                     data: data.vessels
                                 });
@@ -1269,7 +1289,7 @@ if (in_array('modal_close_vessel', $modals)) {
                                 break;
 
                             case 'loading_po_id':
-                                $("input[name=loading_volume_ordered]").val(data.po.po_volume);
+                                $("input[name=loading_volume_ordered]").val(data.po.poq_volume);
                                 break;
 
                         }
