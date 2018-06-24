@@ -445,7 +445,7 @@ class Depots extends CI_Controller {
             $res = $this->depo->saveLoading($data);
 
             if ($res) {
-                echo json_encode(['status' => ['error' => false, 'redirect' => true, 'redirect_url' => site_url('depots/stockloading')]]);
+                echo json_encode(['status' => ['error' => false, 'redirect' => true, 'redirect_url' => site_url('depots/vesselstockloading/' .$vessel['vessel_id'])]]);
             } else {
                 cus_json_error('Something went wrong, Stock Loading was not saved, Please try again', 'error', 'depots/stockloading');
             }

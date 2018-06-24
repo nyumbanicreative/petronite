@@ -194,6 +194,120 @@ class Admin extends CI_Controller {
             }
         }
     }
+    
+    
+    public function submitEditUser() {
+
+        header('Access-Control-Allow-Origin: *');
+        header('Content-type: text/json');
+
+        $this->checkStatusJson(1,1,1);
+        
+        $user_id = $this->uri->segment(3);
+        $url = $this->input->get('url');
+        
+        $user = $this->usr->getUserInfo($user_id, 'ID');
+        
+        if(!$user){
+            cus_json_error('User was not found or may have been removed from the system');
+        }
+        
+        $validations = [
+            ['field' => 'edit_full_name', 'label' => 'Full Name', 'rules' => 'trim|required'],
+            ['field' => 'edit_user_role', 'label' => 'User Login Role', 'rules' => 'trim|required'],
+            ['field' => 'edit_user_name', 'label' => 'Username', 'rules' => 'trim|required|callback_validateEditUserName'],
+            ['field' => 'edit_user_phone', 'label' => 'User Phone', 'rules' => 'trim|required'],
+        ];
+
+        $this->form_validation->set_rules($validations);
+
+        if ($this->form_validation->run() === FALSE) {
+
+            echo json_encode([
+                'status' => [
+                    'error' => TRUE,
+                    'error_type' => 'display',
+                    "form_errors" => validation_errors_array()
+                ]
+            ]);
+            die();
+        } else {
+            
+            $user_data = [
+                'user_fullname' => $this->input->post('edit_full_name'),
+                'user_name' => $this->input->post('edit_user_name'),
+                'user_driving_license' => $this->input->post('edit_driving_license'),
+                'user_role' => $this->input->post('edit_user_role'),
+                'user_phone' => $this->input->post('edit_user_phone'),
+                'user_email' => $this->input->post('edit_user_email'),
+                'user_address' => $this->input->post('edit_user_address')
+            ];
+
+            $res = $this->usr->saveEditUser($user_data, $user['user_id']);
+            if ($res) {
+
+                $this->session->set_flashdata('success', 'User data edited successfully');
+                echo json_encode([
+                    'status' => [
+                        'error' => FALSE,
+                        'redirect' => TRUE,
+                        'redirect_url' => $url
+                    ]
+                ]);
+            } else {
+                cus_json_error('Nothing was updated');
+            }
+        }
+    }
+    
+    
+    public function requestEditUserForm() {
+
+        header('Access-Control-Allow-Origin: *');
+        header('Content-type: text/json');
+
+        // Check user session as usual
+        $this->checkStatusJson(1, 1, 1);
+
+        $user_id = $this->uri->segment(3);
+        $url = $this->input->get('url');
+
+        $user = $this->usr->getUserInfo($user_id, 'ID');
+        
+        if (!$user) {
+            cus_json_error('User was not found or may have been removed form the system');
+        }
+
+        $data['user'] = $user;
+
+        echo json_encode([
+            'status' => [
+                'error' => FALSE,
+                'redirect' => FALSE,
+                'pop_form' => TRUE,
+                'form_type' => 'editUser',
+                'form_url' => site_url('admin/submitedituser/' . $user['user_id']) . '?url='.$url,
+                'form_data' => $data
+            ]
+        ]);
+        die();
+    }
+    
+    
+    public function validateEditUserName($user_name) {
+        
+        $user_id = $this->uri->segment(3);
+       
+        $users = $this->usr->getUsersList(['user_id <>' => $user_id,'user_name' => $user_name]);
+        
+        if($users){
+            $this->form_validation->set_message('validateEditUserName', 'Username is not available for use, choose the different one');
+            return FALSE;
+        }
+        
+        return TRUE;
+        
+    }
 
    
 

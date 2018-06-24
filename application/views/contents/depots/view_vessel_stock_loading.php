@@ -5,9 +5,7 @@
     </div>
 </header>
 
-
 <?php echo $alert; ?>
-
 <section class="tables no-padding-top">   
     <div class="container-fluid" style="min-height:500px; ">
         <br/>

@@ -230,7 +230,8 @@ class Station extends CI_Controller {
                 'ri_id' => $ri['ri_id'],
                 'pos' => $this->purchase->getPurchaseOrders(['po.po_ri_id' => NULL], NULL, ['po.po_id', 'poq.order_qty', 'po.po_number', 'd.user_fullname po_driver_name', 'po.po_truck_number'], ['po.po_station_id' => $station_ids]),
                 'station_depots' => $this->depo->getDepots(['depo.depo_admin_id' => $this->admin_id]), // Get station depots for creating purchase order
-                'delivery_points' => $this->stn->getUserStations($this->user_id, $this->admin_id)
+                'delivery_points' => $this->stn->getUserStations($this->user_id, $this->admin_id),
+                'drivers' => $this->usr->getUsersList(['user_admin_id' => $this->admin_id, 'user_role' => 'driver'])
             ],
             'header_data' => [],
             'footer_data' => [],
@@ -249,7 +250,7 @@ class Station extends CI_Controller {
 
         $ri_id = $this->uri->segment(3);
 
-        $cols = ['u.user_name', 'ri.ri_status', 'ri.ri_id', 'ri.ri_number', 'ri.ri_loading_date', 'depo.depo_name', 'seller.pc_name seller_name', 'customer.pc_name customer_name', 'customer.pc_contact_text', 'customer.pc_logo', 'customer.pc_slogan', 'auth.user_name auth_name'];
+        $cols = ['u.user_name', 'ri.ri_status', 'ri.ri_id', 'ri.ri_number', 'ri.ri_loading_date', 'depo.depo_name', 'seller.pc_name seller_name', 'customer.pc_name customer_name', 'customer.pc_contact_text', 'customer.pc_logo', 'customer.pc_slogan', 'auth.user_fullname auth_name'];
         $ri = $this->purchase->getReleaseInstructionInfo($ri_id, $cols);
 
         if (!$ri) {
@@ -311,9 +312,9 @@ class Station extends CI_Controller {
 
                 if (AGO == $oq->poq_ftg_id) {
                     $qty_in_words .= ucwords($f->format(round($oq->poq_volume))) . ' Litres Of <b>DIESEL</b>';
-                }elseif (PMS == $oq->poq_ftg_id) {
+                } elseif (PMS == $oq->poq_ftg_id) {
                     $qty_in_words .= ucwords($f->format(round($oq->poq_volume))) . ' Litres Of <b>SUPER</b>';
-                }elseif (IK == $oq->poq_ftg_id) {
+                } elseif (IK == $oq->poq_ftg_id) {
                     $qty_in_words .= ucwords($f->format(round($oq->poq_volume))) . ' Litres Of <b>KEROSENE</b>';
                 }
             }
@@ -399,6 +400,7 @@ class Station extends CI_Controller {
             foreach ($order_qty as $i => $oq) {
 
                 switch ($oq->poq_status) {
+
                     case 'NEW':
                         $status .= "<h5><span class='badge badge-info'>" . $oq->product . " - NEW</span></h5>";
                         $can_edit = TRUE;
@@ -438,9 +440,9 @@ class Station extends CI_Controller {
                         <div aria-labelledby="closeCard2" class="dropdown-menu dropdown-menu-right has-shadow">
                                                 ';
 
-           // $actions .= '<a href="' . site_url('station/editpurchaseorder/' . $p->po_id) . '" class="dropdown-item text-success"> <i class="fa fa-list"></i>&nbsp;&nbsp;PO Details</a>';
+            // $actions .= '<a href="' . site_url('station/editpurchaseorder/' . $p->po_id) . '" class="dropdown-item text-success"> <i class="fa fa-list"></i>&nbsp;&nbsp;PO Details</a>';
             if ($can_edit) {
-                //$actions .= '<a href="' . site_url('station/requesteditpoform/' . $p->po_id) . '" class="dropdown-item text-info request_form"> <i class="fa fa-edit"></i>&nbsp;&nbsp;Edit LPO</a>';
+                $actions .= '<a href="' . site_url('station/requesteditpoform/' . $p->po_id) . '" class="dropdown-item text-info request_form"> <i class="fa fa-edit"></i>&nbsp;&nbsp;Edit LPO</a>';
             }
 
 
@@ -480,12 +482,39 @@ class Station extends CI_Controller {
         // Check user session as usual
         $this->checkStatusJson(1, 1, 1);
 
+        $diesel_qty = "";
+        $super_qty = "";
+        $kerose_qty = "";
+        $selected_vessels = [];
+
         $po_id = $this->uri->segment(3);
 
         $po = $this->purchase->getPurchaseOrders(['po_id' => $po_id], 1);
 
+
+
         if (!$po) {
             cus_json_error('Purchase order was not found or it may have been removed form the system');
+        }
+
+        $order_qty = [];
+
+
+        if (cus_is_json('[' . $po['order_qty'] . ']')) {
+            $order_qty = json_decode('[' . $po['order_qty'] . ']');
+        }
+
+        foreach ($order_qty as $i => $oq) {
+            
+            $selected_vessels[] = $oq->poq_vessel_id;
+            
+            if ($oq->poq_ftg_id == AGO) {
+                $diesel_qty = $oq->poq_volume;
+            } elseif ($oq->poq_ftg_id == PMS) {
+                $super_qty = $oq->poq_volume;
+            } elseif ($oq->poq_ftg_id == IK) {
+                $kerose_qty = $oq->poq_volume;
+            }
         }
 
         $depo_vessels = $this->depo->getStockVessels(['vessel_depot_id' => $po['po_depo_id'], 'vessel_status <>' => 'CLOSED']);
@@ -493,9 +522,18 @@ class Station extends CI_Controller {
         foreach ($depo_vessels as $dv) {
             $vessels[] = ['text' => $dv['vessel_name'], 'id' => $dv['vessel_id']];
         }
+        
+        
 
         $data['po'] = $po;
         $data['vessels'] = $vessels;
+        $data['selected_vessels'] = $selected_vessels;
+        
+        $data['poq'] = [
+            'diesel_qty' => $diesel_qty,
+            'super_qty' => $super_qty,
+            'kerosene_qty' => $kerose_qty
+        ];
 
         echo json_encode([
             'status' => [
@@ -580,6 +618,10 @@ class Station extends CI_Controller {
     public function validatePoStationId($station_id) {
         return TRUE;
     }
+    
+    public function validateEditPoStationId($station_id) {
+        return TRUE;
+    }
 
     public function validateOrderDate($po_date) {
         return TRUE;
@@ -661,6 +703,10 @@ class Station extends CI_Controller {
                 ];
             }
 
+            $transfer_note_data = [
+                'stn_status' => 'GENERATED'
+            ];
+
 
             $order_data = [
                 'po_date' => date('Y-m-d', strtotime($this->input->post('order_date'))),
@@ -675,7 +721,7 @@ class Station extends CI_Controller {
 //                'po_fuel_type_group_id' => $vessel['vessel_fuel_type_group_id']
             ];
 
-            $res = $this->purchase->savePurchaseOrder(['order_data' => $order_data, 'po_qty_data' => $po_qty_data, 'vessels' => $vessels], $this->admin_id);
+            $res = $this->purchase->savePurchaseOrder(['order_data' => $order_data, 'po_qty_data' => $po_qty_data, 'vessels' => $vessels, 'transfer_note_data' => $transfer_note_data], $this->admin_id);
 
             if ($res) {
                 $this->setSessMsg('Order created succesffuly', 'success');
@@ -710,12 +756,14 @@ class Station extends CI_Controller {
 
         $validations = [
                 ['field' => 'edit_order_date', 'label' => 'Order Date', 'rules' => 'trim|required|callback_validateOrderDate', 'errors' => ['required' => 'Select the order date.']],
-                ['field' => 'edit_po_station_id', 'label' => 'Delivery Point', 'rules' => 'trim|required|callback_validatePoStationId'],
+                ['field' => 'edit_po_station_id', 'label' => 'Delivery Point', 'rules' => 'trim|required|callback_validateEditPoStationId'],
                 ['field' => 'edit_po_depo_id', 'label' => 'Depo', 'rules' => 'trim|required'],
-                ['field' => 'edit_volume_ordered', 'label' => 'Volume ordered', 'rules' => 'trim|required|numeric'],
+                ['field' => 'edit_super_qty', 'label' => 'super quantity', 'rules' => 'trim|numeric|callback_validateEditSuperQty'],
+                ['field' => 'edit_diesel_qty', 'label' => 'diesel quantity', 'rules' => 'trim|numeric|callback_validateEditDieselQty'],
+                ['field' => 'edit_kerosene_qty', 'label' => 'kerosene quantity', 'rules' => 'trim|numeric|callback_validateEditKeroseneQty'],
                 ['field' => 'edit_truck_number', 'label' => 'Truck Number', 'rules' => 'trim|required'],
                 ['field' => 'edit_driver_id', 'label' => 'Driver', 'rules' => 'trim|required'],
-                ['field' => 'edit_po_vessel_id', 'label' => 'Vessel', 'rules' => 'trim|required']
+                ['field' => 'edit_po_vessel_id[]', 'label' => 'Vessel', 'rules' => 'trim|required|callback_validateEditPoVessels']
         ];
 
         $this->form_validation->set_rules($validations);
@@ -729,25 +777,60 @@ class Station extends CI_Controller {
                 ]
             ]);
         } else {
+            
+            
+            $vessel_ids = $this->input->post('edit_po_vessel_id[]');
+            $vessels = $this->depo->getStockVessels(NULL, NULL, $vessel_ids);
 
-            $vessel_id = $this->input->post('edit_po_vessel_id');
-            $vessel = $this->depo->getStockVessels(['v.vessel_id' => $vessel_id], 1);
+            $super_qty = $this->input->post('edit_super_qty');
+            $diesel_qty = $this->input->post('edit_diesel_qty');
+            $kerosene_qty = $this->input->post('edit_kerosene_qty');
+            $station_id = $this->input->post('edit_po_station_id');
 
-            if (!$vessel) {
-                cus_json_error('Vessel details can not be found');
+            if (empty($super_qty) AND empty($diesel_qty) AND empty($diesel_qty)) {
+                cus_json_error('Atleast one product (Diesel, Super or Kerosine) should have volume ordered');
             }
+
+            if (count($vessels) !== count($vessel_ids)) {
+                cus_json_error('One or more vessel was not found');
+            }
+
+            $po_qty_data = [];
+
+            if (!empty($super_qty)) {
+                $po_qty_data[] = [
+                    'poq_ftg_id' => PMS,
+                    'poq_volume' => $super_qty,
+                    'poq_station_id' => $station_id
+                ];
+            }
+
+            if (!empty($kerosene_qty)) {
+                $po_qty_data[] = [
+                    'poq_ftg_id' => IK,
+                    'poq_volume' => $kerosene_qty,
+                    'poq_station_id' => $station_id
+                ];
+            }
+
+            if (!empty($diesel_qty)) {
+                $po_qty_data[] = [
+                    'poq_ftg_id' => AGO,
+                    'poq_volume' => $diesel_qty,
+                    'poq_station_id' => $station_id
+                ];
+            }
+
 
             $order_data = [
                 'po_date' => date('Y-m-d', strtotime($this->input->post('edit_order_date'))),
                 'po_depo_id' => $this->input->post('edit_po_depo_id'),
-                'po_station_id' => $this->input->post('edit_po_station_id'),
+                'po_station_id' => $station_id,
                 'po_truck_number' => $this->input->post('edit_truck_number'),
-                'po_volume' => $this->input->post('edit_volume_ordered'),
                 'po_driver_id' => $this->input->post('edit_driver_id'),
-                'po_vessel_id' => $vessel['vessel_id']
             ];
-
-            $res = $this->purchase->saveEditPurchaseOrder(['order_data' => $order_data], $po['po_id']);
+            
+            $res = $this->purchase->saveEdittPurchaseOrder(['po_id' => $po['po_id'],'order_data' => $order_data, 'po_qty_data' => $po_qty_data, 'vessels' => $vessels], $this->admin_id);
 
             if ($res) {
                 $this->setSessMsg('Order edited succesffuly', 'success');
@@ -952,8 +1035,6 @@ class Station extends CI_Controller {
 
         $po_ids = array_column($pos, 'po_id');
 
-
-
         if ($this->purchase->updateRi(['ri_status' => 'RELEASED'], ['ri_id' => $ri['ri_id']], NULL, $po_ids)) {
             $this->setSessMsg('Release instruction marked as RELEASED successfully', 'suucess', 'station/releaseinstructioninfo/' . $ri['ri_id']);
         } else {
@@ -977,8 +1058,26 @@ class Station extends CI_Controller {
 
         return TRUE;
     }
+    
+    public function validateEditSuperQty($super_qty) {
 
-    public function validateDieselQty($diesel_qty) {
+        $selected_vessels = $this->input->post('edit_po_vessel_id[]');
+
+        if (!empty($super_qty) AND ! empty($selected_vessels)) {
+            $vessels = $this->depo->getStockVessels(NULL, NULL, $selected_vessels);
+            $vessels_fuel_types = array_column($vessels, 'fuel_type_group_id');
+
+            if (!in_array(PMS, $vessels_fuel_types)) {
+                $this->form_validation->set_message('validateEditSuperQty', 'If super is to be ordered you should select its vessel, otherwise clear this field');
+                return FALSE;
+            }
+        }
+
+        return TRUE;
+    }
+
+    
+     public function validateDieselQty($diesel_qty) {
 
         $selected_vessels = $this->input->post('po_vessel_id[]');
 
@@ -994,7 +1093,42 @@ class Station extends CI_Controller {
 
         return TRUE;
     }
+    
+    public function validateEditDieselQty($diesel_qty) {
 
+        $selected_vessels = $this->input->post('edit_po_vessel_id[]');
+
+        if (!empty($diesel_qty) AND ! empty($selected_vessels)) {
+            $vessels = $this->depo->getStockVessels(NULL, NULL, $selected_vessels);
+            $vessels_fuel_types = array_column($vessels, 'fuel_type_group_id');
+
+            if (!in_array(AGO, $vessels_fuel_types)) {
+                $this->form_validation->set_message('validateEditDieselQty', 'If diesel is to be ordered you should select its vessel, otherwise clear this field');
+                return FALSE;
+            }
+        }
+
+        return TRUE;
+    }
+
+    public function validateEditKeroseneQty($kerosene_qty) {
+
+        $selected_vessels = $this->input->post('edit_po_vessel_id[]');
+
+        if (!empty($kerosene_qty) AND ! empty($selected_vessels)) {
+            $vessels = $this->depo->getStockVessels(NULL, NULL, $selected_vessels);
+            $vessels_fuel_types = array_column($vessels, 'fuel_type_group_id');
+
+            if (!in_array(IK, $vessels_fuel_types)) {
+                $this->form_validation->set_message('validateEditKeroseneQty', 'If kerosene is to be ordered you should select its vessel, otherwise clear this field');
+                return FALSE;
+            }
+        }
+
+        return TRUE;
+    }
+
+    
     public function validateKeroseneQty($kerosene_qty) {
 
         $selected_vessels = $this->input->post('po_vessel_id[]');
@@ -1011,7 +1145,7 @@ class Station extends CI_Controller {
 
         return TRUE;
     }
-
+    
     public function validatePoVessels($vessel_id) {
 
         $vessel = $this->depo->getStockVessels(['v.vessel_id' => $vessel_id], 1);
@@ -1033,6 +1167,34 @@ class Station extends CI_Controller {
 
             if ($vessel['fuel_type_group_id'] == IK AND empty($kerosene_qty)) {
                 $this->form_validation->set_message('validatePoVessels', 'If ' . $vessel['vessel_name'] . ' - ' . $vessel['fuel_type_group_name'] . ' is selected, kerosene qty field should not be empty, otherwise remove it');
+                return FALSE;
+            }
+        }
+
+        return TRUE;
+    }
+    
+    public function validateEditPoVessels($vessel_id) {
+
+        $vessel = $this->depo->getStockVessels(['v.vessel_id' => $vessel_id], 1);
+        $diesel_qty = $this->input->post('edit_diesel_qty');
+        $super_qty = $this->input->post('edit_super_qty');
+        $kerosene_qty = $this->input->post('edit_kerosene_qty');
+
+        if ($vessel AND ! empty($vessel_id)) {
+
+            if ($vessel['fuel_type_group_id'] == AGO AND empty($diesel_qty)) {
+                $this->form_validation->set_message('validateEditPoVessels', 'If ' . $vessel['vessel_name'] . ' - ' . $vessel['fuel_type_group_name'] . ' is selected, diesel qty field should not be empty, otherwise remove it');
+                return FALSE;
+            }
+
+            if ($vessel['fuel_type_group_id'] == PMS AND empty($super_qty)) {
+                $this->form_validation->set_message('validateEditPoVessels', 'If ' . $vessel['vessel_name'] . ' - ' . $vessel['fuel_type_group_name'] . ' is selected, super qty field should not be empty, otherwise remove it');
+                return FALSE;
+            }
+
+            if ($vessel['fuel_type_group_id'] == IK AND empty($kerosene_qty)) {
+                $this->form_validation->set_message('validateEditPoVessels', 'If ' . $vessel['vessel_name'] . ' - ' . $vessel['fuel_type_group_name'] . ' is selected, kerosene qty field should not be empty, otherwise remove it');
                 return FALSE;
             }
         }
