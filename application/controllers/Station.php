@@ -442,7 +442,7 @@ class Station extends CI_Controller {
 
             // $actions .= '<a href="' . site_url('station/editpurchaseorder/' . $p->po_id) . '" class="dropdown-item text-success"> <i class="fa fa-list"></i>&nbsp;&nbsp;PO Details</a>';
             if ($can_edit) {
-                $actions .= '<a href="' . site_url('station/requesteditpoform/' . $p->po_id) . '" class="dropdown-item text-info request_form"> <i class="fa fa-edit"></i>&nbsp;&nbsp;Edit LPO</a>';
+                $actions .= '<a href="' . site_url('station/requesteditpoform/' . $p->po_id).'?url='. site_url('station/purchaseorders') . '" class="dropdown-item text-info request_form"> <i class="fa fa-edit"></i>&nbsp;&nbsp;Edit LPO</a>';
             }
 
 
@@ -481,6 +481,8 @@ class Station extends CI_Controller {
 
         // Check user session as usual
         $this->checkStatusJson(1, 1, 1);
+        
+        
 
         $diesel_qty = "";
         $super_qty = "";
@@ -488,6 +490,8 @@ class Station extends CI_Controller {
         $selected_vessels = [];
 
         $po_id = $this->uri->segment(3);
+        
+        $url = $this->input->get('url');
 
         $po = $this->purchase->getPurchaseOrders(['po_id' => $po_id], 1);
 
@@ -541,7 +545,7 @@ class Station extends CI_Controller {
                 'redirect' => FALSE,
                 'pop_form' => TRUE,
                 'form_type' => 'editPurchaseOrder',
-                'form_url' => site_url('station/submiteditorderhq/' . $po['po_id']),
+                'form_url' => site_url('station/submiteditorderhq/' . $po['po_id']).'?url='.$url,
                 'form_data' => $data
             ]
         ]);
@@ -747,6 +751,8 @@ class Station extends CI_Controller {
         $this->checkStatusJson(1, 1, 1);
 
         $po_id = $this->uri->segment(3);
+        
+        $url = $this->input->get('url');
 
         $po = $this->purchase->getPurchaseOrders(['po_id' => $po_id], 1);
 
@@ -839,7 +845,7 @@ class Station extends CI_Controller {
                     'status' => [
                         'error' => FALSE,
                         'redirect' => true,
-                        'redirect_url' => site_url('station/purchaseorders')
+                        'redirect_url' => !empty($url)? $url : site_url('station/purchaseorders')
                     ]
                 ]);
             } else {

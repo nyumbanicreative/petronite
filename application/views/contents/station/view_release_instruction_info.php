@@ -245,7 +245,7 @@
                                                     <div class="dropdown">
                                                         <button type="button" id="closeCard2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-info btn-sm"><i class="fa fa-ellipsis-v"></i></button>
                                                         <div aria-labelledby="closeCard2" class="dropdown-menu dropdown-menu-right has-shadow">
-                                                            <a href="<?php echo site_url('station/requesteditpoform/' . $po['po_id']); ?>"  class="dropdown-item text-info request_form"> <i class="fa fa-edit"></i>&nbsp;&nbsp;Edit LPO</a>
+                                                            <a href="<?php echo site_url('station/requesteditpoform/' . $po['po_id']). '?url=' . urlencode(current_url()) . '?' . $_SERVER['QUERY_STRING']; ?>"  class="dropdown-item text-info request_form"> <i class="fa fa-edit"></i>&nbsp;&nbsp;Edit LPO</a>
                                                             <a href="<?php echo site_url('station/removepofromri/' . $po['po_id']); ?>" class="dropdown-item edit text-danger confirm" title="Remove purchase order from release instruction"> <i class="fa fa-trash"></i>&nbsp;&nbsp;Delete</a>
                                                         </div>
                                                     </div>
