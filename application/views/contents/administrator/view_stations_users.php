@@ -62,7 +62,7 @@
                                                 <button type="button" id="closeCard2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-info btn-sm"><i class="fa fa-ellipsis-v"></i></button>
                                                 <div aria-labelledby="closeCard2" class="dropdown-menu dropdown-menu-right has-shadow">
                                                     <a href="<?php echo site_url('admin/manageuserstations/' . $u['user_id']) . '?url=' . urlencode(current_url()) . '?' . $_SERVER['QUERY_STRING'];             ?>"  class="dropdown-item edit_item text-success"> <i class="fa fa-user-secret"></i>&nbsp;&nbsp;Manage User's Stations</a>
-                                                    <a href="#<?php //echo site_url('dailyentries/saledetails/' . $att['att_id']) . '?url=' . urlencode(current_url()) . '?' . $_SERVER['QUERY_STRING'];             ?>"  class="dropdown-item edit_item text-info"> <i class="fa fa-edit"></i>&nbsp;&nbsp;Edit Details</a>
+                                                    <a href="<?php echo site_url('admin/requestedituserform/' . $u['user_id']) . '?url=' . urlencode(current_url()) . '?' . $_SERVER['QUERY_STRING'];             ?>"  class="dropdown-item edit_item text-info request_form"> <i class="fa fa-edit"></i>&nbsp;&nbsp;Edit Details</a>
                                                 </div>
                                             </div>
                                         </td>
@@ -119,7 +119,7 @@
                                                 <button type="button" id="closeCard2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-info btn-sm"><i class="fa fa-ellipsis-v"></i></button>
                                                 <div aria-labelledby="closeCard2" class="dropdown-menu dropdown-menu-right has-shadow">
                                                     <a href="<?php //echo site_url('admin/manageuserstations/' . $d['user_id']) . '?url=' . urlencode(current_url()) . '?' . $_SERVER['QUERY_STRING'];             ?>"  class="dropdown-item edit_item text-success"> <i class="fa fa-user-secret"></i>&nbsp;&nbsp;Deactivate Driver</a>
-                                                    <a href="#<?php //echo site_url('dailyentries/saledetails/' . $att['att_id']) . '?url=' . urlencode(current_url()) . '?' . $_SERVER['QUERY_STRING'];             ?>"  class="dropdown-item edit_item text-info"> <i class="fa fa-edit"></i>&nbsp;&nbsp;Edit Details</a>
+                                                    <a href="<?php echo site_url('admin/requestedituserform/' . $d['user_id']) . '?url=' . urlencode(current_url()) . '?' . $_SERVER['QUERY_STRING'];             ?>"  class="dropdown-item edit_item text-info request_form"> <i class="fa fa-edit"></i>&nbsp;&nbsp;Edit Details</a>
                                                 </div>
                                             </div>
                                         </td>

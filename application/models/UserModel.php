@@ -112,7 +112,7 @@ Class UserModel extends CI_Model {
 
     public function getStationsUsers($admin_id) {
 
-      
+        $this->db->select('u.*,st.stations');
         $res = $this->db
                 ->from('users u')
                 ->join("(SELECT u.user_id, GROUP_CONCAT(DISTINCT s.station_name ORDER BY  s.station_name ASC SEPARATOR ', ') stations "
@@ -127,5 +127,13 @@ Class UserModel extends CI_Model {
         return $res->result_array();
     }
     
+    
+    public function saveEditUser($user_data, $user_id) {
+        
+        $this->db->where('user_id',$user_id)->update('users',$user_data);
+        
+        return $this->db->affected_rows();
+        
+    }
 
 }

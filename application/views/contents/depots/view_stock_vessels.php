@@ -93,8 +93,8 @@
                                                         <?php
                                                     } elseif($sv['vessel_status'] == 'OPENED') {
                                                         ?>
-                                                        <a href="<?php echo site_url('depots/requestclosevesselform/' . $sv['vessel_id']); ?>"  class="dropdown-item edit_item text-success request_form"> <i class="fa fa-lock"></i>&nbsp;&nbsp;Close Loading</a>
                                                         <a href="<?php echo site_url('depots/vesselstockloading/' . $sv['vessel_id']). $current_url; ?>"  class="dropdown-item edit_item text-info"> <i class="fa fa-search"></i>&nbsp;&nbsp;View Loading</a>
+                                                        <a href="<?php echo site_url('depots/requestclosevesselform/' . $sv['vessel_id']); ?>"  class="dropdown-item edit_item text-success request_form"> <i class="fa fa-lock"></i>&nbsp;&nbsp;Close Loading</a>
                                                         <?php
                                                     }else{
                                                         ?>

@@ -48,11 +48,11 @@
                                             <?php
                                             if ($s['organize_user_active'] == 1) {
                                                 ?>
-                                                <span class="badge badge-success">ACTIVE</span>
+                                                <h4><span class="badge badge-success">ACTIVE</span></h4>
                                                 <?php
                                             } elseif ($s['organize_user_active'] == 0) {
                                                 ?>
-                                                <span class="badge badge-danger">IN-ACTIVE</span>
+                                                <h4><span class="badge badge-danger">IN-ACTIVE</span></h4> 
                                                 <?php
                                             }
                                             ?>
@@ -61,11 +61,11 @@
                                             <?php
                                             if ($s['organize_user_can_approve_expenditure'] == 1) {
                                                 ?>
-                                                <span class="badge badge-success">YES</span>
+                                            <h4><span class="badge badge-success">YES</span></h4>
                                                 <?php
                                             } elseif ($s['organize_user_can_approve_expenditure'] == 0) {
                                                 ?>
-                                                <span class="badge badge-danger">NO</span>
+                                            <h4><span class="badge badge-danger">NO</span></h4>
                                                 <?php
                                             }
                                             ?>
@@ -74,8 +74,8 @@
                                             <div class="dropdown">
                                                 <button type="button" id="closeCard2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-info btn-sm"><i class="fa fa-ellipsis-v"></i></button>
                                                 <div aria-labelledby="closeCard2" class="dropdown-menu dropdown-menu-right has-shadow">
-                                                    <a href="#<?php //echo site_url('admin/manageuserstations/' . $s['user_id']);  ?>"  class="dropdown-item edit_item text-success"> <i class="fa fa-user-secret"></i>&nbsp;&nbsp;Manage User's Stations</a>
-                                                    <a href="#<?php //echo site_url('dailyentries/saledetails/' . $att['att_id']) . '?url=' . urlencode(current_url()) . '?' . $_SERVER['QUERY_STRING'];             ?>"  class="dropdown-item edit_item text-info"> <i class="fa fa-edit"></i>&nbsp;&nbsp;Edit Details</a>
+                                                    <a href="#<?php //echo site_url('admin/manageuserstations/' . $s['user_id']);   ?>"  class="dropdown-item edit_item text-success"> <i class="fa fa-user-secret"></i>&nbsp;&nbsp;Manage User's Stations</a>
+                                                    <a href="#<?php //echo site_url('dailyentries/saledetails/' . $att['att_id']) . '?url=' . urlencode(current_url()) . '?' . $_SERVER['QUERY_STRING'];              ?>"  class="dropdown-item edit_item text-info"> <i class="fa fa-edit"></i>&nbsp;&nbsp;Edit Details</a>
                                                 </div>
                                             </div>
                                         </td>

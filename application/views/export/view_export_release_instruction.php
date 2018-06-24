@@ -166,7 +166,6 @@
                                 if (in_array($ri['ri_status'], ['NEW'])) {
                                     ?>
                                     <td>
-
                                         <div class="dropdown">
                                             <button type="button" id="closeCard2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-info btn-sm"><i class="fa fa-ellipsis-v"></i></button>
                                             <div aria-labelledby="closeCard2" class="dropdown-menu dropdown-menu-right has-shadow">
@@ -174,8 +173,6 @@
                                                 <a href="<?php echo site_url('station/removepofromri/' . $po['po_id']); ?>" class="dropdown-item edit text-danger confirm" title="Remove purchase order from release instruction"> <i class="fa fa-trash"></i>&nbsp;&nbsp;Delete</a>
                                             </div>
                                         </div>
-
-
                                     </td>
                                     <?php
                                 }
@@ -214,9 +211,7 @@
             } else {
                 ?>
                 <p style="border:1px solid #000; padding:  100px 10px; text-align: center">
-
                     This release instruction has no order added in it yet.
-
                 </p>
                 <?php
             }

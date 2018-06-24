@@ -17,7 +17,7 @@
                 </div>
                 <div class="btn-group pull-right" role="group" aria-label="Basic example">
                     <!--<button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#myModal"><i class="fa fa-calendar-o"></i>&nbsp;Latest Shifts</button>-->
-                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#addStockLoading"><i class="fa fa-plus-square"></i>&nbsp;Add Stock Loading</button>
+                    <!--<button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#addStockLoading"><i class="fa fa-plus-square"></i>&nbsp;Add Stock Loading</button>-->
                 </div>
             </div>
         </div>

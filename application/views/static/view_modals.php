@@ -36,7 +36,7 @@ if (in_array('modal_add_user', $modals)) {
                         </div>
                         <div class="col-lg-6">
                             <div class="form-group" id="user_role">
-                                <label>User Role</label>
+                                <label>User Login Role</label>
                                 <select style="width: 100%" name="user_role">
                                     <option value=""></option>
                                     <?php
@@ -57,13 +57,13 @@ if (in_array('modal_add_user', $modals)) {
                         <div class="col-lg-6">
                             <div class="form-group" id="user_phone">
                                 <label>User Phone</label>
-                                <input autocomplete="off" placeholder="Enter Driving License"  class="form-control" name="user_phone" autocomplete="off" value="">
+                                <input autocomplete="off" placeholder="Enter user phone number"  class="form-control" name="user_phone" autocomplete="off" value="">
                             </div>
                         </div>
                         <div class="col-lg-6">
                             <div class="form-group" id="user_email">
                                 <label>User Email</label>
-                                <input autocomplete="off" placeholder="Enter Driving License"  class="form-control" name="user_email" autocomplete="off" value="">
+                                <input autocomplete="off" placeholder="Enter user email"  class="form-control" name="user_email" autocomplete="off" value="">
                             </div>
                         </div>
 
@@ -74,7 +74,7 @@ if (in_array('modal_add_user', $modals)) {
                         <div class="col-lg-6">
                             <div class="form-group" id="user_address">
                                 <label>User Address</label>
-                                <input autocomplete="off" placeholder="Enter Driving License"  class="form-control" name="user_address" autocomplete="off" value="">
+                                <input autocomplete="off" placeholder="Enter user address"  class="form-control" name="user_address" autocomplete="off" value="">
                             </div>
                         </div>
                     </div>
@@ -84,6 +84,95 @@ if (in_array('modal_add_user', $modals)) {
                     <button type="button" data-dismiss="modal" class="btn btn-secondary pull-left">Close</button>
 
                     <button type="submit" class="btn btn-success"><i class="fa fa-plus-circle"></i>&nbsp;Add User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <?php
+}
+
+//ADDING EDIT USER MODAL
+if (in_array('modal_add_user', $modals)) {
+    ?>
+    <div id="editUser"  role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" class="modal fade text-left">
+        <div role="document" class="modal-dialog modal-lg">
+            <form id="edit_user_form" class="modal-content" action="<?php echo site_url('admin/submitnewuser'); ?>">
+                <div class="modal-header">
+                    <h4 id="exampleModalLabel" class="modal-title"> Edit User Details</h4>
+                    <button type="button" data-dismiss="modal" aria-label="Close" class="close"><span aria-hidden="true">×</span></button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="form-group" id="edit_full_name">
+                                <label>Full Name</label>
+                                <input autocomplete="off" placeholder="Enter Full Name"  class="form-control" name="edit_full_name" autocomplete="off" value="">
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="form-group" id="edit_user_name">
+                                <label>Username</label>
+                                <input autocomplete="off" placeholder="Enter Username" class="form-control" name="edit_user_name" autocomplete="off" value="">
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="form-group" id="edit_driving_license">
+                                <label>Driving License</label>
+                                <input autocomplete="off" placeholder="Enter Driving License" class="form-control" name="edit_driving_license" autocomplete="off" value="">
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="form-group" id="edit_user_role">
+                                <label>User Login Role</label>
+                                <select style="width: 100%" name="edit_user_role">
+                                    <option value=""></option>
+                                    <?php
+                                    foreach ($user_roles as $ur) {
+                                        ?>
+                                        <option value="<?php echo $ur['key']; ?>"><?php echo ucwords(strtolower($ur['value'])); ?></option>
+                                        <?php
+                                    }
+                                    ?>
+                                </select>
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="form-group" id="edit_user_phone">
+                                <label>User Phone</label>
+                                <input autocomplete="off" placeholder="Enter user phone number"  class="form-control" name="edit_user_phone" autocomplete="off" value="">
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="form-group" id="edit_user_email">
+                                <label>User Email</label>
+                                <input autocomplete="off" placeholder="Enter user email"  class="form-control" name="edit_user_email" autocomplete="off" value="">
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="form-group" id="edit_user_address">
+                                <label>User Address</label>
+                                <input autocomplete="off" placeholder="Enter user address"  class="form-control" name="edit_user_address" autocomplete="off" value="">
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" data-dismiss="modal" class="btn btn-secondary pull-left">Close</button>
+                    <button type="submit" class="btn btn-success"><i class="fa fa-save"></i>&nbsp;Save</button>
                 </div>
             </form>
         </div>
@@ -907,7 +996,7 @@ if (in_array('modal_add_release_instruction', $modals)) {
                                     <?php
                                     foreach ($authorizers as $key => $auth) {
                                         ?>
-                                        <option value="<?php echo $auth['user_id'] ?>"><?php echo $auth['user_name']; ?></option>
+                                        <option value="<?php echo $auth['user_id'] ?>"><?php echo!empty($auth['user_fullname']) ? $auth['user_fullname'] : $auth['user_name']; ?></option>
                                         <?php
                                     }
                                     ?>
@@ -1044,15 +1133,15 @@ if (in_array('modal_close_vessel', $modals)) {
 
         $('select[name=ftg_id]').select2({placeholder: 'Select product type'});
         $('select[name=auth_id]').select2({placeholder: 'Select user'});
-        $('select[name=user_role]').select2({placeholder: 'Select user role'});
+        $('select[name=user_role], select[name=edit_user_role]').select2({placeholder: 'Select user role'});
         $('select[name=edit_driver_id],select[name=driver_id]').select2({placeholder: 'Select driver'});
         $('select[name=po_station_id],select[name=edit_po_station_id]').select2({placeholder: 'Select station'});
         $('select[name=loading_po_id],#_po_ids,select[name=od_po_id]').select2({placeholder: 'Select purchase order'}); // Purchase Order
         $('select[name=po_depo_id], select[name=depo_id],select[name=edit_po_depo_id]').select2({placeholder: 'Select depot'});
-        $('select[name=po_vessel_id],#_po_vessel_id,select[name=loading_vessel_id],select[name=close_vs_remain_transfered_to],#edit_po_vessel_id').select2({placeholder: 'Select vessel'});
+        $('select[name=po_vessel_id],#_po_vessel_id,select[name=loading_vessel_id],select[name=close_vs_remain_transfered_to],#_edit_po_vessel_id').select2({placeholder: 'Select vessel'});
 
 
-        $(document).on('submit', '#create_order_form,#add_vessel_form,#add_loading_form,#add_release_instruction_form,#add_po_in_ri_form,#close_vessel_form,#edit_order_form,#add_user_form', function (e) {
+        $(document).on('submit', '#create_order_form,#add_vessel_form,#add_loading_form,#add_release_instruction_form,#add_po_in_ri_form,#close_vessel_form,#edit_order_form,#add_user_form,#edit_user_form', function (e) {
             e.preventDefault();
             var post_data = $(this).serializeArray();
             submitAjaxForm(post_data, $(this).attr('action'));
@@ -1115,6 +1204,19 @@ if (in_array('modal_close_vessel', $modals)) {
 
                                     break;
 
+                                case 'editUser':
+
+                                    $('input[name=edit_full_name]').val(data.status.form_data.user.user_fullname);
+                                    $('input[name=edit_user_name]').val(data.status.form_data.user.user_name);
+                                    $('input[name=edit_driving_license]').val(data.status.form_data.user.user_driving_license);
+                                    $('select[name=edit_user_role]').val(data.status.form_data.user.user_role).trigger('change');
+                                    $('input[name=edit_user_phone]').val(data.status.form_data.user.user_phone);
+                                    $('input[name=edit_user_email]').val(data.status.form_data.user.user_email);
+                                    $('input[name=edit_user_address]').val(data.status.form_data.user.user_address);
+                                    $('#edit_user_form').attr('action', data.status.form_url);
+
+                                    break;
+
                                     // Populate Edit LPO form
                                 case 'editPurchaseOrder':
 
@@ -1122,17 +1224,19 @@ if (in_array('modal_close_vessel', $modals)) {
                                     $('select[name=edit_po_depo_id]').val(data.status.form_data.po.po_depo_id).trigger('change');
                                     $('select[name=edit_driver_id]').val(data.status.form_data.po.po_driver_id).trigger('change');
                                     $('input[name=edit_driver_name]').val(data.status.form_data.po.po_driver_name);
-                                    $('input[name=edit_diesel_qty]').val(data.status.form_data.po.po_volume);
-                                    $('input[name=edit_super_qty').val(data.status.form_data.po.po_volume);
-                                    $('input[name=edit_kerosene_qty]').val(data.status.form_data.po.po_volume);
+                                    $('input[name=edit_diesel_qty]').val(data.status.form_data.poq.diesel_qty);
+                                    $('input[name=edit_super_qty').val(data.status.form_data.poq.super_qty);
+                                    $('input[name=edit_kerosene_qty]').val(data.status.form_data.poq.kerosene_qty);
                                     $('input[name=edit_truck_number]').val(data.status.form_data.po.po_truck_number);
                                     $('input[name=edit_driver_license]').val(data.status.form_data.po.po_driver_license);
                                     $("#_edit_po_vessel_id").empty().select2({
                                         placeholder: 'Select vessel',
                                         data: data.status.form_data.vessels
                                     });
-                                    $('#_edit_po_vessel_id').val(data.status.form_data.po.po_vessel_id).trigger('change');
+                                    $('#_edit_po_vessel_id').val(data.status.form_data.selected_vessels).trigger('change');
+                                   
                                     $('#edit_order_form').attr('action', data.status.form_url);
+
                                     break;
 
                             }
@@ -1273,6 +1377,7 @@ if (in_array('modal_close_vessel', $modals)) {
 
                         switch (field) {
                             case  'po_depo_id':
+
                                 $("#_po_vessel_id").empty().select2({
                                     placeholder: 'Select vessel',
                                     data: data.vessels
