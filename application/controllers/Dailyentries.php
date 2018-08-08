@@ -10,6 +10,7 @@ class Dailyentries extends CI_Controller {
     var $is_logged_in = false;
     var $customer = null;
     var $admin_id = null;
+    var $auto_rtt = 0;
 
     public function __construct() {
         parent::__construct();
@@ -19,6 +20,7 @@ class Dailyentries extends CI_Controller {
             $this->user_id = $this->session->userdata['logged_in']['user_id'];
             $this->station_id = $this->session->userdata['logged_in']['user_station_id'];
             $this->admin_id = $this->session->userdata['logged_in']['user_admin_id'];
+            $this->auto_rtt = $this->session->userdata['logged_in']['user_station_auto_rtt'];
             $this->customer = $this->cust->getCustomerDetails($this->admin_id);
             $this->is_logged_in = TRUE;
         }
@@ -100,6 +102,10 @@ class Dailyentries extends CI_Controller {
                 'next_day' => date('Y-m-d', strtotime('+1 day', strtotime($date))),
                 'prev_day' => date('Y-m-d', strtotime('-1 day', strtotime($date)))
             ],
+            'modals_data' => [
+                'modals' => ['modal_add_credit_sale'],
+                'customers' => $this->cust->getCreditCustomers(['s.station_id' => $this->station_id])
+            ],
             'header_data' => [], //Header data pass here
             'footer_data' => [], //Footer data pass here
             'top_bar_data' => [] //Top bar data pass here
@@ -107,6 +113,32 @@ class Dailyentries extends CI_Controller {
 
         // Now call the base view which have everything we need to dispaly
         $this->load->view('view_base', $data);
+    }
+
+    public function addCreditSale() {
+        header('Access-allow-control-origin: *');
+        header('Content-type: text/json');
+
+        $this->checkStatusJson(1, 1, 1);
+
+        $att_id = $this->uri->segment(3);
+
+        $cols = ['u.user_name', 's.shift_name', 'att.att_id', 'p.pump_name', 'f.fuel_type_generic_name'];
+        $att = $this->rpt->getSales(['att_station_id' => $this->station_id], $cols, NULL, $att_id, []);
+
+        if (!$att) {
+            cus_json_error('Attendant shift was not found or may have been removed from the system');
+        }
+
+
+        $json = json_encode([
+            'status' => ['error' => FALSE, 'redirect' => FALSE, 'pop_form' => TRUE, 'form_type' => 'addCreditSale', 'form_url' => site_url('dailyentries/submitaddcredit/' . $att['att_id'])],
+            'att' => $att
+        ]);
+
+        echo $json;
+
+        die();
     }
 
     public function saleDetails() {
@@ -123,11 +155,15 @@ class Dailyentries extends CI_Controller {
         $cond = ['att.att_station_id' => $this->station_id];
 
         $sale = $this->rpt->getSales($cond, NULL, NULL, $att_id); // reused this function from report model coz it does the same
+        //echo '<pre>';        print_r($sale); die();
 
         if (!$sale) {
             //Sale details not found so we redirect to attendant shifts
             $this->setSessMsg('Sale details was not found or may have been removed from the system', 'error', 'dailyentries/attendantsshifts');
         }
+
+        $cond = ['cs.customer_sale_att_id' => $sale['att_id']];
+        $credit_sales = $this->rpt->getCreditSales($cond);
 
         //cus_print_r($sale);        die();
 
@@ -138,7 +174,8 @@ class Dailyentries extends CI_Controller {
             'content_data' => [
                 'module_name' => 'Shift Details',
                 'customer' => $this->customer,
-                'sale' => $sale
+                'sale' => $sale,
+                'credit_sales' => $credit_sales
             ],
             'header_data' => [],
             'footer_data' => [],
@@ -462,8 +499,110 @@ class Dailyentries extends CI_Controller {
                         'redirect_url' => site_url('dailyentries/purchaseorders')
                     ]
                 ]);
+
+                die();
             } else {
                 cus_json_error('Unable to create new order please refresh the page and try again.');
+            }
+        }
+    }
+
+    public function submitAddCredit() {
+
+        header('Access-allow-control-origin: *');
+        header('Content-type: text/json');
+
+        $this->checkStatusJson(1, 1, 1);
+
+        $att_id = $this->uri->segment(3);
+
+        $att = $this->rpt->getSales(['att.att_station_id' => $this->station_id], ['att.att_id', 'att.att_sale_price_per_ltr','f.fuel_type_generic_name'], NULL, $att_id, []);
+
+        if (!$att) {
+            cus_json_error('Attendant shift was not found or it may have been removed');
+        }
+
+        $validations = [
+            //['field' => 'order_date', 'label' => 'Order Date', 'rules' => 'trim|required|callback_validateOrderDate', 'errors' => ['required' => 'Select the order date.']],
+                ['field' => 'cr_del_no', 'label' => 'Delivery Note Number', 'rules' => 'trim'],
+                ['field' => 'cr_order_no', 'label' => 'Order Number', 'rules' => 'trim'],
+                ['field' => 'cr_customer', 'label' => 'Customer', 'rules' => 'trim|required|callback_validateCreditCustomer'],
+                ['field' => 'cr_truck_no', 'label' => 'Truck Number', 'rules' => 'trim'],
+                ['field' => 'cr_qty', 'label' => 'Quantity sold', 'rules' => 'trim|required|numeric'],
+                ['field' => 'cr_notes', 'label' => 'Credit Notes', 'rules' => 'trim']
+        ];
+
+        $this->form_validation->set_rules($validations);
+
+        if ($this->form_validation->run() === FALSE) {
+            echo json_encode([
+                'status' => [
+                    'error' => TRUE,
+                    'error_type' => 'display',
+                    "form_errors" => validation_errors_array()
+                ]
+            ]);
+        } else {
+
+            $customer_id = $this->input->post('cr_customer');
+            $ltrs = $this->input->post('cr_qty');
+            $rtt = 0;
+            $tts = 0;
+
+            $credit = $this->cust->getCreditCustomers(['crdt.credit_type_id' => $customer_id, 'crdt.credit_type_admin_id' => $this->admin_id], NULL, 1);
+
+            if (!$credit) {
+                cus_json_error('Customer was not found or may have been removed from the sysytem');
+            }
+            
+            if($credit['credit_type_type_description'] == 'STATION'){
+                $tts = 1;
+            }
+            
+            if($credit['credit_type_allow_rtt'] == '1' OR $this->auto_rtt == '1'){
+                $rtt = 1;
+            }
+            
+            $sale_price = $att['att_sale_price_per_ltr'];
+            $amount = $ltrs * $sale_price;
+            $balance_after = $credit['credit_type_balance'] + ($amount);
+
+            $credit_data = [
+                'customer_sale_customer_id' => 1,
+                'customer_sale_att_id' => $att['att_id'],
+                'customer_sale_ltrs' => $ltrs,
+                'customer_sale_credit_type_id'=> $credit['credit_type_id'],
+                'customer_sale_added_by' => $this->user_id,
+                'customer_sale_credit_number' => time(),
+                'customer_sale_order_number' => $this->input->post('cr_order_no'),
+                'customer_sale_track_number' => $this->input->post('cr_truck_no'),
+                'customer_sale_del_no' => $this->input->post('cr_del_no'),
+                'customer_sale_balance_before' => $credit['credit_type_balance'],
+                'customer_sale_balance_after' => $balance_after,
+                'customer_sale_rtt' => $rtt,
+                'customer_sale_tts' => $tts,
+                'customer_sale_price' => $sale_price,
+                'customer_sale_notes' => $this->input->post('cr_notes')
+            ];
+            
+            $notes = "Fuel Purchase. ". $ltrs . ' ltr(s) of '. $att['fuel_type_generic_name'] . ' @'. cus_price_form($sale_price);
+            
+            $res = $this->cust->saveCreditSale(['credit_data' => $credit_data,'amount' => $amount,'admin_id' => $this->admin_id,'notes' => $notes]);
+
+            if ($res) {
+                $this->setSessMsg('Credit sale save successfully', 'success');
+
+                echo json_encode([
+                    'status' => [
+                        'error' => FALSE,
+                        'redirect' => true,
+                        'redirect_url' => site_url('dailyentries/saledetails/'. $att['att_id'])
+                    ]
+                ]);
+
+                die();
+            } else {
+                cus_json_error('Unable to add credit sale, please refresh the page and try again.');
             }
         }
     }
@@ -492,6 +631,18 @@ class Dailyentries extends CI_Controller {
     }
 
     public function validateOrderNumber($order_number) {
+        return TRUE;
+    }
+
+    public function validateCreditCustomer($customer_id) {
+
+        $credit = $this->cust->getCreditCustomers(['crdt.credit_type_id' => $customer_id, 'crdt.credit_type_admin_id' => $this->admin_id], NULL, 1);
+
+        if (!$credit AND ! empty($customer_id)) {
+            $this->form_validation->set_message('validateCreditCustomer', 'Select a valid customer');
+            return FALSE;
+        }
+
         return TRUE;
     }
 

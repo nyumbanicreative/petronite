@@ -9,6 +9,7 @@ class Depots extends CI_Controller {
     var $depo_id = null;
     var $is_logged_in = false;
     var $customer = null;
+    var $admin_id = null;
 
     public function __construct() {
         parent::__construct();
@@ -161,6 +162,66 @@ class Depots extends CI_Controller {
         $this->load->view('view_base', $data);
     }
 
+    public function stockTransferNotes() {
+
+        // check session status of the user
+        $this->checkStatus(1, 1, 1);
+
+        $transfer_notes = $this->purchase->getPurchaseOrders(['depo.depo_admin_id' => $this->admin_id]);
+
+        $data = [
+            'menu' => 'menu/view_depot_menu',
+            'content' => 'contents/depots/view_stock_transfer_notes',
+            'menu_data' => ['curr_menu' => 'STOCK_CONTROL', 'curr_sub_menu' => 'STOCK_CONTROL'],
+            'content_data' => [
+                'module_name' => 'Stock transfer notes',
+                'customer' => $this->customer,
+                'transfer_notes' => $transfer_notes
+            ],
+            'header_data' => [],
+            'footer_data' => [],
+            'top_bar_data' => []
+        ];
+
+
+        $this->load->view('view_base', $data);
+    }
+
+    public function pdfStockTranserNote() {
+
+        ini_set('memory_limit', '50M'); // boost the memory limit if it's low ;)
+        // check session status of the user
+        $this->checkStatus(1, 1, 1);
+
+        $data = [];
+        
+        $stn_id = $this->uri->segment(3);
+
+        
+        $stn = $this->purchase->getPurchaseOrders(['stn.stn_id' => $stn_id], 1);
+        
+        if(!$stn){
+            $this->setSessMsg('Stock transfer not was not found or may have been removed from the system', 'error','depots/stocktransfernotes');
+        }
+
+        $data = ['stn' => $stn];
+
+
+        $html = $this->load->view('export/view_export_stock_transfer_note', $data, true); // render the view into HTML
+
+        $this->load->library('pdf');
+
+        $pdf = $this->pdf->load('c', 'A4-L');
+
+        $pdf->SetFooter('|Powered By Petronite<br>www.petronite.com|');
+        //$pdf->SetFooter($ri['pc_contact_text']); // Add a footer for good measure ;)
+
+        $pdf->WriteHTML($html); // write the HTML into the PDF
+
+        $pdf->Output();
+        return;
+    }
+
     public function setDepot() {
 
         // Check user statuses
@@ -286,14 +347,14 @@ class Depots extends CI_Controller {
             'modals_data' => [
                 'modals' => ['modal_add_stock_loading_single'],
                 'vessel_id' => $vessel['vessel_id'],
-                'orders' => $this->purchase->getPoForVessel(['vs.vessel_id' =>$vessel['vessel_id'],'poq.poq_status' => 'RELEASED']) //$this->purchase->getPurchaseOrders(['po.po_vessel_id' => $vessel['vessel_id'], 'ri.ri_status' => 'RELEASED', 'po.po_status' => 'RELEASED'])
+                'orders' => $this->purchase->getPoForVessel(['vs.vessel_id' => $vessel['vessel_id'], 'poq.poq_status' => 'RELEASED']) //$this->purchase->getPurchaseOrders(['po.po_vessel_id' => $vessel['vessel_id'], 'ri.ri_status' => 'RELEASED', 'po.po_status' => 'RELEASED'])
             ],
             'header_data' => [],
             'footer_data' => [],
             'top_bar_data' => []
         ];
-        
-   
+
+
         $this->load->view('view_base', $data);
     }
 
@@ -391,10 +452,10 @@ class Depots extends CI_Controller {
         $validations = [
                 ['field' => 'loading_date', 'label' => 'Loading Date', 'rules' => 'trim|required|callback_validateLoadingDate'],
                 ['field' => 'invoice_number', 'label' => 'Invoice Number', 'rules' => 'trim|required|callback_validateLoadingInvoiceNumber'],
-                ['field' => 'volume_loaded', 'label' => 'Volume Loaded', 'rules' => 'trim|required|numeric'],
-                ['field' => 'loading_po_id', 'label' => 'Purchase Order', 'rules' => 'trim|required'],
+                ['field' => 'volume_loaded', 'label' => 'Volume Loaded', 'rules' => 'trim|required|numeric|callback_validateVolumeLoaded'],
+                ['field' => 'loading_po_id', 'label' => 'Purchase Order', 'rules' => 'trim|required|callback_validatePoqId'],
                 ['field' => 'transfer_note', 'label' => 'Transfer Note Number', 'rules' => 'trim|required'],
-                ['field' => 'conversion_factor', 'label' => 'Conversion Factor', 'rules' => 'trim|required|numeric']
+                ['field' => 'conversion_factor', 'label' => 'Conversion Factor', 'rules' => 'trim|required|numeric|greater_than[0]']
         ];
 
         $this->form_validation->set_rules($validations);
@@ -445,7 +506,7 @@ class Depots extends CI_Controller {
             $res = $this->depo->saveLoading($data);
 
             if ($res) {
-                echo json_encode(['status' => ['error' => false, 'redirect' => true, 'redirect_url' => site_url('depots/vesselstockloading/' .$vessel['vessel_id'])]]);
+                echo json_encode(['status' => ['error' => false, 'redirect' => true, 'redirect_url' => site_url('depots/vesselstockloading/' . $vessel['vessel_id'])]]);
             } else {
                 cus_json_error('Something went wrong, Stock Loading was not saved, Please try again', 'error', 'depots/stockloading');
             }
@@ -695,6 +756,34 @@ class Depots extends CI_Controller {
         return TRUE;
     }
 
+    public function validateVolumeLoaded($volume_loaded) {
+
+        $poq_id = $this->input->post('loading_po_id');
+
+        $poq = $this->purchase->getPoForVessel(['poq.poq_id' => $poq_id], 1);
+
+        if ($poq) {
+
+            if ($volume_loaded > $poq['poq_volume']) {
+                $this->form_validation->set_message('validateVolumeLoaded', 'Loading quantity is greater than the volume ordered');
+                return false;
+            }
+        }
+        return TRUE;
+    }
+
+    public function validatePoqId($poq_id) {
+
+        $poq = $this->purchase->getPoForVessel(['poq.poq_id' => $poq_id], 1);
+
+        if (!$poq AND ! empty($poq_id)) {
+            $this->form_validation->set_message('validatePoqId', 'Order was not found or it may have been removed from the system');
+
+            return false;
+        }
+        return TRUE;
+    }
+
     public function validateRemainsTransferedTo($selected_vessel_id) {
 
         $vessel_id = $this->uri->segment(3);
@@ -889,10 +978,10 @@ class Depots extends CI_Controller {
         $x = 6;
         foreach ($stock_loadings as $index => $sl) {
 
-            $note_no = !empty($sl['od_id'])? 'OD_'.cus_preciding_zeros($sl['od_id']): "";
-            $del_date = !empty($sl['inventory_purchase_date'])? cus_nice_date($sl['inventory_purchase_date']): "";
+            $note_no = !empty($sl['od_id']) ? 'OD_' . cus_preciding_zeros($sl['od_id']) : "";
+            $del_date = !empty($sl['inventory_purchase_date']) ? cus_nice_date($sl['inventory_purchase_date']) : "";
             $spreadsheet->getActiveSheet()->getStyle("A$x:N$x")->applyFromArray($styleDataArray);
-            
+
             $spreadsheet->setActiveSheetIndex(0)
                     ->setCellValue("A$x", ($index + 1))
                     ->setCellValue("B$x", cus_nice_date($sl['sl_date']))
@@ -910,42 +999,48 @@ class Depots extends CI_Controller {
                     ->setCellValue("N$x", $sl['station_name']);
             $x++;
         }
-        
-        $x +=2;
-        
+
+        $x += 2;
+
         $spreadsheet->getActiveSheet()->mergeCells("A$x:E$x");
-        $spreadsheet->getActiveSheet()->getStyle("A$x:E$x")->applyFromArray($styleHeaderArray); 
-        
-        $spreadsheet->setActiveSheetIndex(0)->setCellValue("A$x", "FROM OUTTURN REPORT");$x++;
-        
+        $spreadsheet->getActiveSheet()->getStyle("A$x:E$x")->applyFromArray($styleHeaderArray);
+
+        $spreadsheet->setActiveSheetIndex(0)->setCellValue("A$x", "FROM OUTTURN REPORT");
+        $x++;
+
         $spreadsheet->getActiveSheet()->getStyle("A$x:E$x")->applyFromArray($styleDataArray);
         $spreadsheet->getActiveSheet()->mergeCells("B$x:C$x");
         $spreadsheet->setActiveSheetIndex(0)->setCellValue("B$x", "ARRIVED QUANTITY");
-        $spreadsheet->setActiveSheetIndex(0)->setCellValue("E$x", "XXXXXXXXXX"); $x++;
-        
+        $spreadsheet->setActiveSheetIndex(0)->setCellValue("E$x", "XXXXXXXXXX");
+        $x++;
+
         $spreadsheet->getActiveSheet()->getStyle("A$x:E$x")->applyFromArray($styleDataArray);
         $spreadsheet->getActiveSheet()->mergeCells("B$x:C$x");
         $spreadsheet->setActiveSheetIndex(0)->setCellValue("A$x", "Less");
         $spreadsheet->setActiveSheetIndex(0)->setCellValue("B$x", "SHIP TO SHORE LOSS");
-        $spreadsheet->setActiveSheetIndex(0)->setCellValue("E$x", ""); $x++;
+        $spreadsheet->setActiveSheetIndex(0)->setCellValue("E$x", "");
+        $x++;
 
-        
+
         $spreadsheet->getActiveSheet()->getStyle("A$x:E$x")->applyFromArray($styleDataArray);
         $spreadsheet->getActiveSheet()->mergeCells("B$x:C$x");
         $spreadsheet->setActiveSheetIndex(0)->setCellValue("A$x", "");
         $spreadsheet->setActiveSheetIndex(0)->setCellValue("B$x", "RECEIVED QUANTITY");
-        $spreadsheet->setActiveSheetIndex(0)->setCellValue("E$x", "XXXXXXXXXX"); $x++;
-        
+        $spreadsheet->setActiveSheetIndex(0)->setCellValue("E$x", "XXXXXXXXXX");
+        $x++;
+
         $spreadsheet->getActiveSheet()->getStyle("A$x:E$x")->applyFromArray($styleDataArray);
         $spreadsheet->setActiveSheetIndex(0)->setCellValue("A$x", "Less");
         $spreadsheet->setActiveSheetIndex(0)->setCellValue("B$x", "MI LOSS");
-        $spreadsheet->setActiveSheetIndex(0)->setCellValue("E$x", "XXXXXXXXXX"); $x++;
-        
+        $spreadsheet->setActiveSheetIndex(0)->setCellValue("E$x", "XXXXXXXXXX");
+        $x++;
+
         $spreadsheet->getActiveSheet()->getStyle("A$x:E$x")->applyFromArray($styleDataArray);
         $spreadsheet->getActiveSheet()->mergeCells("B$x:C$x");
         $spreadsheet->setActiveSheetIndex(0)->setCellValue("A$x", "");
         $spreadsheet->setActiveSheetIndex(0)->setCellValue("B$x", "LOADED QUANTITY");
-        $spreadsheet->setActiveSheetIndex(0)->setCellValue("E$x", "XXXXXXXXXX"); $x++;
+        $spreadsheet->setActiveSheetIndex(0)->setCellValue("E$x", "XXXXXXXXXX");
+        $x++;
 
 
         // Rename worksheet

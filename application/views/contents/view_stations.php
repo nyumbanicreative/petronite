@@ -4,18 +4,8 @@
         <h2 class="no-margin-bottom"><?php echo $module_name; ?></h2>
     </div>
 </header>
-<!-- Breadcrumb-->
-<!--<div class="breadcrumb-holder container-fluid">
-    <ul class="breadcrumb">
-        
-        <li class="breadcrumb-item"><a href="<?php echo site_url('user/dashboard'); ?>">Dashboard</a></li>
-        <li class="breadcrumb-item active"><?php echo $module_name; ?></li>
-    </ul>
-</div>-->
 
 <?php echo $alert; ?>
-
-
 <section class="" style="min-height:550px;">
     <div class="container-fluid">
         

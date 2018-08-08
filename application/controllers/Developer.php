@@ -20,6 +20,13 @@ class Developer extends CI_Controller {
             $this->session->set_flashdata('error', 'You do not have permission to perform requested action');
             redirect('user/index');
         }
+        
+        $temp_uploads = $this->utl->getTempFiles(NULL, ['temp_file_user_id' => $this->usr->user_id], NULL, ['temp_file_type' =>['EDIT_COMPANY_BANNER','COMPANY_BANNER']]);
+        
+     
+        if (!empty($temp_uploads)) {
+            $this->utl->removeTempFiles($temp_uploads);
+        }
 
 
         $data = [

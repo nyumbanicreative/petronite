@@ -150,3 +150,7 @@ function cus_json_error($msg) {
 function cus_preciding_zeros($number){
     return str_pad($number, PRECIDING_ZEROZ, '0', STR_PAD_LEFT);
 }
+
+function cus_phone_with_255($phone_number, $prefix = '255'){
+    return $prefix . substr($phone_number, -9);
+}

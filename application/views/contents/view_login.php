@@ -53,20 +53,17 @@
                                         <?php echo $alert; ?>
                                         <div class="form-group">
                                             <input autocomplete="off" id="login-username" type="text" name="loginUsername" required="" value="<?php echo set_value('loginUsername'); ?>" class="input-material">
-                                            <label for="login-username" class="label-material <?php
-                                            if (set_value('loginUsername')) {
-                                                echo 'active';
-                                            }
-                                            ?>">User Name</label>
+                                            <label for="login-username" class="label-material active">User Name</label>
                                                    <?php echo form_error('loginUsername'); ?>
                                         </div>
                                         <div class="form-group">
                                             <input id="login-password" autocomplete="off" type="password" name="loginPassword" required="" class="input-material">
-                                            <label for="login-password" class="label-material">Password</label>
+                                            <label for="login-password" class="label-material active">Password</label>
                                             <?php echo form_error('loginPassword'); ?>
                                         </div><button type="submit" id="login" class="btn btn-block btn-primary">Login</button>
                                         <!-- This should be submit button but I replaced it with <a> for demo purposes-->
-                                    </form><a href="#" class="forgot-pass">Forgot Password?</a><br>
+                                    </form>
+                                    <!--<a href="#" class="forgot-pass">Forgot Password?</a><br>-->
                                     <!--<small>Do not have an account? </small><a href="register.html" class="signup">Signup</a>-->
                                 </div>
                             </div>

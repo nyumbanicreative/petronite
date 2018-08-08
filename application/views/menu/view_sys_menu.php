@@ -11,6 +11,14 @@
     </div>
     <!-- Side bar Navigation Menus--><span class="heading">Main</span>
     <ul class="list-unstyled">
+        <?php 
+            if($user_system_role == 'developer'){
+                ?>
+                <li class="<?php echo ($curr_menu == 'CUSTOMERS') ? "active" : "" ?>"> <a href="<?php echo site_url('developer/customers'); ?>"><i class="fa fa-group"></i>Petronite Customers</a></li>
+                <?php
+            }
+        ?>
+                
         <li class="<?php echo ($curr_menu == 'DASHBOARD') ? "active" : "" ?>"> <a href="<?php echo site_url('user/dashboard'); ?>"><i class="fa fa-dashboard"></i>Dashboard</a></li>
         
         <li class="<?php echo ($curr_menu == 'DAILY') ? "active" : "" ?>"><a href="#daily" aria-expanded="<?php echo ($curr_menu == 'DAILY') ? "true" : "false" ?>" data-toggle="collapse"><i class="fa fa-truck"></i>Daily Entries </a>
@@ -55,13 +63,7 @@
         
         
         
-        <?php 
-            if($user_system_role == 'developer'){
-                ?>
-                <li class="<?php echo ($curr_menu == 'CUSTOMERS') ? "active" : "" ?>"> <a href="<?php echo site_url('developer/customers'); ?>"><i class="fa fa-group"></i>Petronite Customers</a></li>
-                <?php
-            }
-        ?>
+        
     </ul>
 
 </nav>

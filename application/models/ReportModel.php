@@ -41,7 +41,7 @@ Class ReportModel extends CI_Model {
                 ->join('fuel_tanks t', 'p.pump_fuel_tank_id = t.fuel_tank_id')
                 ->join('fuel_types f', 't.fuel_tank_fuel_type_id = f.fuel_type_id')
                 ->join('(SELECT cr.customer_sale_att_id, '
-                        . "GROUP_CONCAT(CONCAT('{\"customer_sale_id\":\"',customer_sale_id,'\",\"customer_sale_ltrs\" :\"',customer_sale_ltrs,'\",\"credit_type_name\" :\"',credit_type_name,'\",\"customer_sale_rtt\" :\"',customer_sale_rtt,'\",\"customer_sale_tts\" :\"',customer_sale_tts,'\" }')) credit_list, "
+                        //. "GROUP_CONCAT(CONCAT('{\"customer_sale_id\":\"',customer_sale_id,'\",\"customer_sale_ltrs\" :\"',customer_sale_ltrs,'\",\"credit_type_name\" :\"',credit_type_name,'\",\"customer_sale_rtt\" :\"',customer_sale_rtt,'\",\"customer_sale_tts\" :\"',customer_sale_tts,'\" }')) credit_list, "
                         . 'SUM(if(customer_sale_ltrs > 0 AND customer_sale_rtt = 0 AND customer_sale_tts = 0, customer_sale_ltrs,0)) credit_sales, '
                         . 'SUM(if(customer_sale_ltrs > 0 AND customer_sale_rtt = 1 AND customer_sale_tts = 0, customer_sale_ltrs,0)) return_to_tank, '
                         . 'SUM(if(customer_sale_ltrs > 0 AND customer_sale_rtt = 0 AND customer_sale_tts = 1, customer_sale_ltrs,0)) transfered_to_station '

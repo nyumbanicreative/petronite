@@ -15,6 +15,7 @@
         <li class="<?php echo ($curr_menu == 'STOCK_CONTROL') ? "active" : "" ?>"><a href="#daily" aria-expanded="<?php echo ($curr_menu == 'STOCK_CONTROL') ? "true" : "false" ?>" data-toggle="collapse"><i class="fa fa-flask"></i>Stock Control </a>
             <ul id="daily" class="<?php echo ($curr_sub_menu == 'STOCK_CONTROL') ? "" : "collapse" ?> list-unstyled">
                 <li><a href="<?php echo site_url('depots/stockvessels'); ?>">Stock Vessels</a></li>
+                <li><a href="<?php echo site_url('depots/stocktransfernotes'); ?>">Stock Transfer Notes</a></li>
                 <li><a href="<?php echo site_url('depots/stockloading'); ?>">Stock Loading</a></li>
             </ul>
         </li>

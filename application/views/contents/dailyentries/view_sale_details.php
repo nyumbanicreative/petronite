@@ -30,8 +30,7 @@
                         <div class="dropdown">
                             <button type="button" id="closeCard1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class=" btn btn-info btn-sm"><i class="fa fa-gears"></i>&nbsp;Options</button>
                             <div aria-labelledby="closeCard1" class="dropdown-menu dropdown-menu-right has-shadow">
-                                <a href="#" data-toggle="modal" data-target="#rechedule" class="dropdown-item edit"> <i class="fa fa-calendar-o"></i>Reschedule</a>
-                                <a href="#" data-toggle="modal" data-target="#editbooking" class="dropdown-item edit"> <i class="fa fa-edit"></i>Edit Details</a>
+                                <a href="<?php site_url('dailyacivities/addcreditsale/'.$sale['att_id']);?>" data-toggle="modal" data-target="#addCreditSale" class="dropdown-item edit request_form"> <i class="fa fa-plus-circle"></i>Add Credit Sale</a>
                             </div>
                         </div>
                     </div>
@@ -197,13 +196,7 @@
         </div>
 
         <?php
-//Credit sales
-
-        $credit_list = [];
-
-        if (cus_is_json('[' . $sale['credit_list'] . ']')) {
-            $credit_list = json_decode('[' . $sale['credit_list'] . ']');
-        }
+        //Credit sales
         ?>
 
         <div class="row">
@@ -218,15 +211,18 @@
                             <thead>
                                 <tr>
                                     <th>Customer</th>
+                                    <th style="">Product</th>
                                     <th style="">Volume</th>
+                                    <th style="">Price</th>
                                     <th style="" class="text-right">Amount</th>
                                     <th style="width:10px;"></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php
+                                
                                 $total_amount = 0;
-                                foreach ($credit_list as $i => $list) {
+                                foreach ($credit_sales as $i => $list) {
                                     $list = (array) $list;
 
                                     if ($list['customer_sale_rtt'] == '0' && $list['customer_sale_tts'] == '0') {
@@ -234,7 +230,9 @@
                                         <tr>
                                            <!--<th scope="row"><?php echo $i + 1; ?></th>-->
                                             <td><?php echo $list['credit_type_name']; ?></td>
+                                            <td><?php echo $list['fuel_type_generic_name']; ?></td>
                                             <td><?php echo $list['customer_sale_ltrs']; ?></td>
+                                            <td><?php echo $list['att_sale_price_per_ltr']; ?></td>
                                             <td class="text-right">
                                                 <?php echo cus_price_form_french($list['customer_sale_ltrs'] * $sale['att_sale_price_per_ltr']) . '&nbsp;' . CURRENCY; ?>
                                             </td>
@@ -279,7 +277,7 @@
                             <tbody>
                                 <?php
                                 $total_amount = 0;
-                                foreach ($credit_list as $i => $list) {
+                                foreach ($credit_sales as $i => $list) {
                                     $list = (array) $list;
 
                                     if ($list['customer_sale_rtt'] == '0' && $list['customer_sale_tts'] == '1') {
@@ -332,7 +330,7 @@
                             <tbody>
                                 <?php
                                 $total_amount = 0;
-                                foreach ($credit_list as $i => $list) {
+                                foreach ($credit_sales as $i => $list) {
                                     $list = (array) $list;
 
                                     if ($list['customer_sale_rtt'] == '1' && $list['customer_sale_tts'] == '0') {

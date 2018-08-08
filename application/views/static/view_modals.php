@@ -91,6 +91,97 @@ if (in_array('modal_add_user', $modals)) {
     <?php
 }
 
+
+//ADDING SUPPLIER
+if (in_array('modal_add_supplier', $modals)) {
+    ?>
+    <div id="addSupplier"  role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" class="modal fade text-left">
+        <div role="document" class="modal-dialog modal-lg">
+            <form id="add_supplier_form" class="modal-content" action="<?php echo site_url('suppliers/submitnewsupplier'); ?>">
+                <div class="modal-header">
+                    <h4 id="exampleModalLabel" class="modal-title"> Add New Supplier</h4>
+                    <button type="button" data-dismiss="modal" aria-label="Close" class="close"><span aria-hidden="true">×</span></button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="form-group" id="sup_name">
+                                <label>Supplier Name</label>
+                                <input autocomplete="off" placeholder="Enter Supplier Name"  class="form-control" name="sup_name" autocomplete="off" value="">
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="form-group" id="sup_tel">
+                                <label>Supplier Tel No.</label>
+                                <input autocomplete="off" placeholder="Enter Supplier Tel" class="form-control" name="sup_tel" autocomplete="off" value="">
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="form-group" id="sup_mob_1">
+                                <label>Supplier Mobile No. 1</label>
+                                <input autocomplete="off" placeholder="Enter Supplier Mobile No. 1" class="form-control" name="sup_mob_1" autocomplete="off" value="">
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="form-group" id="sup_mob_2">
+                                <label>Supplier Mobile No. 2</label>
+                                <input autocomplete="off" placeholder="Enter Supplier Mobile No. 2" class="form-control" name="sup_mob_2" autocomplete="off" value="">
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="form-group" id="sup_fax">
+                                <label>Supplier Fax</label>
+                                <input autocomplete="off" placeholder="Enter Supplier Fax"  class="form-control" name="sup_fax" autocomplete="off" value="">
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="form-group" id="sup_email">
+                                <label>Supplier Email</label>
+                                <input autocomplete="off" placeholder="Enter Supplier Email" class="form-control" name="sup_email" autocomplete="off" value="">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="form-group" id="sup_address">
+                                <label>Supplier Address</label>
+                                <textarea name="sup_address" placeholder="Enter Supplier Address" class="form-control"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <div class="form-group" id="sup_url">
+                                <label>Supplier Url</label>
+                                <input autocomplete="off" placeholder="Enter Supplier Website Url"  class="form-control" name="sup_url" autocomplete="off" value="">
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" data-dismiss="modal" class="btn btn-secondary pull-left">Close</button>
+
+                    <button type="submit" class="btn btn-success"><i class="fa fa-plus-circle"></i>&nbsp;Add Supplier</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <?php
+}
+
 //ADDING EDIT USER MODAL
 if (in_array('modal_add_user', $modals)) {
     ?>
@@ -716,13 +807,13 @@ if (in_array('modal_add_purchase_order_hq', $modals)) {
 
                         <div class="col-md-6">
                             <div class="form-group" id="po_station_id">
-                                <label>Delivery Point</label>
+                                <label>Supplier</label>
                                 <select style="width: 100%" name="po_station_id">
                                     <option></option>
                                     <?php
-                                    foreach ($delivery_points as $key => $s) {
+                                    foreach ($suppliers as $key => $sup) {
                                         ?>
-                                        <option value="<?php echo $s['station_id'] ?>"><?php echo strtoupper($s['station_name']); ?></option>
+                                        <option value="<?php echo $sup['supplier_id'] ?>"><?php echo strtoupper($sup['supplier_name']); ?></option>
                                         <?php
                                     }
                                     ?>
@@ -1125,6 +1216,194 @@ if (in_array('modal_close_vessel', $modals)) {
     </div>
     <?php
 }
+
+
+//ADDING CREDIT SALE
+if (in_array('modal_add_credit_sale', $modals)) {
+    ?>
+    <div id="addCreditSale"  role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" class="modal fade text-left">
+        <div role="document" class="modal-dialog modal-lg">
+            <form id="add_credit_sale_form" class="modal-content" action="">
+                <div class="modal-header">
+                    <h4 id="exampleModalLabel" class="modal-title"> Add Credit Sale</h4>
+                    <button type="button" data-dismiss="modal" aria-label="Close" class="close"><span aria-hidden="true">×</span></button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="form-group" id="cr_attendant_details">
+                                <label>Attendant</label>
+                                <input placeholder="Attendant Details" readonly="" class="form-control" name="cr_attendant_details" autocomplete="off" value="">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group" id="cr_del_note">
+                                <label>Delivery Note No</label>
+                                <input placeholder="Enter delivery note no"  class="form-control" name="cr_del_note" autocomplete="off" value="">
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group" id="cr_order_no">
+                                <label>Order No</label>
+                                <input placeholder="Enter the order number"  class="form-control" name="cr_order_no" autocomplete="off" value="">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group" id="cr_customer">
+                                <label>Customer</label>
+                                <select style="width: 100%;" name="cr_customer">
+                                    <option value=""></option>
+                                    <?php
+                                    foreach ($customers as $key => $cust) {
+                                        ?>
+                                        <option value="<?php echo $cust['credit_type_id']; ?>"><?php echo $cust['credit_type_name']; ?></option>
+                                        <?php
+                                    }
+                                    ?>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group" id="cr_truck_no">
+                                <label>Truck No</label>
+                                <input placeholder="Enter the truck number"  class="form-control" name="cr_truck_no" autocomplete="off" value="">
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="form-group" id="cr_qty">
+                                <label>Quantity (Ltrs)</label>
+                                <input placeholder="Enter the quantity in ltrs"  class="form-control volume" name="cr_qty" autocomplete="off" value="">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="form-group" id="cr_notes">
+                                <label>Credit Sale Notes</label>
+                                <textarea placeholder="Enter the sale notes (optional)"  class="form-control" name="cr_notes" autocomplete="off"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" data-dismiss="modal" class="btn btn-secondary pull-left">Close</button>
+                    <button type="submit" class="btn btn-success"><i class="fa fa-plus-circle"></i>&nbsp;Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <?php
+}
+
+
+
+if (in_array('modal_add_payment', $modals)) {
+    ?>
+    <div id="addPayment"  role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" class="modal fade text-left">
+        <div role="document" class="modal-dialog">
+            <form id="close_vessel_form" class="modal-content" action="<?php echo site_url('customers/submitcustomerpayment'); ?>">
+                <div class="modal-header">
+                    <h4 id="exampleModalLabel" class="modal-title"> Add Payment</h4>
+                    <button type="button" data-dismiss="modal" aria-label="Close" class="close"><span aria-hidden="true">×</span></button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="form-group" id="pay_date">
+                                <label>Payment Date</label>
+                                <input placeholder="Enter the payment date" readonly=""  class="form-control min_date" name="pay_date" autocomplete="off" value="">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="form-group" id="pay_customer">
+                                <label>Customer</label>
+                                <select style="width: 100%;" name="pay_customer">
+                                    <option value=""></option>
+                                    <?php
+                                    foreach ($credit_customers as $cust) {
+                                        ?>
+                                        <option value="<?php echo $cust['credit_type_id']; ?>"><?php echo $cust['credit_type_name']; ?></option>
+                                        <?php
+                                    }
+                                    ?>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="form-group" id="pay_method">
+                                <label>Payment Method</label>
+                                <select style="width: 100%;" name="pay_method">
+                                    <option value=""></option>
+                                    <?php
+                                    foreach ($pay_methods as $pm) {
+                                        ?>
+                                        <option name ="<?php echo $pm; ?>"><?php echo $pm; ?></option>
+                                        <?php
+                                    }
+                                    ?>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="form-group" id="pay_amount">
+                                <label>Amount Paid</label>
+                                <input placeholder="Enter the amount paid"  class="form-control amount" name="pay_amount" autocomplete="off" value="">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="form-group" id="pay_reference">
+                                <label>Payment Reference</label>
+                                <input placeholder="Enter payment reference number"  class="form-control" name="pay_reference" autocomplete="off" value="">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="form-group" id="pay_notes">
+                                <label>Payment Notes</label>
+                                <textarea class="form-control" name="pay_notes" placeholder="Enter payment notes"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" data-dismiss="modal" class="btn btn-secondary pull-left">Close</button>
+                    <button type="submit" class="btn btn-success"><i class="fa fa-plus-circle"></i>&nbsp;Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <?php
+}
 ?>
 
 <script type="text/javascript">
@@ -1132,7 +1411,10 @@ if (in_array('modal_close_vessel', $modals)) {
     $(document).ready(function () {
 
         $('select[name=ftg_id]').select2({placeholder: 'Select product type'});
+        $('select[name=pay_method]').select2({placeholder: 'Select payment method'});
+        $('select[name=cr_customer],select[name=pay_customer]').select2({placeholder: 'Select customer'});
         $('select[name=auth_id]').select2({placeholder: 'Select user'});
+        $('select[name=supplier_id]').select2({placeholder: 'Select supplier'});
         $('select[name=user_role], select[name=edit_user_role]').select2({placeholder: 'Select user role'});
         $('select[name=edit_driver_id],select[name=driver_id]').select2({placeholder: 'Select driver'});
         $('select[name=po_station_id],select[name=edit_po_station_id]').select2({placeholder: 'Select station'});
@@ -1141,7 +1423,7 @@ if (in_array('modal_close_vessel', $modals)) {
         $('select[name=po_vessel_id],#_po_vessel_id,select[name=loading_vessel_id],select[name=close_vs_remain_transfered_to],#_edit_po_vessel_id').select2({placeholder: 'Select vessel'});
 
 
-        $(document).on('submit', '#create_order_form,#add_vessel_form,#add_loading_form,#add_release_instruction_form,#add_po_in_ri_form,#close_vessel_form,#edit_order_form,#add_user_form,#edit_user_form', function (e) {
+        $(document).on('submit', '#edit_petronite_customer_form,#create_order_form,#add_vessel_form,#add_loading_form,#add_release_instruction_form,#add_po_in_ri_form,#close_vessel_form,#edit_order_form,#add_user_form,#edit_user_form,#add_supplier_form,#add_credit_sale_form,#add_petronite_customer_form', function (e) {
             e.preventDefault();
             var post_data = $(this).serializeArray();
             submitAjaxForm(post_data, $(this).attr('action'));
@@ -1204,6 +1486,25 @@ if (in_array('modal_close_vessel', $modals)) {
 
                                     break;
 
+                                case 'editPetroniteCustomer':
+
+                                    $('input[name=edit_company_name]').val(data.status.form_data.customer_data.pc_name);
+                                    $('input[name=edit_company_slogan]').val(data.status.form_data.customer_data.pc_slogan);
+                                    $('textarea[name=edit_company_contact_text]').val(data.status.form_data.customer_data.pc_contact_text);
+                                    $('input[name=edit_company_tin]').val(data.status.form_data.customer_data.pc_tin_number);
+                                    $('input[name=edit_company_vrn]').val(data.status.form_data.customer_data.pc_vrn);
+                                    
+                                    $('input[name=edit_admin_full_name]').val(data.status.form_data.admin_data.user_fullname);
+                                    $('input[name=edit_admin_user_name]').val(data.status.form_data.admin_data.user_name);
+                                    $('input[name=edit_admin_phone]').val(data.status.form_data.admin_data.user_phone);
+                                    $('input[name=edit_admin_email]').val(data.status.form_data.admin_data.user_email);
+                                    $('input[name=edit_admin_address]').val(data.status.form_data.admin_data.user_address);
+                                    $('#company_banner').attr('src',"<?php echo base_url();?>uploads/company_banners/"+data.status.form_data.customer_data.pc_logo)
+                                    
+                                    $('#edit_petronite_customer_form').attr('action', data.status.form_url);
+
+                                    break;
+
                                 case 'editUser':
 
                                     $('input[name=edit_full_name]').val(data.status.form_data.user.user_fullname);
@@ -1225,7 +1526,7 @@ if (in_array('modal_close_vessel', $modals)) {
                                     $('select[name=edit_driver_id]').val(data.status.form_data.po.po_driver_id).trigger('change');
                                     $('input[name=edit_driver_name]').val(data.status.form_data.po.po_driver_name);
                                     $('input[name=edit_diesel_qty]').val(data.status.form_data.poq.diesel_qty);
-                                    $('input[name=edit_super_qty').val(data.status.form_data.poq.super_qty);
+                                    $('input[name=edit_super_qty]').val(data.status.form_data.poq.super_qty);
                                     $('input[name=edit_kerosene_qty]').val(data.status.form_data.poq.kerosene_qty);
                                     $('input[name=edit_truck_number]').val(data.status.form_data.po.po_truck_number);
                                     $('input[name=edit_driver_license]').val(data.status.form_data.po.po_driver_license);
@@ -1234,9 +1535,14 @@ if (in_array('modal_close_vessel', $modals)) {
                                         data: data.status.form_data.vessels
                                     });
                                     $('#_edit_po_vessel_id').val(data.status.form_data.selected_vessels).trigger('change');
-                                   
+
                                     $('#edit_order_form').attr('action', data.status.form_url);
 
+                                    break;
+
+                                case 'addCreditSale':
+                                    $('input[name=cr_attendant_details]').val(data.att.user_name + ' (' + data.att.pump_name + ' - ' + data.att.fuel_type_generic_name + ' - ' + data.att.shift_name + ')');
+                                    $('#add_credit_sale_form').attr('action', data.status.form_url);
                                     break;
 
                             }

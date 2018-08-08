@@ -38,29 +38,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php
-                                foreach ($credit_customers as $i => $c) {
-                                    ?>
-                                    <tr>
-                                        <td><?php echo $c['credit_type_name']; ?></td>
-                                        <td><?php echo $c['stations']; ?></td>
-                                        <td><?php echo $c['credit_type_type_description']; ?></td>
-                                        <td><?php echo $c['credit_type_allow_rtt']; ?></td>
-                                        <td>
-                                            <div class="dropdown">
-                                                <button type="button" id="closeCard2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-info btn-sm"><i class="fa fa-ellipsis-v"></i></button>
-                                                <div aria-labelledby="closeCard2" class="dropdown-menu dropdown-menu-right has-shadow">
-                                                    <a href="<?php //echo site_url('dailyentries/saledetails/' . $att['att_id']) . '?url=' . urlencode(current_url()) . '?' . $_SERVER['QUERY_STRING'];  ?>"  class="dropdown-item edit_item text-success"> <i class="fa fa-list-ul"></i>&nbsp;&nbsp;Details</a>
-                                                    <a href="<?php //echo site_url('inventory/edithallitem/' . $att['att_id']);  ?>"  class="dropdown-item edit_item"> <i class="fa fa-edit"></i>&nbsp;&nbsp;Edit</a>
-                                                    <a href="<?php //echo site_url('inventory/deletehallitem/' . $att['att_id']);  ?>" class="dropdown-item edit text-danger"> <i class="fa fa-trash"></i>&nbsp;&nbsp;Delete</a>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <?php
-                                }
-                                ?>
-
+                                
                             </tbody>
                         </table>
                     </div>
@@ -76,23 +54,40 @@
 <script type="text/javascript">
 
     $(document).ready(function () {
-
-        s_table = $('#shifts_table').DataTable({
+        
+        $('#shifts_table').DataTable({
             "aaSorting": [],
             responsive: true,
             fixedHeader: {headerOffset: 70},
             searching: true,
-            lengthChange: false,
-            "pageLength": 10,
+            lengthChange: true,
+            "pageLength": 25,
+            "processing": true, //Feature control the processing indicator.
+            "serverSide": true, //Feature control DataTables' server-side processing mode.
+            "order": [], //Initial no order.
+
+            // Load data for the table's content from an Ajax source
+            "ajax": {
+                "url": "<?php echo site_url('customers/ajaxstationcustomerslist'); ?>",
+                data: {type: ""},
+                "type": "POST",
+                error: function (xhr, error, thrown) {
+                    alert('Something went wrong!');
+                    // location.reload(false);
+                }
+            },
+
+            //Set column definition initialisation properties.
             columnDefs: [
                 {responsivePriority: 1, targets: 0},
                 {responsivePriority: 2, targets: -1},
-                {responsivePriority: 3, targets: 1}
+                {responsivePriority: 3, targets: 1},
+                {
+                    "targets": [1,2,3], //first column / numbering column
+                    "orderable": false, //set not orderable
+                },
             ]
         });
-
-
-
     });
 
 </script>

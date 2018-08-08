@@ -2,8 +2,58 @@
 
 Class UserModel extends CI_Model {
 
+    // Initialize gloabal variables
+    var $user_id = null;
+    var $station_id = null;
+    var $is_logged_in = false;
+    var $customer = null;
+    var $admin_id = null;
+
+    
     public function __construct() {
         
+        // Check if user has logged in using session
+        if ($this->isLogedin()) {
+            $this->user_id = $this->session->userdata['logged_in']['user_id'];
+            $this->station_id = $this->session->userdata['logged_in']['user_station_id'];
+            $this->admin_id = $this->session->userdata['logged_in']['user_admin_id'];
+            $this->is_logged_in = TRUE;
+        }
+    }
+    
+    public function setSessMsg($msg, $type, $redirect_to = null) {
+        $this->session->set_flashdata($type, $msg);
+        if (null !== $redirect_to) {
+            redirect($redirect_to);
+        }
+    }
+
+    public function checkStatus($logged_in = null, $customer = null, $admin = null) {
+
+        if (null !== $logged_in AND ! $this->is_logged_in) {
+            // User session expired they must login to continue
+            $this->setSessMsg('Loging in is required', 'error', 'user/index');
+        }
+
+
+        if (null !== $admin AND null === $this->admin_id) {
+            // admin identity not set
+            $this->setSessMsg('Select a valid customer', 'error', 'developer/customers');
+        }
+    }
+
+    public function checkStatusJson($logged_in = null, $customer = null, $admin = null) {
+
+        if (null !== $logged_in AND ! $this->is_logged_in) {
+            // User session expired they must login to continue
+            cus_json_error('Loging in is required, Please refresh the page');
+        }
+
+
+        if (null !== $admin AND null === $this->admin_id) {
+            // admin identity not set
+            cus_json_error('Select a valid customer');
+        }
     }
 
     public function getUserInfo($var, $type = null) {

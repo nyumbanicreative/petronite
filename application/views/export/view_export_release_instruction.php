@@ -40,7 +40,7 @@
         <div>
 
             <div style="text-align: center;">
-                <img src="<?php echo base_url(); ?>assets/img/afroiltopbanner.jpg" style="height:100%;"/>
+                <img src="<?php echo base_url() . 'uploads/company_banners/'.$customer['pc_logo']; ?>" style="height:60px;"/>
             </div>
 
             <p style="text-align:center;"><?php echo $contact_text; ?></p>
