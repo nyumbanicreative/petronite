@@ -189,7 +189,7 @@ class Maintenance extends CI_Controller {
         $this->checkStatusJson(1, 1, 1);
 
         // Initialize valid fields
-        $valid_fields = ['po_depo_id', 'loading_vessel_id', 'loading_po_id'];
+        $valid_fields = ['po_depo_id', 'loading_vessel_id', 'loading_po_id','cr_customer'];
 
         // initialize post inputs
         $field = $this->input->post('field');
@@ -244,6 +244,17 @@ class Maintenance extends CI_Controller {
 
                 $json = ['status' => ['error' => FALSE], 'po' => $po];
 
+                break;
+                
+            case 'cr_customer':
+                
+                $customer = $this->cust->getCreditCustomers(['credit_type_id' => $value], NULL, 1);
+                
+                if(!$customer){
+                    cus_json_error('Customer was not found or may have been removed from the system');
+                }
+                
+                $json = ['status' => ['error' => FALSE], 'customer' => $customer];
                 break;
         }
 

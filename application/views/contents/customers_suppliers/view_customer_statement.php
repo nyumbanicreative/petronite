@@ -7,7 +7,7 @@
 <?php echo $alert; ?>
 <section class="tables no-padding-top">   
     <div class="container-fluid">
-        
+
         <div id="filter" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" class="modal fade text-left">
             <div role="document" class="modal-dialog">
                 <form action="<?php echo site_url('customers/customersstatement/' . $cc['credit_type_id']); ?>" method="post" class="modal-content">
@@ -21,7 +21,7 @@
                             <div class="col-lg-12">
                                 <div class="form-group" id="item_name">
                                     <label>Select Date Range</label>
-                                    <input placeholder="Select Date Range" autocomplete="off" class="form-control" name="date_range" id="_date_range" value="<?php echo !empty(set_value('sbt')) ?set_value('date_range') : $date_string; ?>">
+                                    <input placeholder="Select Date Range" autocomplete="off" class="form-control" name="date_range" id="_date_range" value="<?php echo!empty(set_value('sbt')) ? set_value('date_range') : $date_string; ?>">
                                 </div>
                             </div>
 
@@ -36,7 +36,7 @@
                 </form>
             </div>
         </div>
-        
+
         <br/>
         <div class="row">
             <div class="col-lg-12">
@@ -44,10 +44,10 @@
                     <a href="<?php echo site_url('user/dashboard'); ?>"class="btn btn-primary btn-sm" data-target="#myModal"><i class="fa fa-dashboard"></i>&nbsp;Dashboard</a>
                     <a href="<?php echo site_url('customers/customersbalance'); ?>"class="btn btn-primary btn-sm" data-target="#myModal"><i class="fa fa-arrow-circle-left"></i>&nbsp;Back</a>
                 </div>
-                
+
                 <div class="pull-right">
-                    <a href="<?php echo site_url('user/pdfcustomerinvoice/'.$cc['credit_type_id']); ?>" class="btn btn-secondary btn-sm"  target="_blank"><i class="fa fa-file-pdf-o"></i>&nbsp;Current Invoice</a>
-                    <a href="<?php echo site_url('customers/pdfcustomerstatement/'.$cc['credit_type_id'].'?datefrom='.$datefrom.'&dateto='.$dateto); ?>" class="btn btn-secondary btn-sm" target="_blank"><i class="fa fa-file-pdf-o"></i>&nbsp;PDF Statement</a>
+                    <a href="<?php echo site_url('user/pdfcustomerinvoice/' . $cc['credit_type_id']); ?>" class="btn btn-secondary btn-sm"  target="_blank"><i class="fa fa-file-pdf-o"></i>&nbsp;Current Invoice</a>
+                    <a href="<?php echo site_url('customers/pdfcustomerstatement/' . $cc['credit_type_id'] . '?datefrom=' . $datefrom . '&dateto=' . $dateto); ?>" class="btn btn-secondary btn-sm" target="_blank"><i class="fa fa-file-pdf-o"></i>&nbsp;PDF Statement</a>
                 </div>
             </div>
         </div>
@@ -84,9 +84,9 @@
                                         <label>Customer Balance</label>
                                         <?php
                                         if ($cc['credit_type_balance'] <= 0) {
-                                            echo "<h4><span class='badge badge-success'>" . cus_price_form($cc['credit_type_balance']) . ' ' . CURRENCY . "</span></h4>";
+                                            echo "<h4><span class='badge badge-success'>" . CURRENCY . ' ' . cus_price_form(abs($cc['credit_type_balance'])) . " Cr</span></h4>";
                                         } else {
-                                            echo "<h4><span class='badge badge-danger'>" . cus_price_form($cc['credit_type_balance']) . ' ' . CURRENCY . "</span></h4>";
+                                            echo "<h4><span class='badge badge-danger'>" . CURRENCY . ' ' . cus_price_form($cc['credit_type_balance']) . ' Dr</span></h4>';
                                         }
                                         ?>
                                     </div>
@@ -109,9 +109,10 @@
                             <thead>
                                 <tr>
                                     <th>Transaction Date</th>
+                                    <th>Particulars</th>
                                     <th>Transaction Type</th>
-                                    <th>Amount</th>
-                                    <th>Description</th>
+                                    <th>Debit</th>
+                                    <th>Credit</th>
                                     <th>Balance</th>
                                 </tr>
                             </thead>
@@ -121,6 +122,7 @@
                                     ?>
                                     <tr>
                                         <td><?php echo $txn['txn_timestamp'] ?></td>
+                                        <td><?php echo $txn['txn_notes']; ?></td>
                                         <td>
                                             <?php
                                             if ($txn['txn_type'] == 'CREDIT_SALE') {
@@ -132,15 +134,24 @@
                                         </td>
                                         <td>
                                             <?php
-                                            if ($txn['txn_type'] == 'CREDIT_SALE') {
-                                                echo cus_price_form_french($txn['txn_debit']);
-                                            } elseif ($txn['txn_type'] == 'CREDIT_PAYMENT') {
-                                                echo cus_price_form_french($txn['txn_credit']);
+                                            echo cus_price_form_french($txn['txn_debit']);
+                                            ?>
+                                        </td>
+                                        <td>
+                                            <?php
+                                            echo cus_price_form_french($txn['txn_credit']);
+                                            ?>
+                                        </td>
+
+                                        <td>
+                                            <?php
+                                            if ($txn['txn_balance_after'] <= 0) {
+                                                echo cus_price_form(abs($txn['txn_balance_after'])) . ' Cr';
+                                            } else {
+                                                echo cus_price_form($txn['txn_balance_after']) .' Dr';
                                             }
                                             ?>
                                         </td>
-                                        <td><?php echo $txn['txn_notes']; ?></td>
-                                        <td><?php echo cus_price_form_french($txn['txn_balance_after']); ?></td>
                                     </tr>
                                     <?php
                                 }
@@ -159,7 +170,7 @@
 <script type="text/javascript">
 
     $(document).ready(function () {
-        
+
         $('#_date_range').daterangepicker({
             "singleDatePicker": false,
             "autoUpdateInput": false,
@@ -172,8 +183,8 @@
             $('#_date_range').val(start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'));
             console.log('New date range selected: ' + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD') + ' (predefined range: ' + label + ')');
         });
-        
-        
+
+
         $('#statement_table').DataTable({
             "aaSorting": [],
             responsive: true,

@@ -116,6 +116,7 @@ class Dailyentries extends CI_Controller {
     }
 
     public function addCreditSale() {
+
         header('Access-allow-control-origin: *');
         header('Content-type: text/json');
 
@@ -176,6 +177,10 @@ class Dailyentries extends CI_Controller {
                 'customer' => $this->customer,
                 'sale' => $sale,
                 'credit_sales' => $credit_sales
+            ],
+            'modals_data' =>[
+                'modals' => ['modal_add_credit_sale'],
+                'customers' => $this->cust->getCreditCustomers(['s.station_id' => $this->station_id])
             ],
             'header_data' => [],
             'footer_data' => [],
@@ -516,7 +521,7 @@ class Dailyentries extends CI_Controller {
 
         $att_id = $this->uri->segment(3);
 
-        $att = $this->rpt->getSales(['att.att_station_id' => $this->station_id], ['att.att_id', 'att.att_sale_price_per_ltr','f.fuel_type_generic_name'], NULL, $att_id, []);
+        $att = $this->rpt->getSales(['att.att_station_id' => $this->station_id], ['att.att_id', 'att.att_sale_price_per_ltr', 'f.fuel_type_generic_name'], NULL, $att_id, []);
 
         if (!$att) {
             cus_json_error('Attendant shift was not found or it may have been removed');
@@ -529,7 +534,9 @@ class Dailyentries extends CI_Controller {
                 ['field' => 'cr_customer', 'label' => 'Customer', 'rules' => 'trim|required|callback_validateCreditCustomer'],
                 ['field' => 'cr_truck_no', 'label' => 'Truck Number', 'rules' => 'trim'],
                 ['field' => 'cr_qty', 'label' => 'Quantity sold', 'rules' => 'trim|required|numeric'],
-                ['field' => 'cr_notes', 'label' => 'Credit Notes', 'rules' => 'trim']
+                ['field' => 'cr_notes', 'label' => 'Credit Notes', 'rules' => 'trim'],
+                ['field' => 'cr_driver_name', 'label' => 'Driver Name', 'rules' => 'trim|callback_validateDriverName'],
+                ['field' => 'cr_delivery_point', 'label' => 'Delivery Point', 'rules' => 'trim|callback_validateDeliveryPoint']
         ];
 
         $this->form_validation->set_rules($validations);
@@ -554,15 +561,15 @@ class Dailyentries extends CI_Controller {
             if (!$credit) {
                 cus_json_error('Customer was not found or may have been removed from the sysytem');
             }
-            
-            if($credit['credit_type_type_description'] == 'STATION'){
+
+            if ($credit['credit_type_type_description'] == 'STATION') {
                 $tts = 1;
             }
-            
-            if($credit['credit_type_allow_rtt'] == '1' OR $this->auto_rtt == '1'){
+
+            if ($credit['credit_type_allow_rtt'] == '1' OR $this->auto_rtt == '1') {
                 $rtt = 1;
             }
-            
+
             $sale_price = $att['att_sale_price_per_ltr'];
             $amount = $ltrs * $sale_price;
             $balance_after = $credit['credit_type_balance'] + ($amount);
@@ -571,7 +578,7 @@ class Dailyentries extends CI_Controller {
                 'customer_sale_customer_id' => 1,
                 'customer_sale_att_id' => $att['att_id'],
                 'customer_sale_ltrs' => $ltrs,
-                'customer_sale_credit_type_id'=> $credit['credit_type_id'],
+                'customer_sale_credit_type_id' => $credit['credit_type_id'],
                 'customer_sale_added_by' => $this->user_id,
                 'customer_sale_credit_number' => time(),
                 'customer_sale_order_number' => $this->input->post('cr_order_no'),
@@ -582,12 +589,14 @@ class Dailyentries extends CI_Controller {
                 'customer_sale_rtt' => $rtt,
                 'customer_sale_tts' => $tts,
                 'customer_sale_price' => $sale_price,
-                'customer_sale_notes' => $this->input->post('cr_notes')
+                'customer_sale_notes' => $this->input->post('cr_notes'),
+                'customer_sale_driver_name' => $this->input->post('cr_driver_name'),
+                'customer_sale_delivery_point' => $this->input->post('cr_delivery_point')
             ];
-            
-            $notes = "Fuel Purchase. ". $ltrs . ' ltr(s) of '. $att['fuel_type_generic_name'] . ' @'. cus_price_form($sale_price);
-            
-            $res = $this->cust->saveCreditSale(['credit_data' => $credit_data,'amount' => $amount,'admin_id' => $this->admin_id,'notes' => $notes]);
+
+            $notes = "Fuel Purchase. " . $ltrs . ' ltr(s) of ' . $att['fuel_type_generic_name'] . ' @' . cus_price_form($sale_price);
+
+            $res = $this->cust->saveCreditSale(['credit_data' => $credit_data, 'amount' => $amount, 'admin_id' => $this->admin_id, 'notes' => $notes]);
 
             if ($res) {
                 $this->setSessMsg('Credit sale save successfully', 'success');
@@ -596,7 +605,7 @@ class Dailyentries extends CI_Controller {
                     'status' => [
                         'error' => FALSE,
                         'redirect' => true,
-                        'redirect_url' => site_url('dailyentries/saledetails/'. $att['att_id'])
+                        'redirect_url' => site_url('dailyentries/saledetails/' . $att['att_id'])
                     ]
                 ]);
 
@@ -605,6 +614,40 @@ class Dailyentries extends CI_Controller {
                 cus_json_error('Unable to add credit sale, please refresh the page and try again.');
             }
         }
+    }
+    
+    public function validateDeliveryPoint($delivery_point) {
+        $customer_id = $this->input->post('cr_customer');
+        
+        $customer = $this->cust->getCreditCustomers(['crdt.credit_type_id' => $customer_id], NULL, 1);
+        
+        if(!$customer){
+            return TRUE;
+        }
+        
+        if($customer['credit_type_type_description'] == 'TRANSIT' AND empty($delivery_point)){
+            $this->form_validation->set_message('validateDeliveryPoint','Delivery point is required');
+            return FALSE;
+        }
+        return TRUE;
+    }
+    
+    public function validateDriverName($driver_name) {
+        
+        $customer_id = $this->input->post('cr_customer');
+        
+        $customer = $this->cust->getCreditCustomers(['crdt.credit_type_id' => $customer_id], NULL, 1);
+        
+        if(!$customer){
+            return TRUE;
+        }
+        
+        if($customer['credit_type_type_description'] == 'TRANSIT' AND empty($driver_name)){
+            $this->form_validation->set_message('validateDriverName','Driver name is required');
+            return FALSE;
+        }
+        
+        return TRUE;
     }
 
     public function releaseOrder() {

@@ -1280,7 +1280,23 @@ if (in_array('modal_add_credit_sale', $modals)) {
                         </div>
                     </div>
 
+                    <div class="row" id="for_transit" style="display: none;">
 
+                        <div class="col-md-6">
+                            <div class="form-group" id="cr_driver_name">
+                                <label>Driver Name</label>
+                                <input placeholder="Enter the driver name"  class="form-control" name="cr_driver_name" autocomplete="off" value="">
+
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group" id="cr_delivery_point">
+                                <label>Delivery Point</label>
+                                <input placeholder="Enter the delivery point"  class="form-control" name="cr_delivery_point" autocomplete="off" value="">
+                            </div>
+                        </div>
+                    </div>
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="form-group" id="cr_qty">
@@ -1430,7 +1446,7 @@ if (in_array('modal_add_payment', $modals)) {
         });
 
         //Cache Vessels
-        $(document).on('change', 'select[name=po_depo_id],select[name=loading_vessel_id],select[name=loading_po_id]', function (e) {
+        $(document).on('change', 'select[name=po_depo_id],select[name=loading_vessel_id],select[name=loading_po_id],select[name=cr_customer]', function (e) {
             e.preventDefault();
             field = $(this).attr('name');
             value = $(this).val()
@@ -1493,14 +1509,14 @@ if (in_array('modal_add_payment', $modals)) {
                                     $('textarea[name=edit_company_contact_text]').val(data.status.form_data.customer_data.pc_contact_text);
                                     $('input[name=edit_company_tin]').val(data.status.form_data.customer_data.pc_tin_number);
                                     $('input[name=edit_company_vrn]').val(data.status.form_data.customer_data.pc_vrn);
-                                    
+
                                     $('input[name=edit_admin_full_name]').val(data.status.form_data.admin_data.user_fullname);
                                     $('input[name=edit_admin_user_name]').val(data.status.form_data.admin_data.user_name);
                                     $('input[name=edit_admin_phone]').val(data.status.form_data.admin_data.user_phone);
                                     $('input[name=edit_admin_email]').val(data.status.form_data.admin_data.user_email);
                                     $('input[name=edit_admin_address]').val(data.status.form_data.admin_data.user_address);
-                                    $('#company_banner').attr('src',"<?php echo base_url();?>uploads/company_banners/"+data.status.form_data.customer_data.pc_logo)
-                                    
+                                    $('#company_banner').attr('src', "<?php echo base_url(); ?>uploads/company_banners/" + data.status.form_data.customer_data.pc_logo)
+
                                     $('#edit_petronite_customer_form').attr('action', data.status.form_url);
 
                                     break;
@@ -1701,6 +1717,16 @@ if (in_array('modal_add_payment', $modals)) {
 
                             case 'loading_po_id':
                                 $("input[name=loading_volume_ordered]").val(data.po.poq_volume);
+                                break;
+
+                            case "cr_customer":
+
+                                if (data.customer.credit_type_type_description == 'TRANSIT') {
+                                    $('#for_transit').show();
+                                } else {
+                                    $('#for_transit').hide();
+                                }
+
                                 break;
 
                         }

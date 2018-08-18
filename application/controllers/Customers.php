@@ -138,9 +138,9 @@ class Customers extends CI_Controller {
             $balance = $a->credit_type_balance;
 
             if ($balance <= 0) {
-                $balance = "<h4><span class='badge badge-success'>" . cus_price_form($balance) . ' ' . CURRENCY . "</span></h4>";
+                $balance = "<h4><span class='badge badge-success'>" .CURRENCY .'  '. cus_price_form($balance) .  " Cr</span></h4>";
             } else {
-                $balance = "<h4><span class='badge badge-danger'>" . cus_price_form($balance) . ' ' . CURRENCY . "</span></h4>";
+                $balance = "<h4><span class='badge badge-danger'>" .CURRENCY .'  '.  cus_price_form($balance) . " Dr</span></h4>";
             }
 
             $link = '<a href="' . site_url('customers/customersstatement/' . $a->credit_type_id) . '" class="btn btn-sm btn-outline-info">View Statement</a>';

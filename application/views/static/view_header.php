@@ -360,6 +360,10 @@
                 color: #333;
                 padding: 15px 0px 20px;
             }
+            
+            .hide{
+                display: none;
+            }
 
         </style>
 

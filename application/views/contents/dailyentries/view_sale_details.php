@@ -30,7 +30,7 @@
                         <div class="dropdown">
                             <button type="button" id="closeCard1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class=" btn btn-info btn-sm"><i class="fa fa-gears"></i>&nbsp;Options</button>
                             <div aria-labelledby="closeCard1" class="dropdown-menu dropdown-menu-right has-shadow">
-                                <a href="<?php site_url('dailyacivities/addcreditsale/'.$sale['att_id']);?>" data-toggle="modal" data-target="#addCreditSale" class="dropdown-item edit request_form"> <i class="fa fa-plus-circle"></i>Add Credit Sale</a>
+                                <a href="<?php echo site_url('dailyentries/addcreditsale/' . $sale['att_id']); ?>"  class="dropdown-item edit request_form"> <i class="fa fa-plus-circle"></i>Add Credit Sale</a>
                             </div>
                         </div>
                     </div>
