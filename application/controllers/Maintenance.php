@@ -189,7 +189,7 @@ class Maintenance extends CI_Controller {
         $this->checkStatusJson(1, 1, 1);
 
         // Initialize valid fields
-        $valid_fields = ['po_depo_id', 'loading_vessel_id', 'loading_po_id','cr_customer'];
+        $valid_fields = ['po_depo_id', 'loading_vessel_id', 'loading_po_id', 'cr_customer', 'as_pump_id'];
 
         // initialize post inputs
         $field = $this->input->post('field');
@@ -211,7 +211,7 @@ class Maintenance extends CI_Controller {
                 }
 
                 foreach ($depo_vessels as $dv) {
-                    $vessels[] = ['text' => $dv['vessel_name'] .' - '.$dv['fuel_type_group_name'], 'id' => $dv['vessel_id']];
+                    $vessels[] = ['text' => $dv['vessel_name'] . ' - ' . $dv['fuel_type_group_name'], 'id' => $dv['vessel_id']];
                 }
                 $json = ['status' => ['error' => FALSE], 'vessels' => $vessels];
 
@@ -220,7 +220,7 @@ class Maintenance extends CI_Controller {
             case 'loading_vessel_id':
 
                 $pos [] = ['text' => '', 'id' => ''];
-                $released_pos = $this->purchase->getPurchaseOrders(['po.po_vessel_id' => $value,'ri.ri_status' => 'RELEASED','po.po_status' => 'RELEASED']);
+                $released_pos = $this->purchase->getPurchaseOrders(['po.po_vessel_id' => $value, 'ri.ri_status' => 'RELEASED', 'po.po_status' => 'RELEASED']);
 
                 if (!$released_pos) {
                     cus_json_error('No purchase order has been requested for this vessel');
@@ -236,7 +236,7 @@ class Maintenance extends CI_Controller {
 
             case 'loading_po_id':
 
-                $po = $this->purchase->getPoForVessel(['poq.poq_id' => $value],1);
+                $po = $this->purchase->getPoForVessel(['poq.poq_id' => $value], 1);
 
                 if (!$po) {
                     cus_json_error('Purchase order may have been removed from the system');
@@ -245,16 +245,77 @@ class Maintenance extends CI_Controller {
                 $json = ['status' => ['error' => FALSE], 'po' => $po];
 
                 break;
-                
+
             case 'cr_customer':
-                
+
                 $customer = $this->cust->getCreditCustomers(['credit_type_id' => $value], NULL, 1);
-                
-                if(!$customer){
+
+                if (!$customer) {
                     cus_json_error('Customer was not found or may have been removed from the system');
                 }
-                
+
                 $json = ['status' => ['error' => FALSE], 'customer' => $customer];
+                break;
+
+            case 'as_pump_id':
+
+                $pump = $this->mnt->getPumps($this->usr->station_id, ['pump_id' => $value], NULL, 1);
+
+                if (!$pump) {
+                    cus_json_error('Pump was not found');
+                }
+
+                $opened_pumps = $this->rpt->getSales(['att.att_station_id' => $this->usr->station_id, 'att_shift_status' => 'Opened'], ['att.att_pump_id'], NULL);
+
+                if ($opened_pumps) {
+                    $opened_pumps = array_column($opened_pumps, 'att_pump_id');
+                } else {
+                    $opened_pumps = [];
+                }
+
+                if (in_array($pump['pump_id'], $opened_pumps)) {
+                    cus_json_error('Pump is assigned to an open shift');
+                }
+                
+                // Lets have max and min shift sequences
+                $min_shift = $this->mnt->getShifts($this->usr->station_id, NULL, NULL, 1, NULL, [['col' => 'shift_sequence', 'sort' => 'ASC']]);
+                $max_shift = $this->mnt->getShifts($this->usr->station_id, NULL, NULL, 1, NULL, [['col' => 'shift_sequence', 'sort' => 'DESC']]);
+
+                // Get last shift for selected pump
+                $last_pump_shift = $this->att->getAttendances(['att.att_pump_id' => $pump['pump_id'], 'att.att_station_id' => $this->usr->station_id], ['att.att_date', 's.shift_sequence'], 1, NULL, [['col' => 'att.att_date', 'sort' => 'DESC'], ['col' => 's.shift_sequence', 'sort' => 'DESC']]);
+
+                // Check if we have it
+                if ($last_pump_shift) {
+
+                    // If we have it lets check if next shift is latest
+                    if (((int)$last_pump_shift['shift_sequence'] + 1) > $max_shift['shift_sequence']) {
+
+                        $next_shift_date = date('Y-m-d', strtotime('+1 day', strtotime($last_pump_shift['att_date'])));
+                        $next_shift_id = $min_shift['shift_id'];
+                        
+                    } else {
+
+                        $next_shift_date = $last_pump_shift['att_date'];
+                        $next_shift = $this->mnt->getShifts($this->usr->station_id, ['shift_sequence' => ((int)$last_pump_shift['shift_sequence'] + 1)], NULL, 1, NULL, NULL);
+                      
+                        if ($next_shift) {
+                            $next_shift_id = $next_shift['shift_id'];
+                        } else {
+                            $next_shift_date = date('Y-m-d', strtotime('+1 day', strtotime($last_pump_shift['att_date'])));
+                            $next_shift_id = $min_shift['shift_id'];
+                        }
+                    }
+                } else {
+                    
+                    $next_shift_id = $min_shift['shift_id'];
+                    $next_shift_date = $this->usr->station_first_day;
+                    
+                }
+
+                $data = ['next_shift_id' => $next_shift_id, 'next_shift_date' => $next_shift_date,'open_mtr_readings' => $pump['pump_curr_mtr_rdngs']];
+                $json = ['status' => ['error' => FALSE], 'next_shift' => $data];
+                
+                
                 break;
         }
 

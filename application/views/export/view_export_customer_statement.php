@@ -63,7 +63,7 @@
                     <td class="align_right width-50"><b>VRN:&nbsp;</b><?php echo $customer['pc_vrn'] ?></td>
                 </tr>
                 <tr>
-                    <td class="align_left width-50 padding-10-0" nowrap="nowrap"><h4><span style="font-weight:normal;">Balance To Be Paid:</span>&nbsp;&nbsp;<strong><?php echo cus_price_form($cc['credit_type_balance']) . ' ' . CURRENCY; ?></h4></strong></td>
+                    <td class="align_left width-50 padding-10-0" nowrap="nowrap"><!--<h4><span style="font-weight:normal;">Balance To Be Paid:</span>&nbsp;&nbsp;<strong><?php echo cus_price_form($cc['credit_type_balance']) . ' ' . CURRENCY; ?></h4></strong>--></td>
                     <td class="align_right width-50"><b>TIN:&nbsp;</b><?php echo $customer['pc_tin_number'] ?></td>
                 </tr>
             </table>
@@ -72,13 +72,13 @@
             <table class="order_info" style="width: 100%; border:1px solid #000; border-collapse: collapse; font-size: 14px;" >
                 <thead>
                     <tr>
-                        <th>Transaction Date</th>
-                        <th>Particular</th>
-                        <th>Transaction Type</th>
-                        <th>Debit (<?php echo CURRENCY;?>)</th>
-                        <th>Credit (<?php echo CURRENCY;?>)</th>
-                        
-                        <th>Balance (<?php echo CURRENCY;?>)</th>
+                        <th nowrap="nowrap">Transaction Date</th>
+                        <th nowrap="nowrap">Particular</th>
+                        <th nowrap="nowrap">Vch Type</th>
+                        <th nowrap="nowrap">Debit (<?php echo CURRENCY; ?>)</th>
+                        <th nowrap="nowrap">Credit (<?php echo CURRENCY; ?>)</th>
+
+                        <th nowrap="nowrap">Balance (<?php echo CURRENCY; ?>)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -86,7 +86,38 @@
                     foreach ($txns as $key => $txn) {
                         ?>
                         <tr>
-                            <td><?php echo $txn['txn_timestamp'] ?></td>
+                            <td><?php echo cus_nice_date($txn['txn_date']) ?></td>
+                            <td>
+                                <?php
+                                if ($txn['txn_type'] == 'CREDIT_SALE') {
+                                    echo $txn['fuel_type_generic_name'] . ' - ' . $txn['station_name'] . ' ';
+                                    echo $txn['customer_sale_ltrs'] . ' ltrs @ ' . cus_price_form($txn['att_sale_price_per_ltr']) . '/ltr&nbsp;&nbsp;' . cus_price_form($txn['att_sale_price_per_ltr'] * $txn['customer_sale_ltrs']) . '<br/>';
+                                    echo '<i>' . $txn['customer_sale_track_number'] . '</i>';
+                                } else {
+                                    echo $txn['txn_notes'];
+                                }
+                                ?>
+                            </td>
+
+                            <td>
+                                <?php
+                                if ($txn['txn_type'] == 'CREDIT_SALE') {
+                                    echo 'Credit Sale';
+                                } elseif ($txn['txn_type'] == 'CREDIT_PAYMENT') {
+                                    echo 'Receipt';
+                                }
+                                ?>
+                            </td>
+                            <td>
+                                <?php
+                                echo cus_price_form_french(abs($txn['txn_debit']));
+                                ?>
+                            </td>
+                            <td>
+                                <?php
+                                echo cus_price_form_french(abs($txn['txn_credit']));
+                                ?>
+                            </td>
                             <td>
                                 <?php
                                 if ($txn['txn_balance_after'] <= 0) {
@@ -96,27 +127,7 @@
                                 }
                                 ?>
                             </td>
-                            <td>
-                                <?php
-                                if ($txn['txn_type'] == 'CREDIT_SALE') {
-                                    echo 'CREDIT SALE';
-                                } elseif ($txn['txn_type'] == 'CREDIT_PAYMENT') {
-                                    echo 'RECEIPT';
-                                }
-                                ?>
-                            </td>
-                            <td>
-                                <?php
-                                echo cus_price_form_french($txn['txn_debit']);
-                                ?>
-                            </td>
-                            <td>
-                                <?php
-                                echo cus_price_form_french($txn['txn_credit']);
-                                ?>
-                            </td>
-                            <td><?php echo $txn['txn_notes']; ?></td>
-                            
+
                         </tr>
                         <?php
                     }

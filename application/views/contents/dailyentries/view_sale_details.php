@@ -13,9 +13,22 @@
         <br/>
         <div class="row">
             <div class="col-lg-12">
-                <div class="btn-group pull-left" role="group" aria-label="Basic example">
+                <div class="pull-left">
+                    <a href="<?php echo site_url('user/dashboard'); ?>" class="btn btn-primary btn-sm" data-target="#myModal"><i class="fa fa-dashboard"></i>&nbsp;Dashboard</a>
                     <a href="<?php echo $this->input->get('url'); ?>"class="btn btn-primary btn-sm" data-target="#myModal"><i class="fa fa-arrow-circle-left"></i>&nbsp;Back</a>
-                    <a href="<?php echo site_url('user/dashboard'); ?>"class="btn btn-primary btn-sm" data-target="#myModal"><i class="fa fa-dashboard"></i>&nbsp;Dashboard</a>
+                </div>
+
+                <div class="pull-right">
+                    <a href="<?php echo site_url('dailyentries/addcreditsale/' . $sale['att_id']); ?>"  class="btn btn-primary btn-sm request_form"> <i class="fa fa-plus-circle"></i> Add Credit Sale</a>
+
+                    <?php
+                    if ($sale['att_posted_to_ledger'] == 0) {
+                        ?>
+                    <a href="<?php echo site_url('dailyentries/posttoledger/' . $sale['att_id']); ?>"  class="btn btn-outline-danger btn-sm confirm" title="post sale details to account ledgers. <br/>Process can not be revert"> <i class="fa fa-list-alt"></i> Post To Ledger</a>
+                        <?php
+                    }
+                    ?>
+
                 </div>
             </div>
         </div>
@@ -27,12 +40,12 @@
             <div class="col-lg-12">
                 <div class="line-chart-example card has-shadow">
                     <div class="card-close">
-                        <div class="dropdown">
-                            <button type="button" id="closeCard1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class=" btn btn-info btn-sm"><i class="fa fa-gears"></i>&nbsp;Options</button>
-                            <div aria-labelledby="closeCard1" class="dropdown-menu dropdown-menu-right has-shadow">
-                                <a href="<?php echo site_url('dailyentries/addcreditsale/' . $sale['att_id']); ?>"  class="dropdown-item edit request_form"> <i class="fa fa-plus-circle"></i>Add Credit Sale</a>
-                            </div>
-                        </div>
+                        <!--                        <div class="dropdown">
+                                                    <button type="button" id="closeCard1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class=" btn btn-info btn-sm"><i class="fa fa-gears"></i>&nbsp;Options</button>
+                                                    <div aria-labelledby="closeCard1" class="dropdown-menu dropdown-menu-right has-shadow">
+                                                        <a href="<?php echo site_url('dailyentries/addcreditsale/' . $sale['att_id']); ?>"  class="dropdown-item edit request_form"> <i class="fa fa-plus-circle"></i>Add Credit Sale</a>
+                                                    </div>
+                                                </div>-->
                     </div>
                     <div class="card-header d-flex align-items-center">
                         <h3 class="h4">Details</h3>
@@ -80,11 +93,15 @@
                                         <label>Status</label>
                                         <p>
                                             <?php
-                                            if ($sale['att_shift_status'] == 'Closed') {
+                                            if ($sale['att_shift_status'] == 'Closed' AND $sale['att_posted_to_ledger'] == '0' ) {
+                                                ?>
+                                                <span class="badge badge-warning">PENDING LEDGER</span>
+                                                <?php
+                                            } elseif ($sale['att_shift_status'] == 'Closed' AND $sale['att_posted_to_ledger'] == '1' ) {
                                                 ?>
                                                 <span class="badge badge-success">CLOSED</span>
                                                 <?php
-                                            } else {
+                                            }else {
                                                 ?>
                                                 <span class="badge badge-danger">IN-PROGRESS</span>
                                                 <?php
@@ -220,7 +237,6 @@
                             </thead>
                             <tbody>
                                 <?php
-                                
                                 $total_amount = 0;
                                 foreach ($credit_sales as $i => $list) {
                                     $list = (array) $list;
@@ -362,8 +378,6 @@
                 </div>
             </div>
         </div>
-
-
     </div>
 </section>
 

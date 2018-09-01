@@ -138,9 +138,9 @@ class Customers extends CI_Controller {
             $balance = $a->credit_type_balance;
 
             if ($balance <= 0) {
-                $balance = "<h4><span class='badge badge-success'>" .CURRENCY .'  '. cus_price_form($balance) .  " Cr</span></h4>";
+                $balance = "<h4><span class='badge badge-success'>" . CURRENCY . '  ' . cus_price_form(abs($balance)) . " Cr</span></h4>";
             } else {
-                $balance = "<h4><span class='badge badge-danger'>" .CURRENCY .'  '.  cus_price_form($balance) . " Dr</span></h4>";
+                $balance = "<h4><span class='badge badge-danger'>" . CURRENCY . '  ' . cus_price_form(abs($balance)) . " Dr</span></h4>";
             }
 
             $link = '<a href="' . site_url('customers/customersstatement/' . $a->credit_type_id) . '" class="btn btn-sm btn-outline-info">View Statement</a>';
@@ -281,9 +281,12 @@ class Customers extends CI_Controller {
 
         // $txns = $this->txn->getTransactions(NULL, "txn.txn_type IN ('CREDIT_SALE','CREDIT_PAYMENT') AND txn.txn_acc_ref = '".$cc['credit_type_id']."'");
 
-        $txns = $this->txn->getTransactions(NULL, $cond, NULL, ['txn.txn_type' => ['CREDIT_SALE', 'CREDIT_PAYMENT']]);
+        $txns = $this->txn->getTransactions(NULL, $cond, NULL, ['txn.txn_type' => ['CREDIT_SALE', 'CREDIT_PAYMENT','CANCELLED_PAYMENT']]);
 
-
+//        echo '<pre>';
+//        print_r($txns);
+//        
+//        die();
         $data = [
             'menu' => 'menu/view_stations_menu', // View for menu
             'content' => 'contents/customers_suppliers/view_customer_statement', // View for contnet
@@ -367,7 +370,8 @@ class Customers extends CI_Controller {
             'modals_data' => [
                 'modals' => ['modal_add_payment'],
                 'credit_customers' => $credit_customers,
-                'pay_methods' => ['MPESA', 'CASH', 'BANK', 'CHEQUE']
+                'pay_methods' => ['MPESA', 'CASH', 'BANK', 'CHEQUE'],
+                'pay_points' => $this->stn->getUserStations($this->usr->user_id, $this->usr->admin_id)
             ],
             'header_data' => [], //Header data pass here
             'footer_data' => [], //Footer data pass here
@@ -386,12 +390,14 @@ class Customers extends CI_Controller {
         $this->checkStatusJson(1, 1, 1);
 
         $validations = [
+                ['field' => 'add_payment_form_error', 'label' => 'Form', 'rules' => 'callback_validateAddPaymentForm'],
                 ['field' => 'pay_date', 'label' => 'Payment Date', 'rules' => 'trim|required'],
                 ['field' => 'pay_customer', 'label' => 'Customer', 'rules' => 'trim|required|callback_validatePaymentCustomer'],
                 ['field' => 'pay_method', 'label' => 'Payment Method', 'rules' => 'trim|required|callback_validatePaymentMethod'],
                 ['field' => 'pay_amount', 'label' => 'Amount Paid', 'rules' => 'trim|required|numeric'],
                 ['field' => 'pay_reference', 'label' => 'Payment Reference', 'rules' => 'trim|callback_validatePaymentReference'],
-                ['field' => 'pay_notes', 'label' => 'Payment Notes', 'rules' => 'trim']
+                ['field' => 'pay_notes', 'label' => 'Payment Notes', 'rules' => 'trim'],
+                ['field' => 'pay_point', 'label' => 'Payment Point', 'rules' => 'trim|required|callback_validatePayPoint']
         ];
 
         $this->form_validation->set_rules($validations);
@@ -407,6 +413,7 @@ class Customers extends CI_Controller {
         } else {
             $customer_id = $this->input->post('pay_customer');
             $amount = $this->input->post('pay_amount');
+            $pay_date = $this->input->post('pay_date');
 
 
             $customer = $this->cust->getCreditCustomers(['credit_type_id' => $customer_id, 'credit_type_admin_id' => $this->usr->admin_id], NULL, 1);
@@ -428,7 +435,9 @@ class Customers extends CI_Controller {
                 'txn_admin_id' => $this->usr->admin_id,
                 'txn_notes' => $this->input->post('pay_notes'),
                 'txn_method' => $this->input->post('pay_method'),
-                'txn_reference_no' => $this->input->post('pay_reference')
+                'txn_reference_no' => $this->input->post('pay_reference'),
+                'txn_date' => date('Y-m-d', strtotime($pay_date)),
+                'txn_station_id' => $this->input->post('pay_point')
             ];
 
             $credit_data = ['credit_type_balance' => $balance_after];
@@ -451,6 +460,44 @@ class Customers extends CI_Controller {
                 cus_json_error('Unable to add credit payment, please refresh the page and try again.');
             }
         }
+    }
+
+    public function validatePayPoint($pay_point) {
+
+        if ($pay_point == '0') {
+            return TRUE;
+        }
+
+        $stations = $this->stn->getUserStations($this->usr->user_id, $this->usr->admin_id);
+
+        if (!$stations) {
+            $this->form_validation->set_message('validatePayPoint', 'Select a valid pay poin');
+            return FALSE;
+        }
+
+        $station_ids = array_column($stations, 'station_id');
+
+        if (!in_array($pay_point, $station_ids)) {
+            $this->form_validation->set_message('validatePayPoint', 'Select a valid pay poin');
+            return FALSE;
+        }
+
+        return TRUE;
+    }
+
+    public function validateAddPaymentForm() {
+
+        $cust_id = $this->input->post('pay_customer');
+        $pay_date = $this->input->post('pay_date');
+
+        $txn = $this->txn->getTransactions(['txn_id'], "(txn_timestamp BETWEEN DATE_SUB(NOW() , INTERVAL 2 MINUTE) AND NOW()) AND txn_acc_ref ='" . $cust_id . "' AND txn_date = '" . date('Y-m-d', strtotime($pay_date)) . "' ", 1, NULL);
+
+        if ($txn) {
+            $this->form_validation->set_message('validateAddPaymentForm', 'The record might have been submitted alredy, <a href="' . site_url('customers/customerpayments') . '">Refresh</a> the page to confirm');
+            return FALSE;
+        }
+
+        return TRUE;
     }
 
     public function requestEditPetroniteCustomerForm() {
@@ -502,7 +549,7 @@ class Customers extends CI_Controller {
                 ['field' => 'company_name', 'label' => 'Company Name', 'rules' => 'trim|required|is_unique[' . $this->db->dbprefix . 'petronite_customers.pc_name]'],
                 ['field' => 'company_slogan', 'label' => 'Company Slogan', 'rules' => 'trim'],
                 ['field' => 'company_tin', 'label' => 'Company TIN', 'rules' => 'trim|required|is_unique[' . $this->db->dbprefix . 'petronite_customers.pc_tin_number]'],
-                ['field' => 'company_vrn', 'label' => 'Company VRN', 'rules' => 'trim|required|is_unique[' . $this->db->dbprefix . 'petronite_customers.pc_vrn]'],
+                ['field' => 'company_vrn', 'label' => 'Company VRN', 'rules' => 'trim|is_unique[' . $this->db->dbprefix . 'petronite_customers.pc_vrn]'],
                 ['field' => 'company_contact_text', 'label' => 'Company Contact text', 'rules' => 'trim|required'],
                 ['field' => 'admin_full_name', 'label' => 'Admin Fullname', 'rules' => 'trim|required'],
                 ['field' => 'admin_user_name', 'label' => 'Admin User Name', 'rules' => 'trim|required|is_unique[' . $this->db->dbprefix . 'users.user_name]'],
@@ -602,7 +649,7 @@ class Customers extends CI_Controller {
                 ['field' => 'edit_company_name', 'label' => 'Company Name', 'rules' => 'trim|required|callback_validateEditPCName'],
                 ['field' => 'edit_company_slogan', 'label' => 'Company Slogan', 'rules' => 'trim'],
                 ['field' => 'edit_company_tin', 'label' => 'Company TIN', 'rules' => 'trim|required|callback_validateEditPCTin'],
-                ['field' => 'edit_company_vrn', 'label' => 'Company VRN', 'rules' => 'trim|required|callback_validateEditPCVrn'],
+                ['field' => 'edit_company_vrn', 'label' => 'Company VRN', 'rules' => 'trim|callback_validateEditPCVrn'],
                 ['field' => 'edit_company_contact_text', 'label' => 'Company Contact text', 'rules' => 'trim|required'],
                 ['field' => 'edit_admin_full_name', 'label' => 'Admin Fullname', 'rules' => 'trim|required'],
                 ['field' => 'edit_admin_phone', 'label' => 'Admin Phone Number', 'rules' => 'trim|required'],
@@ -644,14 +691,14 @@ class Customers extends CI_Controller {
                 'user_address' => $this->input->post('edit_admin_address')
             ];
 
-            $res = $this->cust->saveEditPetroniteCustomer(['customer_data' => $customer_data, 'admin_data' => $admin_data, 'temp_file' => $temp_file,'admin_id' => $customer['pc_admin_id'],'pc_id' => $customer['pc_id']]);
+            $res = $this->cust->saveEditPetroniteCustomer(['customer_data' => $customer_data, 'admin_data' => $admin_data, 'temp_file' => $temp_file, 'admin_id' => $customer['pc_admin_id'], 'pc_id' => $customer['pc_id']]);
 
             if ($res) {
 
                 $this->setSessMsg('Petronite customer edited successfully', 'success');
 
                 if ($temp_file) {
-                    
+
                     $location = './uploads/company_banners/';
                     $og_file = './uploads/temp/' . $temp_file['temp_file_name'];
                     $file = $location . $temp_file['temp_file_name'];
@@ -664,10 +711,11 @@ class Customers extends CI_Controller {
                     if (file_exists($og_file)) {
                         rename($og_file, $file);
                     }
-                    
+
                     //Delete old file
-                    $old_file = $location.$customer['pc_logo'];
-                    if(file_exists($old_file)){
+                    $old_file = $location . $customer['pc_logo'];
+
+                    if (file_exists($old_file) AND ! empty($customer['pc_logo'])) {
                         unlink($old_file);
                     }
                 }
@@ -686,15 +734,15 @@ class Customers extends CI_Controller {
             }
         }
     }
-    
+
     public function validateEditPCName($pc_name) {
         return TRUE;
     }
-    
+
     public function validateEditPCTin($tin) {
         return TRUE;
     }
-    
+
     public function validateEditPCVrn($vrn) {
         return TRUE;
     }
@@ -720,50 +768,6 @@ class Customers extends CI_Controller {
 
     public function validatePaymentCustomer($payment_customer) {
         return TRUE;
-    }
-
-    public function ajaxCustomerPayments() {
-
-        $this->checkStatusJson(1, 1, 1);
-
-        $data = [];
-        $list = $this->txn->get_datatables_credit_sales_txn(['admin_id' => $this->admin_id]);
-        $no = $_POST['start'];
-
-        foreach ($list as $a) {
-            $no++;
-            $row = array();
-
-            $status = "";
-            $link = '<div class="dropdown">
-                        <button type="button" id="closeCard2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-info btn-sm"><i class="fa fa-ellipsis-v"></i></button>
-                        <div aria-labelledby="closeCard2" class="dropdown-menu dropdown-menu-right has-shadow">
-                            <a href=""  class="dropdown-item edit_item text-danger"> <i class="fa fa-close"></i>&nbsp;&nbsp;Cancel Txn</a>
-                        </div>
-                    </div>';
-
-            //$row[] = $no;
-            $row[] = $a->txn_timestamp;
-            $row[] = $a->credit_type_name;
-            $row[] = cus_price_form_french($a->txn_credit);
-            $row[] = $a->txn_method;
-            $row[] = $a->txn_reference_no;
-            $row[] = $a->txn_notes;
-            $row[] = $link;
-            $data[] = $row;
-        }
-
-        $output = array(
-            "draw" => $_POST['draw'],
-            "recordsTotal" => $this->txn->count_all_credit_sales_txn(['admin_id' => $this->admin_id]),
-            "recordsFiltered" => $this->txn->count_filtered_credit_sales_txn(['admin_id' => $this->admin_id]),
-            "data" => $data,
-            "post" => $_POST
-        );
-
-
-        //output to json format
-        echo json_encode($output);
     }
 
     public function validateReportDateRange($param) {

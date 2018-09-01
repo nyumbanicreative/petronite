@@ -75,9 +75,9 @@
 
         <!-- Location picker -->
 
-        <script type="text/javascript" src='https://maps.google.com/maps/api/js?sensor=false&libraries=places&key=AIzaSyAUVnVdhs1B7jKC2FqtRi8iqLhPd9s4-uQ'></script>
+        <!--<script type="text/javascript" src='https://maps.google.com/maps/api/js?sensor=false&libraries=places&key=AIzaSyAUVnVdhs1B7jKC2FqtRi8iqLhPd9s4-uQ'></script>-->
 
-        <script src="<?php echo base_url(); ?>assets/vendor/map/dist/locationpicker.jquery.js" type="text/javascript"></script>
+        <!--<script src="<?php echo base_url(); ?>assets/vendor/map/dist/locationpicker.jquery.js" type="text/javascript"></script>-->
 
         <link href="<?php echo base_url(); ?>assets/vendor/select2/css/select2.css" rel="stylesheet" type="text/css"/>
         <script src="<?php echo base_url(); ?>assets/vendor/select2/js/select2.full.js" type="text/javascript"></script>

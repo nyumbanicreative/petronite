@@ -114,6 +114,9 @@ Class CustomerModel extends CI_Model {
 
         $this->db->where('credit_type_id', $data['customer']['credit_type_id'])->update('credit_types', $data['credit_data']);
 
+        if (isset($data['cancel_txn'])) {
+            $this->db->where('txn_id', $data['cancel_txn']['txn_id'])->update('transactions', ['txn_status' => 'CANCELED']);
+        }
         $this->db->trans_complete();
 
         if ($this->db->trans_status() == false) {
@@ -134,22 +137,26 @@ Class CustomerModel extends CI_Model {
 
         $cs_id = $this->db->insert_id();
 
-        $this->db->where('credit_type_id', $data['credit_data']['customer_sale_credit_type_id'])->update('credit_types', ['credit_type_balance' => $data['credit_data']['customer_sale_balance_after']]);
+        if ($data['new_credit_sale']) {
+            
+            $this->db->where('credit_type_id', $data['credit_data']['customer_sale_credit_type_id'])->update('credit_types', ['credit_type_balance' => $data['credit_data']['customer_sale_balance_after']]);
 
-        $transaction_data = [
-            'txn_credit' => 0,
-            'txn_debit' => $data['amount'],
-            'txn_type' => 'CREDIT_SALE',
-            'txn_acc_ref' => $data['credit_data']['customer_sale_credit_type_id'],
-            'txn_ref' => $cs_id,
-            'txn_user_id' => $data['credit_data']['customer_sale_added_by'],
-            'txn_balance_before' => $data['credit_data']['customer_sale_balance_before'],
-            'txn_balance_after' => $data['credit_data']['customer_sale_balance_after'],
-            'txn_admin_id' => $data['admin_id'],
-            'txn_notes' => $data['notes']
-        ];
+            $transaction_data = [
+                'txn_credit' => 0,
+                'txn_debit' => $data['amount'],
+                'txn_type' => 'CREDIT_SALE',
+                'txn_acc_ref' => $data['credit_data']['customer_sale_credit_type_id'],
+                'txn_ref' => $cs_id,
+                'txn_user_id' => $data['credit_data']['customer_sale_added_by'],
+                'txn_balance_before' => $data['credit_data']['customer_sale_balance_before'],
+                'txn_balance_after' => $data['credit_data']['customer_sale_balance_after'],
+                'txn_admin_id' => $data['admin_id'],
+                'txn_notes' => $data['notes']
+            ];
 
-        $this->db->insert('transactions', $transaction_data);
+            $this->db->insert('transactions', $transaction_data);
+        }
+
         $this->db->trans_complete();
 
         if ($this->db->trans_status() == false) {
@@ -190,15 +197,15 @@ Class CustomerModel extends CI_Model {
             return $admin_id;
         }
     }
-    
+
     public function saveEditPetroniteCustomer($data) {
 
 
         $this->db->trans_start();
 
-        $this->db->where('user_id',$data['admin_id'])->update('users', $data['admin_data']);
-        
-        $this->db->where('pc_id',$data['pc_id'])->update('petronite_customers', $data['customer_data']);
+        $this->db->where('user_id', $data['admin_id'])->update('users', $data['admin_data']);
+
+        $this->db->where('pc_id', $data['pc_id'])->update('petronite_customers', $data['customer_data']);
 
         $this->db->where('temp_file_name', $data['temp_file']['temp_file_name'])->delete('temp_files');
 
@@ -241,7 +248,7 @@ Class CustomerModel extends CI_Model {
                     $this->db->or_like($item, $_POST['search']['value']);
                 }
 
-                if (count($data['station_customers_search_columns']) - 1 == $i) //last loop
+                if (count($data['search_columns']) - 1 == $i) //last loop
                     $this->db->group_end(); //close bracket
             }
             $i++;

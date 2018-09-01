@@ -1232,6 +1232,12 @@ if (in_array('modal_add_credit_sale', $modals)) {
 
                     <div class="row">
                         <div class="col-lg-12">
+                            <div id="add_credit_form">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-12">
                             <div class="form-group" id="cr_attendant_details">
                                 <label>Attendant</label>
                                 <input placeholder="Attendant Details" readonly="" class="form-control" name="cr_attendant_details" autocomplete="off" value="">
@@ -1331,8 +1337,8 @@ if (in_array('modal_add_credit_sale', $modals)) {
 if (in_array('modal_add_payment', $modals)) {
     ?>
     <div id="addPayment"  role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" class="modal fade text-left">
-        <div role="document" class="modal-dialog">
-            <form id="close_vessel_form" class="modal-content" action="<?php echo site_url('customers/submitcustomerpayment'); ?>">
+        <div role="document" class="modal-dialog modal-lg">
+            <form id="add_payment_form" class="modal-content" action="<?php echo site_url('customers/submitcustomerpayment'); ?>">
                 <div class="modal-header">
                     <h4 id="exampleModalLabel" class="modal-title"> Add Payment</h4>
                     <button type="button" data-dismiss="modal" aria-label="Close" class="close"><span aria-hidden="true">×</span></button>
@@ -1340,16 +1346,25 @@ if (in_array('modal_add_payment', $modals)) {
                 <div class="modal-body">
 
                     <div class="row">
-                        <div class="col-lg-12">
-                            <div class="form-group" id="pay_date">
-                                <label>Payment Date</label>
-                                <input placeholder="Enter the payment date" readonly=""  class="form-control min_date" name="pay_date" autocomplete="off" value="">
+                        <div class="col-lg-6">
+                            <div class="form-group" id="add_payment_form_error">
                             </div>
                         </div>
+
                     </div>
 
                     <div class="row">
-                        <div class="col-lg-12">
+
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="form-group" id="pay_date">
+                                <label>Payment Date</label>
+                                <input placeholder="Enter the payment date" readonly=""  class="form-control max_date" name="pay_date" autocomplete="off" value="">
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
                             <div class="form-group" id="pay_customer">
                                 <label>Customer</label>
                                 <select style="width: 100%;" name="pay_customer">
@@ -1367,7 +1382,7 @@ if (in_array('modal_add_payment', $modals)) {
                     </div>
 
                     <div class="row">
-                        <div class="col-lg-12">
+                        <div class="col-lg-6">
                             <div class="form-group" id="pay_method">
                                 <label>Payment Method</label>
                                 <select style="width: 100%;" name="pay_method">
@@ -1382,10 +1397,7 @@ if (in_array('modal_add_payment', $modals)) {
                                 </select>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-lg-12">
+                        <div class="col-lg-6">
                             <div class="form-group" id="pay_amount">
                                 <label>Amount Paid</label>
                                 <input placeholder="Enter the amount paid"  class="form-control amount" name="pay_amount" autocomplete="off" value="">
@@ -1393,13 +1405,38 @@ if (in_array('modal_add_payment', $modals)) {
                         </div>
                     </div>
 
+
                     <div class="row">
-                        <div class="col-lg-12">
+                        <div class="col-lg-6">
                             <div class="form-group" id="pay_reference">
                                 <label>Payment Reference</label>
                                 <input placeholder="Enter payment reference number"  class="form-control" name="pay_reference" autocomplete="off" value="">
                             </div>
                         </div>
+
+                        <div class="col-lg-6">
+                            <div class="form-group" id="pay_reference">
+                                <label>Payment Point</label>
+                                <select name="pay_point" style="width: 100%;">
+                                    <option value=""></option>
+                                    <?php
+                                    
+                                    if ($user_system_role == 'admin') {
+                                        ?>
+                                        <option value="0">Headquarter (HQ)</option>
+                                        <?php
+                                    }
+
+                                    foreach ($pay_points as $pp) {
+                                        ?>
+                                        <option value="<?php echo $pp['station_id']; ?>"><?php echo $pp['station_name']; ?></option>
+                                        <?php
+                                    }
+                                    ?>
+                                </select>
+                            </div>
+                        </div>
+
                     </div>
 
                     <div class="row">
@@ -1420,12 +1457,86 @@ if (in_array('modal_add_payment', $modals)) {
     </div>
     <?php
 }
+
+if (in_array('modal_close_att_shift', $modals)) {
+    ?>
+    <div id="closeAttShift"  role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" class="modal fade text-left">
+        <div role="document" class="modal-dialog">
+            <form id="close_att_shift_form" class="modal-content" action="">
+                <div class="modal-header">
+                    <h4 id="exampleModalLabel" class="modal-title"> Close Attendant Shift</h4>
+                    <button type="button" data-dismiss="modal" aria-label="Close" class="close"><span aria-hidden="true">×</span></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div id="cs_form">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="form-group">
+                                <label>Attendant</label>
+                                <input readonly="" type="text"placeholder="Attendant" name="cs_attendant" class="form-control"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="form-group" >
+                                <label>Opening Meter Readings</label>
+                                <input readonly="" type="text"placeholder="Opening Meter Readings" name="cs_op_mtr_rdngs" class="form-control"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="form-group" >
+                                <label>Credit Sales Total Ltrs</label>
+                                <input readonly="" type="text"placeholder="Opening Meter Readings" name="cs_ctredit_ltrs" class="form-control"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="form-group" id="cs_clo_mtr_rdngs">
+                                <label>Closing Meter Readings</label>
+                                <input type="text" autocomplete="off" placeholder="Closing Meter Readings" name="cs_clo_mtr_rdngs" class="form-control volume"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="form-group" id="cs_throughput">
+                                <label>Throughput</label>
+                                <input readonly="" type="text"placeholder="Throughput" name="cs_throughput" class="form-control"/>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" data-dismiss="modal" class="btn btn-secondary pull-left">Cancel</button>
+                    <button type="submit" class="btn btn-success">Close Shift</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <?php
+}
 ?>
 
 <script type="text/javascript">
 
     $(document).ready(function () {
 
+        $('select[name=pay_point]').select2({placeholder: 'Select payment point'});
         $('select[name=ftg_id]').select2({placeholder: 'Select product type'});
         $('select[name=pay_method]').select2({placeholder: 'Select payment method'});
         $('select[name=cr_customer],select[name=pay_customer]').select2({placeholder: 'Select customer'});
@@ -1439,14 +1550,14 @@ if (in_array('modal_add_payment', $modals)) {
         $('select[name=po_vessel_id],#_po_vessel_id,select[name=loading_vessel_id],select[name=close_vs_remain_transfered_to],#_edit_po_vessel_id').select2({placeholder: 'Select vessel'});
 
 
-        $(document).on('submit', '#edit_petronite_customer_form,#create_order_form,#add_vessel_form,#add_loading_form,#add_release_instruction_form,#add_po_in_ri_form,#close_vessel_form,#edit_order_form,#add_user_form,#edit_user_form,#add_supplier_form,#add_credit_sale_form,#add_petronite_customer_form', function (e) {
+        $(document).on('submit', '#close_att_shift_form,#cancel_payment_form,#edit_petronite_customer_form,#create_order_form,#add_vessel_form,#add_loading_form,#add_release_instruction_form,#add_po_in_ri_form,#close_vessel_form,#edit_order_form,#add_user_form,#edit_user_form,#add_supplier_form,#add_credit_sale_form,#add_petronite_customer_form,#add_payment_form', function (e) {
             e.preventDefault();
             var post_data = $(this).serializeArray();
             submitAjaxForm(post_data, $(this).attr('action'));
         });
 
         //Cache Vessels
-        $(document).on('change', 'select[name=po_depo_id],select[name=loading_vessel_id],select[name=loading_po_id],select[name=cr_customer]', function (e) {
+        $(document).on('change', 'select[name=as_pump_id],select[name=po_depo_id],select[name=loading_vessel_id],select[name=loading_po_id],select[name=cr_customer]', function (e) {
             e.preventDefault();
             field = $(this).attr('name');
             value = $(this).val()
@@ -1561,6 +1672,42 @@ if (in_array('modal_add_payment', $modals)) {
                                     $('#add_credit_sale_form').attr('action', data.status.form_url);
                                     break;
 
+                                case 'cancelPayment':
+
+                                    $('textarea[name=pay_details]').val('Date:   ' + data.txn.txn_date + '\nCustomer:   ' + data.txn.credit_type_name + '\nAmount Paid:   ' + data.txn.txn_credit + ' <?php echo CURRENCY; ?>\nTxn Ref:   ' + data.txn.txn_reference_no + '\nTxn Method:   ' + data.txn.txn_method);
+                                    $('#cancel_payment_form').attr('action', data.status.form_url);
+                                    break;
+
+                                case 'closeAttShift':
+                                    credit_sales = parseFloat(data.att.credit_sales || 0) + parseFloat(data.att.return_to_tank || 0) + parseFloat(data.att.transfered_to_station || 0);
+
+                                    $('input[name=cs_attendant]').val('' + data.att.user_name + ' - ' + data.att.shift_name + ' (' + data.att.pump_name + ' - ' + data.att.fuel_type_generic_name + ' )');
+                                    $('input[name=cs_op_mtr_rdngs]').val(data.att.att_op_mtr_reading);
+                                    $('input[name=cs_ctredit_ltrs]').val(credit_sales);
+
+                                    $(document).on('keyup', 'input[name=cs_clo_mtr_rdngs]', function () {
+
+                                        op_mtr_rdngs = parseFloat(data.att.att_op_mtr_reading);
+                                        clo_mtr_rdngs = ($(this).val() || 0);
+
+                                        throughput = clo_mtr_rdngs - op_mtr_rdngs;
+
+                                        if (throughput >= 0) {
+                                            $('input[name=cs_throughput]').val(parseFloat(throughput).toFixed(3) + " Ltrs")
+                                            $('input[name=cs_throughput]').css({'background': '#0f8234', 'color': '#fff'});
+                                        } else if (throughput < 0) {
+
+                                            $('input[name=cs_throughput]').val(parseFloat(throughput).toFixed(3) + " Ltrs")
+                                            $('input[name=cs_throughput]').css({'background': 'red', 'color': '#fff'});
+
+                                        }
+
+                                    });
+
+                                    $('#close_att_shift_form').attr('action', data.status.form_url);
+
+                                    break;
+
                             }
 
                             $('#' + data.status.form_type).modal('show');
@@ -1671,6 +1818,8 @@ if (in_array('modal_add_payment', $modals)) {
         // This function will autofill some fields
         function cacheAjaxFields(data, field_type) {
 
+            var selected_value = data.value;
+
             $.blockUI({message: `<div id="loader-wrapper"><div id="loader"></div></div>`}); // Block user interdace during submitting
 
             // Ajax request itself
@@ -1685,8 +1834,8 @@ if (in_array('modal_add_payment', $modals)) {
                     // Check if response have server error
                     if (data.status.error == true) {
 
-                        if (field_type == 'SELECT') {
-                            $('select[name=' + field + ']').select2("val", "")
+                        if (field_type == 'SELECT' && (selected_value != '' && selected_value != undefined)) {
+                            $('select[name=' + field + ']').val('').trigger('change');
                         }
 
                         // Check type of error if its pop 
@@ -1729,6 +1878,14 @@ if (in_array('modal_add_payment', $modals)) {
 
                                 break;
 
+                            case 'as_pump_id':
+
+                                $('input[name=as_shift_date]').val(data.next_shift.next_shift_date);
+                                $('select[name=as_att_shift]').val(data.next_shift.next_shift_id).trigger('change');
+                                $('input[name=as_op_mtr_rdngs]').val(data.next_shift.open_mtr_readings);
+
+                                break;
+
                         }
                     }
 
@@ -1739,6 +1896,10 @@ if (in_array('modal_add_payment', $modals)) {
 
                     console.log(xhr);
                     console.log("Details: " + desc + "\nError:" + err);// just log to see whats going on
+
+                    if (field_type == 'SELECT' && (selected_value != '' && selected_value != undefined)) {
+                        $('select[name=' + field + ']').val('').trigger('change');
+                    }
 
                     $.unblockUI(); // ublock UI so they can be able to try again
                     $.alert({

@@ -18,12 +18,18 @@
                 <?php
             }
         ?>
+        <li class="<?php echo ($curr_menu == 'STATIONS') ? "active" : "" ?>"><a href="#stn" aria-expanded="<?php echo ($curr_menu == 'STATIONS') ? "true" : "false" ?>" data-toggle="collapse"><i class="fa fa-building-o"></i>Stations </a>
+            <ul id="stn" class="<?php echo ($curr_sub_menu == 'STATIONS') ? "" : "collapse" ?> list-unstyled">
+                <li><a href="<?php echo site_url('station'); ?>">Station Selection</a></li>
+            </ul>
+        </li>
                 
         <li class="<?php echo ($curr_menu == 'DASHBOARD') ? "active" : "" ?>"> <a href="<?php echo site_url('user/dashboard'); ?>"><i class="fa fa-dashboard"></i>Dashboard</a></li>
         
         <li class="<?php echo ($curr_menu == 'DAILY') ? "active" : "" ?>"><a href="#daily" aria-expanded="<?php echo ($curr_menu == 'DAILY') ? "true" : "false" ?>" data-toggle="collapse"><i class="fa fa-truck"></i>Daily Entries </a>
             <ul id="daily" class="<?php echo ($curr_sub_menu == 'DAILY') ? "" : "collapse" ?> list-unstyled">
                 <li><a href="<?php echo site_url('dailyentries/attendantsshifts'); ?>">Attendant Shifts</a></li>
+                <li><a href="<?php echo site_url('dailyentries/attendantscollections'); ?>">Attendant Collection</a></li>
                 <li><a href="<?php echo site_url('dailyentries/creditsales'); ?>">Credit Sales</a></li>
                 <li><a href="<?php echo site_url('dailyentries/stocktransfer'); ?>">Stock Transfer</a></li>
                 <li><a href="<?php echo site_url('dailyentries/expenditure'); ?>">Expenditure</a></li>
@@ -55,11 +61,7 @@
             </ul>
         </li>
         
-        <li class="<?php echo ($curr_menu == 'STATIONS') ? "active" : "" ?>"><a href="#stn" aria-expanded="<?php echo ($curr_menu == 'STATIONS') ? "true" : "false" ?>" data-toggle="collapse"><i class="fa fa-building-o"></i>Stations </a>
-            <ul id="stn" class="<?php echo ($curr_sub_menu == 'STATIONS') ? "" : "collapse" ?> list-unstyled">
-                <li><a href="<?php echo site_url('station'); ?>">Station Selection</a></li>
-            </ul>
-        </li>
+        
         
         
         

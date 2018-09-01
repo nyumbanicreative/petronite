@@ -129,8 +129,9 @@ class Station extends CI_Controller {
             $this->session->userdata['logged_in']['user_station_id'] = $station['station_id'];
             $this->session->userdata['logged_in']['user_station_name'] = $station['station_name'];
             $this->session->userdata['logged_in']['user_station_role'] = $station['organize_user_role'];
-            $this->session->userdata['logged_id']['user_station_auto_rtt'] = $station['station_auto_rtt'];
-
+            $this->session->userdata['logged_in']['user_station_auto_rtt'] = $station['station_auto_rtt'];
+            $this->session->userdata['logged_in']['user_station_station_new_credit_sales'] = $station['station_new_credit_sales'];
+            $this->session->userdata['logged_in']['user_station_first_day'] = $station['station_first_day'];
             redirect('user/dashboard');
         } else {
             $this->session->set_flashdata('error', 'Select a valid station');

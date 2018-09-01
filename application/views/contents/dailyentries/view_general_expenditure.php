@@ -59,7 +59,7 @@
                                     <th>Expenditure Notes</th>
                                     <th>Expenditure Amount</th>
                                     <th>Expense Type</th>
-                                    <th>Shif Details</th>
+                                    <th>Shift Details</th>
                                     <th>Approval Status</th>
                                     <th>Added By</th>
                                     <th style="width:10px;"></th>

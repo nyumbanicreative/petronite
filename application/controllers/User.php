@@ -192,7 +192,9 @@ class User extends CI_Controller {
                     'user_depo_name' => '',
                     'user_depo_role' => '',
                     'user_name' => $user['user_name'],
-                    'user_station_auto_rtt' =>''
+                    'user_station_auto_rtt' =>'',
+                    'user_station_station_new_credit_sales' => '0',
+                    'user_station_first_day' => ''
                 ];
 
                 //echo '<pre>'.$user['user_role']; print_r($user_data) ; die();

@@ -6,6 +6,106 @@
 </header>
 <?php echo $alert; ?>
 
+<div id="assignPump"  role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" class="modal fade text-left">
+    <div role="document" class="modal-dialog">
+        <form id="close_vessel_form" class="modal-content" action="<?php echo site_url('dailyentries/submitassignshift');?>">
+            <div class="modal-header">
+                <h4 id="exampleModalLabel" class="modal-title"> Assign Pump To Attendant</h4>
+                <button type="button" data-dismiss="modal" aria-label="Close" class="close"><span aria-hidden="true">×</span></button>
+            </div>
+            <div class="modal-body">
+                
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="form-group" id="as_form">
+                            
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="form-group" id="as_attendant">
+                            <label>Attendant</label>
+                            <select style="width: 100%;" name="as_attendant">
+                                <option value=""></option>
+                                <?php
+                                foreach ($attendants as $attendant) {
+                                    ?>
+                                    <option value="<?php echo $attendant['user_id'] ?>"><?php echo $attendant['user_name'] ?></option>
+                                    <?php
+                                }
+                                ?>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="form-group" id="as_pump_id">
+                            <label>Pump</label>
+                            <select style="width: 100%;" name="as_pump_id">
+                                <option value=""></option>
+                                <?php
+                                foreach ($pumps as $p) {
+                                    if (!in_array($p['pump_id'], $opened_pumps)) {
+                                        ?>
+                                        <option value="<?php echo $p['pump_id'] ?>"><?php echo $p['pump_name']; ?></option>
+                                        <?php
+                                    }
+                                }
+                                ?>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="form-group" id="as_shift_date">
+                            <label>Attendance Date</label>
+                            <input readonly="" type="text"placeholder="Attendance Date" name="as_shift_date" class="form-control"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="form-group" id="as_att_shift">
+                            <label>Shift</label>
+                            <select disabled="disabled" style="width: 100%;" name="as_att_shift" class="form-control">
+                                <option value=""></option>
+                                <?php
+                                foreach ($shifts as $s) {
+                                        ?>
+                                        <option value="<?php echo $s['shift_id'] ?>"><?php echo $s['shift_name']; ?></option>
+                                        <?php
+                                    
+                                }
+                                ?>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="form-group" id="as_op_mtr_rdngs">
+                            <label>Opening Meter Readings</label>
+                            <input type="text" name="as_op_mtr_rdngs"  placeholder="Opening Meter Readings" readonly="" class="form-control"/>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" data-dismiss="modal" class="btn btn-secondary pull-left">Close</button>
+                <button type="submit" class="btn btn-success"><i class="fa fa-plus-circle"></i>&nbsp;Assign</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <section class="tables no-padding-top">  
 
     <div class="container-fluid" style="min-height: 500px;">
@@ -17,7 +117,7 @@
                 </div>
                 <div class="btn-group pull-right" role="group" aria-label="Basic example">
                     <!--<button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#myModal"><i class="fa fa-calendar-o"></i>&nbsp;Latest Shifts</button>-->
-                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#myModal"><i class="fa fa-plus-square"></i>&nbsp;Assign Pump</button>
+                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#assignPump"><i class="fa fa-plus-square"></i>&nbsp;Assign Pump</button>
                 </div>
             </div>
         </div>
@@ -49,15 +149,15 @@
 
         </div>
         <br/>
-      
 
-        
+
+
 
         <div class="row">
             <div class="col-lg-12">
                 <div class="card">
                     <div class="card-body no-padding">
-                        <table id="shifts_table" class="table  table-hover table-light" style="width:100%">
+                        <table id="shifts_table" class="table  table-hover table-light table-striped" style="width:100%">
                             <thead>
                                 <tr>
                                     <th>Attendants</th>
@@ -66,7 +166,7 @@
                                     <th>Open<br/>Mtr No</th>
                                     <th>Closing<br/>Mtr No</th>
                                     <th>Selling<br/>Price</th>
-                                    <th>Amount<br/>Banked</th>
+                                    <th>Amount<br/>Collected</th>
                                     <th style="width:10px;"> </th>
                                 </tr>
                             </thead>
@@ -78,7 +178,11 @@
                                         <td><?php echo $att['user_name']; ?></td>
                                         <td><?php
                                             echo $att['shift_name'] . '<br/>';
-                                            if ($att['att_shift_status'] == 'Closed') {
+                                            if ($att['att_shift_status'] == 'Closed' AND $att['att_posted_to_ledger'] == '0') {
+                                                ?>
+                                                <span class="badge badge-warning">PENDING LEDGER</span>
+                                                <?php
+                                            } elseif ($att['att_shift_status'] == 'Closed' AND $att['att_posted_to_ledger'] == '1') {
                                                 ?>
                                                 <span class="badge badge-success">CLOSED</span>
                                                 <?php
@@ -90,7 +194,16 @@
                                             ?></td>
                                         <td><?php echo $att['pump_name'] . '&nbsp;-&nbsp;' . $att['fuel_type_generic_name']; ?></td>
                                         <td><?php echo $att['att_op_mtr_reading']; ?></td>
-                                        <td><?php echo $att['att_clo_mtr_reading']; ?></td>
+                                        <td>
+                                            <?php 
+                                            
+                                            if($att['att_shift_status'] == 'Opened'){
+                                                echo 'N/A';
+                                            }else{
+                                            echo $att['att_clo_mtr_reading']; 
+                                            }
+                                            ?>
+                                        </td>
                                         <td>
                                             <?php
                                             echo CURRENCY . '&nbsp;' . cus_price_form_french($att['att_sale_price_per_ltr']);
@@ -124,7 +237,23 @@
                                             <div class="dropdown">
                                                 <button type="button" id="closeCard2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-info btn-sm"><i class="fa fa-ellipsis-v"></i></button>
                                                 <div aria-labelledby="closeCard2" class="dropdown-menu dropdown-menu-right has-shadow">
-                                                    <a href="<?php echo site_url('dailyentries/saledetails/' . $att['att_id']).'?url='. urlencode(current_url()) .'?'.$_SERVER['QUERY_STRING']; ?>"  class="dropdown-item edit_item text-success"> <i class="fa fa-list-ul"></i>&nbsp;&nbsp;Details</a>
+                                                    <a href="<?php echo site_url('dailyentries/saledetails/' . $att['att_id']) . '?url=' . urlencode(current_url()) . '?' . $_SERVER['QUERY_STRING']; ?>"  class="dropdown-item edit_item text-success"> <i class="fa fa-list-ul"></i>&nbsp;&nbsp;Details</a>
+                                                    <?php
+                                                    if ($att['att_shift_status'] == 'Closed' AND $att['att_posted_to_ledger'] == '0') {
+                                                        ?>
+                                                        <a href="<?php echo site_url('dailyentries/posttoledger/' . $att['att_id']); ?>"  class="dropdown-item text-danger confirm" title="post sale details to account ledgers. <br/>Process can not be revert"> <i class="fa fa-list-alt"></i>&nbsp;&nbsp;Post To Ledger</a>
+                                                        <?php
+                                                    } else {
+                                                        ?>
+                                                        <?php
+                                                    }
+                                                    
+                                                    if($att['att_shift_status'] == 'Opened'){
+                                                        ?>
+                                                        <a href="<?php echo site_url('dailyentries/requestcloseshiftform/' . $att['att_id']); ?>"  class="dropdown-item request_form text-danger"> <i class="fa fa-clock-o"></i>&nbsp;&nbsp;Close Shift</a>
+                                                        <?php
+                                                    }
+                                                    ?>
                                                     <a href="<?php echo site_url('dailyentries/addcreditsale/' . $att['att_id']); ?>"  class="dropdown-item request_form text-info"> <i class="fa fa-credit-card"></i>&nbsp;&nbsp;Add Credit Sale</a>
                                                 </div>
                                             </div>
@@ -150,10 +279,21 @@
 
     $(document).ready(function () {
 
+        $('select[name=as_attendant]').select2({placeholder: 'Select an attendant'});
+        $('select[name=as_pump_id]').select2({
+            placeholder: 'Select Pump',
+            language: {
+                noResults: function () {
+                    return "No result found";
+                }
+            },
+        });
+        $('select[name=as_att_shift]').select2({placeholder: 'Select Shift', readonly:true});
+
         s_table = $('#shifts_table').DataTable({
             "aaSorting": [],
             responsive: true,
-            fixedHeader: { headerOffset: 70 },
+            fixedHeader: {headerOffset: 70},
             searching: false,
             lengthChange: false,
             "pageLength": 100,
@@ -168,7 +308,7 @@
         $('#search_shifts').keyup(function () {
             s_table.search($(this).val()).draw();
         });
-        
+
         s_table.responsive.recalc();
 
         $("input[name=date]").daterangepicker({

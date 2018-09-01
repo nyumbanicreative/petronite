@@ -8,7 +8,10 @@ Class UserModel extends CI_Model {
     var $is_logged_in = false;
     var $customer = null;
     var $admin_id = null;
-
+    var $station_new_credit_sales = false;
+    var $station_first_day = null;
+    var $auto_rtt = 0;
+    var $user_system_role = null;
     
     public function __construct() {
         
@@ -17,7 +20,11 @@ Class UserModel extends CI_Model {
             $this->user_id = $this->session->userdata['logged_in']['user_id'];
             $this->station_id = $this->session->userdata['logged_in']['user_station_id'];
             $this->admin_id = $this->session->userdata['logged_in']['user_admin_id'];
+            $this->auto_rtt = $this->session->userdata['logged_in']['user_station_auto_rtt'];
             $this->is_logged_in = TRUE;
+            $this->user_system_role = $this->session->userdata['logged_in']['user_system_role'];
+            $this->station_new_credit_sales = $this->session->userdata['logged_in']['user_station_station_new_credit_sales'] == '1'? TRUE:FALSE;
+            $this->station_first_day = $this->session->userdata['logged_in']['user_station_first_day'];
         }
     }
     

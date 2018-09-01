@@ -33,8 +33,8 @@ Class ReportModel extends CI_Model {
         foreach ($where_ins as $wn) {
             $this->db->where_in($wn['col'], $wn['vals']);
         }
-
-        $res = $this->db->from('tbl_attandance att')
+        
+        $this->db->from('tbl_attandance att')
                 ->select('(att_clo_mtr_reading - att_op_mtr_reading) throughput')
                 ->join('pumps p', 'att.att_pump_id = p.pump_id')
                 ->join('shifts s', 'att.att_shift_id = s.shift_id')
@@ -48,8 +48,9 @@ Class ReportModel extends CI_Model {
                         . 'FROM ' . $this->db->dbprefix . 'customer_sales cr, ' . $this->db->dbprefix . 'credit_types cus '
                         . 'WHERE cr.customer_sale_credit_type_id = cus.credit_type_id '
                         . 'GROUP BY customer_sale_att_id ORDER BY cus.credit_type_name) credits', 'att.att_id = credits.customer_sale_att_id', 'LEFT OUTER')
-                ->join('users u', 'att.att_employee_id = u.user_id')
-                ->get();
+                ->join('users u', 'att.att_employee_id = u.user_id');
+        
+        $res = $this->db->get();
 
         // If attendance id is set means 1 row is requested so we return it
         if ($att_id !== NULL) {
@@ -64,12 +65,18 @@ Class ReportModel extends CI_Model {
         }
     }
 
-    public function getCreditSales($cond = null) {
+    public function getCreditSales($cond = null,$cols = null, $limit = null) {
 
         if ($cond !== NULL) {
             $this->db->where($cond);
         }
+        if ($cols !== NULL) {
+            $this->db->select($cols);
+        } else {
+            $this->db->select('*');
+        }
 
+        
         $res = $this->db
                 ->select('a.user_name attendant_name, cs.*, att.*,ct.*,f.*,s.shift_name,p.pump_name,m.user_name')
                 ->from('customer_sales cs')
@@ -84,7 +91,13 @@ Class ReportModel extends CI_Model {
                 ->order_by('s.shift_sequence ASC,ct.credit_type_name ASC, p.pump_name ASC')
                 ->get();
 
-        return $res->result_array();
+        if($limit == 1 AND $res->num_rows() == 1){
+            return $res->row_array();
+        }elseif($limit == 1 AND $res->num_rows != 1){
+            return FALSE;
+        }else{
+            return $res->result_array();
+        }
     }
     
     

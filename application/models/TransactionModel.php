@@ -20,8 +20,8 @@ Class TransactionModel extends CI_Model {
 
         $this->db->where('ctxn.txn_type', 'CREDIT_PAYMENT')->where('ctxn.txn_admin_id', $data['admin_id']);
         $this->db->from('transactions ctxn')
-                ->join('credit_types crdt', 'crdt.credit_type_id = ctxn.txn_acc_ref', 'INNER');
-
+                ->join('credit_types crdt', 'crdt.credit_type_id = ctxn.txn_acc_ref', 'INNER')
+                ->join('stations stn', 'stn.station_id = ctxn.txn_station_id', 'LEFT OUTER');
 
         $i = 0;
         foreach ($this->credit_sales_txn_search_columns as $item) { // loop column 
@@ -84,12 +84,20 @@ Class TransactionModel extends CI_Model {
             $this->db->limit($limit);
         }
 
-        if($where_in != NULL){
-            foreach ($where_in as $key => $wn){
-                $this->db->where_in($key,$wn);
+        if ($where_in != NULL) {
+            foreach ($where_in as $key => $wn) {
+                $this->db->where_in($key, $wn);
             }
         }
-        $res = $this->db->order_by('txn.txn_timestamp','ACS')->get('transactions txn');
+        $res = $this->db->order_by('txn.txn_timestamp', 'ACS')
+                ->from('transactions txn')
+                ->join('customer_sales sales', "sales.customer_sale_id = txn.txn_ref AND txn.txn_type ='CREDIT_SALE'", "LEFT OUTER")
+                ->join('credit_types crdt', 'crdt.credit_type_id = txn.txn_acc_ref', 'LEFT OUTER')
+                ->join('attandance att', "att.att_id = sales.customer_sale_att_id ", "LEFT OUTER")
+                ->join('pumps p', "p.pump_id = att.att_pump_id ", "LEFT OUTER")
+                ->join('fuel_types f', "f.fuel_type_id = p.pump_fuel_type_id ", "LEFT OUTER")
+                ->join('stations st', "st.station_id = att.att_station_id", "LEFT OUTER")
+                ->get();
 
         if ($limit == 1 AND $res->num_rows() == 1) {
             return $res->row_array();
@@ -97,6 +105,58 @@ Class TransactionModel extends CI_Model {
             return false;
         } else {
             return $res->result_array();
+        }
+    }
+
+    public function saveShiftToLedger($data) {
+
+        $this->db->trans_start();
+
+
+        foreach ($data['credit_sales'] as $cs) {
+
+            $res = $this->db->where('credit_type_id', $cs['customer_sale_credit_type_id'])->limit(1)->get('credit_types');
+
+            if ($c = $res->row_array()) {
+                
+                $sale_price = $data['att']['att_sale_price_per_ltr'];
+                $amount = $cs['customer_sale_ltrs'] * $sale_price;
+                $balance_after = $c['credit_type_balance'] + ($amount);
+                
+                $notes = "Fuel Purchase. " . $cs['customer_sale_ltrs'] . ' ltr(s) of ' . $data['att']['fuel_type_generic_name'] . ' @' . cus_price_form($sale_price);
+
+                $this->db->where('credit_type_id', $c['credit_type_id'])->update('credit_types', ['credit_type_balance' => $balance_after]);
+
+                $transaction_data = [
+                    'txn_credit' => 0,
+                    'txn_debit' => $amount,
+                    'txn_type' => 'CREDIT_SALE',
+                    'txn_acc_ref' => $c['credit_type_id'],
+                    'txn_ref' => $cs['customer_sale_id'],
+                    'txn_user_id' => $data['user_id'],
+                    'txn_balance_before' => $c['credit_type_balance'],
+                    'txn_balance_after' => $balance_after,
+                    'txn_admin_id' => $data['admin_id'],
+                    'txn_notes' => $notes,
+                    'txn_date' => $data['att']['att_date'],
+                    'txn_station_id' => $data['att']['att_station_id']
+                ];
+
+                $this->db->insert('transactions', $transaction_data);
+            }
+        }
+        
+        $this->db->where('att_id',$data['att']['att_id'])->update('attandance',['att_posted_to_ledger' => 1]);
+        
+        $this->db->trans_complete();
+
+        if ($this->db->trans_status() == false) {
+
+            $this->db->trans_rollback();
+            return false;
+        } else {
+            $this->db->trans_commit();
+            return true;
         }
     }
 

@@ -46,7 +46,7 @@
                 </div>
 
                 <div class="pull-right">
-                    <a href="<?php echo site_url('user/pdfcustomerinvoice/' . $cc['credit_type_id']); ?>" class="btn btn-secondary btn-sm"  target="_blank"><i class="fa fa-file-pdf-o"></i>&nbsp;Current Invoice</a>
+                    <!--<a href="<?php echo site_url('user/pdfcustomerinvoice/' . $cc['credit_type_id']); ?>" class="btn btn-secondary btn-sm"  target="_blank"><i class="fa fa-file-pdf-o"></i>&nbsp;Current Invoice</a>-->
                     <a href="<?php echo site_url('customers/pdfcustomerstatement/' . $cc['credit_type_id'] . '?datefrom=' . $datefrom . '&dateto=' . $dateto); ?>" class="btn btn-secondary btn-sm" target="_blank"><i class="fa fa-file-pdf-o"></i>&nbsp;PDF Statement</a>
                 </div>
             </div>
@@ -110,7 +110,7 @@
                                 <tr>
                                     <th>Transaction Date</th>
                                     <th>Particulars</th>
-                                    <th>Transaction Type</th>
+                                    <th>Vch Type</th>
                                     <th>Debit</th>
                                     <th>Credit</th>
                                     <th>Balance</th>
@@ -121,8 +121,21 @@
                                 foreach ($txns as $key => $txn) {
                                     ?>
                                     <tr>
-                                        <td><?php echo $txn['txn_timestamp'] ?></td>
-                                        <td><?php echo $txn['txn_notes']; ?></td>
+                                        <td><?php echo $txn['txn_date'] ?></td>
+                                        <td>
+                                            <?php
+                                            if ($txn['txn_type'] == 'CREDIT_SALE') {
+                                                echo $txn['fuel_type_generic_name']. ' - '. $txn['station_name'] .' ';
+                                                echo $txn['customer_sale_ltrs']. ' ltrs @ '. cus_price_form($txn['att_sale_price_per_ltr']) .'/ltr&nbsp;&nbsp;'.cus_price_form($txn['att_sale_price_per_ltr'] * $txn['customer_sale_ltrs']).'<br/>';
+                                                echo '<i>'.$txn['customer_sale_track_number'].'</i>';
+                                            }elseif ($txn['txn_type'] == 'CREDIT_SALE'){
+                                                echo $txn['txn_notes'];
+                                            } else {
+                                                echo $txn['txn_notes'];
+                                            }
+                                            
+                                            ?>
+                                        </td>
                                         <td>
                                             <?php
                                             if ($txn['txn_type'] == 'CREDIT_SALE') {
@@ -134,12 +147,12 @@
                                         </td>
                                         <td>
                                             <?php
-                                            echo cus_price_form_french($txn['txn_debit']);
+                                            echo cus_price_form_french(abs($txn['txn_debit']));
                                             ?>
                                         </td>
                                         <td>
                                             <?php
-                                            echo cus_price_form_french($txn['txn_credit']);
+                                            echo cus_price_form_french(abs($txn['txn_credit']));
                                             ?>
                                         </td>
 
@@ -148,7 +161,7 @@
                                             if ($txn['txn_balance_after'] <= 0) {
                                                 echo cus_price_form(abs($txn['txn_balance_after'])) . ' Cr';
                                             } else {
-                                                echo cus_price_form($txn['txn_balance_after']) .' Dr';
+                                                echo cus_price_form($txn['txn_balance_after']) . ' Dr';
                                             }
                                             ?>
                                         </td>

@@ -4,79 +4,19 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Dailyentries extends CI_Controller {
 
-    // Initialize gloabal variables
-    var $user_id = null;
-    var $station_id = null;
-    var $is_logged_in = false;
-    var $customer = null;
-    var $admin_id = null;
-    var $auto_rtt = 0;
-
     public function __construct() {
         parent::__construct();
 
-        // Check if user has logged in using session
-        if ($this->usr->isLogedin()) {
-            $this->user_id = $this->session->userdata['logged_in']['user_id'];
-            $this->station_id = $this->session->userdata['logged_in']['user_station_id'];
-            $this->admin_id = $this->session->userdata['logged_in']['user_admin_id'];
-            $this->auto_rtt = $this->session->userdata['logged_in']['user_station_auto_rtt'];
-            $this->customer = $this->cust->getCustomerDetails($this->admin_id);
-            $this->is_logged_in = TRUE;
-        }
     }
-
-    private function setSessMsg($msg, $type, $redirect_to = null) {
-        $this->session->set_flashdata($type, $msg);
-        if (null !== $redirect_to) {
-            redirect($redirect_to);
-        }
-    }
-
-    private function checkStatus($logged_in = null, $customer = null, $admin = null) {
-
-        if (null !== $logged_in AND ! $this->is_logged_in) {
-            // User session expired they must login to continue
-            $this->setSessMsg('Loging in is required', 'error', 'user/index');
-        }
-
-        if (null !== $customer AND null === $this->customer) {
-            // not a valid customer
-            $this->setSessMsg('It appears that, customer details was not found or may have been removed.', 'error', 'user/logout');
-        }
-
-        if (null !== $admin AND null === $this->admin_id) {
-            // admin identity not set
-            $this->setSessMsg('Select a valid customer', 'error', 'developer/customers');
-        }
-    }
-
-    private function checkStatusJson($logged_in = null, $customer = null, $admin = null) {
-
-        if (null !== $logged_in AND ! $this->is_logged_in) {
-            // User session expired they must login to continue
-            cus_json_error('Loging in is required, Please refresh the page');
-        }
-
-        if (null !== $customer AND null === $this->customer) {
-            // not a valid customer
-            cus_json_error('It appears that, customer details was not found or may have been removed.');
-        }
-
-        if (null !== $admin AND null === $this->admin_id) {
-            // admin identity not set
-            cus_json_error('Select a valid customer');
-        }
-    }
-
+    
     public function attendantsShifts() {
 
-        $this->checkStatus(1, 1, 1);
+        $this->usr->checkStatus(1, 1, 1);
 
         // Get latest Attendants shifts date
         $date = $this->input->get('date');
         if (empty($date)) {
-            $latest_att = $this->att->getLatestAtt($this->station_id);
+            $latest_att = $this->att->getLatestAtt($this->usr->station_id);
             if ($latest_att) {
                 $date = $latest_att['att_date'];
             } else {
@@ -85,26 +25,39 @@ class Dailyentries extends CI_Controller {
         }
 
         // Retrieving attendants shifts due to date 
-        $cond = ['att.att_station_id' => $this->station_id, 'att.att_date' => $date];
+        $cond = ['att.att_station_id' => $this->usr->station_id, 'att.att_date' => $date];
         $order_by = 's.shift_sequence ASC, u.user_name ASC, p.pump_name ASC, f.fuel_type_generic_name ASC';
         $atts = $this->rpt->getSales($cond, null, $order_by); // reused this function from report model coz it does the same
         //cus_print_r($atts);        die();
         // Creating view data
+
+        $opened_pumps = $this->rpt->getSales(['att.att_station_id' => $this->usr->station_id, 'att_shift_status' => 'Opened'], ['att.att_pump_id'], NULL);
+
+        if ($opened_pumps) {
+            $opened_pumps = array_column($opened_pumps, 'att_pump_id');
+        } else {
+            $opened_pumps = [];
+        }
+
         $data = [
             'menu' => 'menu/view_sys_menu', // View for menu
             'content' => 'contents/dailyentries/view_attendants_shifts', // View for contnet
             'menu_data' => ['curr_menu' => 'DAILY', 'curr_sub_menu' => 'DAILY'], //Inorder to collapse  menu items
             'content_data' => [//Contents data pass here
                 'module_name' => 'Attendant Shifts',
-                'customer' => $this->customer,
+                'customer' => $this->usr->customer,
                 'atts' => $atts,
                 'date' => $date,
                 'next_day' => date('Y-m-d', strtotime('+1 day', strtotime($date))),
-                'prev_day' => date('Y-m-d', strtotime('-1 day', strtotime($date)))
+                'prev_day' => date('Y-m-d', strtotime('-1 day', strtotime($date))),
+                'attendants' => $this->mnt->getStationAttendants($this->usr->station_id),
+                'pumps' => $this->mnt->getPumps($this->usr->station_id),
+                'shifts' => $this->mnt->getShifts($this->usr->station_id),
+                'opened_pumps' => $opened_pumps
             ],
             'modals_data' => [
-                'modals' => ['modal_add_credit_sale'],
-                'customers' => $this->cust->getCreditCustomers(['s.station_id' => $this->station_id])
+                'modals' => ['modal_add_credit_sale', 'modal_close_att_shift'],
+                'customers' => $this->cust->getCreditCustomers(['s.station_id' => $this->usr->station_id]),
             ],
             'header_data' => [], //Header data pass here
             'footer_data' => [], //Footer data pass here
@@ -120,12 +73,12 @@ class Dailyentries extends CI_Controller {
         header('Access-allow-control-origin: *');
         header('Content-type: text/json');
 
-        $this->checkStatusJson(1, 1, 1);
+        $this->usr->checkStatusJson(1, 1, 1);
 
         $att_id = $this->uri->segment(3);
 
         $cols = ['u.user_name', 's.shift_name', 'att.att_id', 'p.pump_name', 'f.fuel_type_generic_name'];
-        $att = $this->rpt->getSales(['att_station_id' => $this->station_id], $cols, NULL, $att_id, []);
+        $att = $this->rpt->getSales(['att_station_id' => $this->usr->station_id], $cols, NULL, $att_id, []);
 
         if (!$att) {
             cus_json_error('Attendant shift was not found or may have been removed from the system');
@@ -145,7 +98,7 @@ class Dailyentries extends CI_Controller {
     public function saleDetails() {
 
         //Check user status
-        $this->checkStatus(1, 1, 1);
+        $this->usr->checkStatus(1, 1, 1);
 
 
         // Attendants shifts date
@@ -153,14 +106,14 @@ class Dailyentries extends CI_Controller {
 
 
         // Retrieving attendants shifts due to date 
-        $cond = ['att.att_station_id' => $this->station_id];
+        $cond = ['att.att_station_id' => $this->usr->station_id];
 
         $sale = $this->rpt->getSales($cond, NULL, NULL, $att_id); // reused this function from report model coz it does the same
         //echo '<pre>';        print_r($sale); die();
 
         if (!$sale) {
             //Sale details not found so we redirect to attendant shifts
-            $this->setSessMsg('Sale details was not found or may have been removed from the system', 'error', 'dailyentries/attendantsshifts');
+            $this->usr->setSessMsg('Sale details was not found or may have been removed from the system', 'error', 'dailyentries/attendantsshifts');
         }
 
         $cond = ['cs.customer_sale_att_id' => $sale['att_id']];
@@ -174,13 +127,14 @@ class Dailyentries extends CI_Controller {
             'menu_data' => ['curr_menu' => 'DAILY', 'curr_sub_menu' => 'DAILY'],
             'content_data' => [
                 'module_name' => 'Shift Details',
-                'customer' => $this->customer,
+                'customer' => $this->usr->customer,
                 'sale' => $sale,
                 'credit_sales' => $credit_sales
             ],
-            'modals_data' =>[
+            'modals_data' => [
                 'modals' => ['modal_add_credit_sale'],
-                'customers' => $this->cust->getCreditCustomers(['s.station_id' => $this->station_id])
+                'user_system_role' => $this->usr->user_system_role,
+                'customers' => $this->cust->getCreditCustomers(['s.station_id' => $this->usr->station_id])
             ],
             'header_data' => [],
             'footer_data' => [],
@@ -193,12 +147,12 @@ class Dailyentries extends CI_Controller {
     public function creditSales() {
 
         //Check user status
-        $this->checkStatus(1, 1, 1);
+        $this->usr->checkStatus(1, 1, 1);
 
         // Attendants shifts date
         $date = $this->input->get('date');
         if (empty($date)) {
-            $latest_att = $this->att->getLatestAtt($this->station_id);
+            $latest_att = $this->att->getLatestAtt($this->usr->station_id);
             if ($latest_att) {
                 $date = $latest_att['att_date'];
             } else {
@@ -207,7 +161,7 @@ class Dailyentries extends CI_Controller {
         }
 
         // Retrieving attendants shifts due to date 
-        $cond = ['att.att_station_id' => $this->station_id, 'att.att_date' => $date, 'cs.customer_sale_tts' => '0'];
+        $cond = ['att.att_station_id' => $this->usr->station_id, 'att.att_date' => $date, 'cs.customer_sale_tts' => '0'];
         $credit_sales = $this->rpt->getCreditSales($cond); // reused this function from report model coz it does the same
         //cus_print_r($atts);        die();
 
@@ -217,7 +171,7 @@ class Dailyentries extends CI_Controller {
             'menu_data' => ['curr_menu' => 'DAILY', 'curr_sub_menu' => 'DAILY'],
             'content_data' => [
                 'module_name' => 'Credit Sales',
-                'customer' => $this->customer,
+                'customer' => $this->usr->customer,
                 'credit_sales' => $credit_sales,
                 'date' => $date,
                 'next_day' => date('Y-m-d', strtotime('+1 day', strtotime($date))),
@@ -234,13 +188,13 @@ class Dailyentries extends CI_Controller {
     public function expenditure() {
 
         //Check user status
-        $this->checkStatus(1, 1, 1);
+        $this->usr->checkStatus(1, 1, 1);
 
 
         // Attendants shifts date
         $date = $this->input->get('date');
         if (empty($date)) {
-            $latest_date = $this->exps->getLatestExpenditureDate($this->station_id);
+            $latest_date = $this->exps->getLatestExpenditureDate($this->usr->station_id);
             if ($latest_date) {
                 $date = $latest_date['general_expenditure_date'];
             } else {
@@ -249,7 +203,7 @@ class Dailyentries extends CI_Controller {
         }
 
         // Retrieving expenditure shifts due to date 
-        $cond = ['ge.general_expenditure_station_id' => $this->station_id, 'ge.general_expenditure_date' => $date];
+        $cond = ['ge.general_expenditure_station_id' => $this->usr->station_id, 'ge.general_expenditure_date' => $date];
         $expenditures = $this->rpt->getGeneralExpenditures($cond); // reused this function from report model coz it does the same
         //cus_print_r($credit_sales);        die();
 
@@ -259,9 +213,9 @@ class Dailyentries extends CI_Controller {
             'menu_data' => ['curr_menu' => 'DAILY', 'curr_sub_menu' => 'DAILY'],
             'content_data' => [
                 'module_name' => 'General Expenditure <span class="module-date">&nbsp;&nbsp;(' . cus_nice_date($date) . ')</span> ',
-                'customer' => $this->customer,
+                'customer' => $this->usr->customer,
                 'expenditures' => $expenditures,
-                'expenditure_dates' => $this->exps->getAllExpenditureDates($this->station_id),
+                'expenditure_dates' => $this->exps->getAllExpenditureDates($this->usr->station_id),
                 'date' => $date,
                 'next_day' => date('Y-m-d', strtotime('+1 day', strtotime($date))),
                 'prev_day' => date('Y-m-d', strtotime('-1 day', strtotime($date)))
@@ -277,13 +231,13 @@ class Dailyentries extends CI_Controller {
     public function dipping() {
 
         //Check user status
-        $this->checkStatus(1, 1, 1);
+        $this->usr->checkStatus(1, 1, 1);
 
 
         // Attendants shifts date
         $date = $this->input->get('date');
         if (empty($date)) {
-            $latest_date = $this->dipping->getLatestDipping($this->station_id);
+            $latest_date = $this->dipping->getLatestDipping($this->usr->station_id);
             if ($latest_date) {
                 $date = $latest_date['inventory_traking_date'];
             } else {
@@ -292,7 +246,7 @@ class Dailyentries extends CI_Controller {
         }
 
         // Retrieving expenditure shifts due to date 
-        $cond = ['tr.inventory_traking_station_id' => $this->station_id, 'tr.inventory_traking_date' => $date];
+        $cond = ['tr.inventory_traking_station_id' => $this->usr->station_id, 'tr.inventory_traking_date' => $date];
         $dippings = $this->dipping->getDippings($cond); // reused this function from report model coz it does the same
         //cus_print_r($dippings);        die();
 
@@ -302,9 +256,9 @@ class Dailyentries extends CI_Controller {
             'menu_data' => ['curr_menu' => 'DAILY', 'curr_sub_menu' => 'DAILY'],
             'content_data' => [
                 'module_name' => 'Dipping <span class="module-date">&nbsp;&nbsp;(' . cus_nice_date($date) . ')</span> ',
-                'customer' => $this->customer,
+                'customer' => $this->usr->customer,
                 'dippings' => $dippings,
-                'fuel_types' => $this->mnt->getFuelTypes($this->station_id),
+                'fuel_types' => $this->mnt->getFuelTypes($this->usr->station_id),
                 'date' => $date,
                 'next_day' => date('Y-m-d', strtotime('+1 day', strtotime($date))),
                 'prev_day' => date('Y-m-d', strtotime('-1 day', strtotime($date)))
@@ -320,13 +274,13 @@ class Dailyentries extends CI_Controller {
     public function purchases() {
 
         //Check user status
-        $this->checkStatus(1, 1, 1);
+        $this->usr->checkStatus(1, 1, 1);
 
 
         // Attendants shifts date
         $date = $this->input->get('date');
         if (empty($date)) {
-            $latest_date = $this->purchase->getLatestPurchaseDate($this->station_id);
+            $latest_date = $this->purchase->getLatestPurchaseDate($this->usr->station_id);
             if ($latest_date) {
                 $date = $latest_date['inventory_purchase_date'];
             } else {
@@ -335,7 +289,7 @@ class Dailyentries extends CI_Controller {
         }
 
         // Retrieving expenditure shifts due to date 
-        $cond = ['pur.inventory_purchase_station_id' => $this->station_id, 'pur.inventory_purchase_date' => $date];
+        $cond = ['pur.inventory_purchase_station_id' => $this->usr->station_id, 'pur.inventory_purchase_date' => $date];
         $purchases = $this->purchase->getPurchases($cond); // reused this function from report model coz it does the same
         //cus_print_r($dippings);        die();
 
@@ -345,7 +299,7 @@ class Dailyentries extends CI_Controller {
             'menu_data' => ['curr_menu' => 'DAILY', 'curr_sub_menu' => 'DAILY'],
             'content_data' => [
                 'module_name' => 'Purchases <span class="module-date">&nbsp;&nbsp;(' . cus_nice_date($date) . ')</span> ',
-                'customer' => $this->customer,
+                'customer' => $this->usr->customer,
                 'purchases' => $purchases,
                 'fuel_types' => $this->mnt->getFuelTypes($this->station_id),
                 'purchase_dates' => $this->purchase->getAllPurchaseDates($this->station_id),
@@ -364,11 +318,11 @@ class Dailyentries extends CI_Controller {
     public function purchaseOrders() {
 
         //Check user status
-        $this->checkStatus(1, 1, 1);
+        $this->usr->checkStatus(1, 1, 1);
 
 
         // Retrieving expenditure shifts due to date 
-        $cond = ['po.po_station_id' => $this->station_id];
+        $cond = ['po.po_station_id' => $this->usr->station_id];
         $purchase_orders = $this->purchase->getPurchaseOrders($cond); // reused this function from report model coz it does the same
         //cus_print_r($dippings);        die();
 
@@ -378,13 +332,13 @@ class Dailyentries extends CI_Controller {
             'menu_data' => ['curr_menu' => 'DAILY', 'curr_sub_menu' => 'DAILY'],
             'content_data' => [
                 'module_name' => 'Purchase Orders',
-                'customer' => $this->customer,
+                'customer' => $this->usr->customer,
                 'purchase_orders' => $purchase_orders
             ],
             'modals_data' => [// Modals data
                 'modals' => ['modal_add_purchase_order'], // Put array of popup modals which you want them to appear on current page
                 'fuel_types_group' => $this->mnt->getFuelTypesGroup(), // Pass data for popup modals here
-                'station_depots' => $this->depo->getDepots(['depo.depo_admin_id' => $this->admin_id]) // Get station depots for creating purchase order
+                'station_depots' => $this->depo->getDepots(['depo.depo_admin_id' => $this->usr->admin_id]) // Get station depots for creating purchase order
             ],
             'header_data' => [],
             'footer_data' => [],
@@ -397,13 +351,13 @@ class Dailyentries extends CI_Controller {
     public function stocktransfer() {
 
         //Check user status
-        $this->checkStatus(1, 1, 1);
+        $this->usr->checkStatus(1, 1, 1);
 
 
         // Attendants shifts date
         $date = $this->input->get('date');
         if (empty($date)) {
-            $latest_att = $this->att->getLatestAtt($this->station_id);
+            $latest_att = $this->att->getLatestAtt($this->usr->station_id);
             if ($latest_att) {
                 $date = $latest_att['att_date'];
             } else {
@@ -412,7 +366,7 @@ class Dailyentries extends CI_Controller {
         }
 
         // Retrieving attendants shifts due to date 
-        $cond = ['att.att_station_id' => $this->station_id, 'att.att_date' => $date, 'cs.customer_sale_tts' => '1'];
+        $cond = ['att.att_station_id' => $this->usr->station_id, 'att.att_date' => $date, 'cs.customer_sale_tts' => '1'];
         $credit_sales = $this->rpt->getCreditSales($cond); // reused this function from report model coz it does the same
         //cus_print_r($atts);        die();
 
@@ -422,7 +376,7 @@ class Dailyentries extends CI_Controller {
             'menu_data' => ['curr_menu' => 'DAILY', 'curr_sub_menu' => 'DAILY'],
             'content_data' => [
                 'module_name' => 'Stock Transfer <span class="module-date">&nbsp;&nbsp;(' . cus_nice_date($date) . ')</span> ',
-                'customer' => $this->customer,
+                'customer' => $this->usr->customer,
                 'credit_sales' => $credit_sales,
                 'date' => $date,
                 'next_day' => date('Y-m-d', strtotime('+1 day', strtotime($date))),
@@ -441,7 +395,7 @@ class Dailyentries extends CI_Controller {
         header('Access-allow-control-origin: *');
         header('Content-type: text/json');
 
-        $this->checkStatusJson(1, 1, 1);
+        $this->usr->checkStatusJson(1, 1, 1);
 
         $validations = [
                 ['field' => 'order_date', 'label' => 'Order Date', 'rules' => 'trim|required|callback_validateOrderDate', 'errors' => ['required' => 'Select the order date.']],
@@ -479,8 +433,8 @@ class Dailyentries extends CI_Controller {
                 'po_date' => date('Y-m-d', strtotime($this->input->post('order_date'))),
                 'po_number' => $this->input->post('order_number'),
                 'po_depo_id' => $this->input->post('po_depo_id'),
-                'po_station_id' => $this->station_id,
-                'po_user_id' => $this->user_id,
+                'po_station_id' => $this->usr->station_id,
+                'po_user_id' => $this->usr->user_id,
                 'po_truck_number' => $this->input->post('truck_number'),
                 'po_volume' => $this->input->post('volume_ordered'),
                 'po_driver_name' => $this->input->post('driver_name'),
@@ -495,7 +449,7 @@ class Dailyentries extends CI_Controller {
             $res = $this->purchase->savePurchaseOrder(['order_data' => $order_data]);
 
             if ($res) {
-                $this->setSessMsg('Order created succesffuly', 'success');
+                $this->usr->setSessMsg('Order created succesffuly', 'success');
 
                 echo json_encode([
                     'status' => [
@@ -517,11 +471,11 @@ class Dailyentries extends CI_Controller {
         header('Access-allow-control-origin: *');
         header('Content-type: text/json');
 
-        $this->checkStatusJson(1, 1, 1);
+        $this->usr->checkStatusJson(1, 1, 1);
 
         $att_id = $this->uri->segment(3);
 
-        $att = $this->rpt->getSales(['att.att_station_id' => $this->station_id], ['att.att_id', 'att.att_sale_price_per_ltr', 'f.fuel_type_generic_name'], NULL, $att_id, []);
+        $att = $this->rpt->getSales(['att.att_station_id' => $this->usr->station_id], ['att.att_id', 'att.att_sale_price_per_ltr', 'f.fuel_type_generic_name'], NULL, $att_id, []);
 
         if (!$att) {
             cus_json_error('Attendant shift was not found or it may have been removed');
@@ -529,11 +483,12 @@ class Dailyentries extends CI_Controller {
 
         $validations = [
             //['field' => 'order_date', 'label' => 'Order Date', 'rules' => 'trim|required|callback_validateOrderDate', 'errors' => ['required' => 'Select the order date.']],
+                ['field' => 'add_credit_form', 'label' => 'From Error', 'rules' => 'trim|callback_validateAddCreditForm'],
                 ['field' => 'cr_del_no', 'label' => 'Delivery Note Number', 'rules' => 'trim'],
                 ['field' => 'cr_order_no', 'label' => 'Order Number', 'rules' => 'trim'],
                 ['field' => 'cr_customer', 'label' => 'Customer', 'rules' => 'trim|required|callback_validateCreditCustomer'],
                 ['field' => 'cr_truck_no', 'label' => 'Truck Number', 'rules' => 'trim'],
-                ['field' => 'cr_qty', 'label' => 'Quantity sold', 'rules' => 'trim|required|numeric'],
+                ['field' => 'cr_qty', 'label' => 'Quantity sold', 'rules' => 'trim|required|numeric|callback_validateCrQtySold'],
                 ['field' => 'cr_notes', 'label' => 'Credit Notes', 'rules' => 'trim'],
                 ['field' => 'cr_driver_name', 'label' => 'Driver Name', 'rules' => 'trim|callback_validateDriverName'],
                 ['field' => 'cr_delivery_point', 'label' => 'Delivery Point', 'rules' => 'trim|callback_validateDeliveryPoint']
@@ -566,7 +521,7 @@ class Dailyentries extends CI_Controller {
                 $tts = 1;
             }
 
-            if ($credit['credit_type_allow_rtt'] == '1' OR $this->auto_rtt == '1') {
+            if ($credit['credit_type_allow_rtt'] == '1' OR $this->usr->auto_rtt == '1') {
                 $rtt = 1;
             }
 
@@ -579,7 +534,7 @@ class Dailyentries extends CI_Controller {
                 'customer_sale_att_id' => $att['att_id'],
                 'customer_sale_ltrs' => $ltrs,
                 'customer_sale_credit_type_id' => $credit['credit_type_id'],
-                'customer_sale_added_by' => $this->user_id,
+                'customer_sale_added_by' => $this->usr->user_id,
                 'customer_sale_credit_number' => time(),
                 'customer_sale_order_number' => $this->input->post('cr_order_no'),
                 'customer_sale_track_number' => $this->input->post('cr_truck_no'),
@@ -596,10 +551,10 @@ class Dailyentries extends CI_Controller {
 
             $notes = "Fuel Purchase. " . $ltrs . ' ltr(s) of ' . $att['fuel_type_generic_name'] . ' @' . cus_price_form($sale_price);
 
-            $res = $this->cust->saveCreditSale(['credit_data' => $credit_data, 'amount' => $amount, 'admin_id' => $this->admin_id, 'notes' => $notes]);
+            $res = $this->cust->saveCreditSale(['credit_data' => $credit_data, 'amount' => $amount, 'admin_id' => $this->usr->admin_id, 'notes' => $notes, 'new_credit_sale' => $this->usr->station_new_credit_sales]);
 
             if ($res) {
-                $this->setSessMsg('Credit sale save successfully', 'success');
+                $this->usr->setSessMsg('Credit sale saved successfully', 'success');
 
                 echo json_encode([
                     'status' => [
@@ -615,57 +570,365 @@ class Dailyentries extends CI_Controller {
             }
         }
     }
-    
-    public function validateDeliveryPoint($delivery_point) {
-        $customer_id = $this->input->post('cr_customer');
-        
-        $customer = $this->cust->getCreditCustomers(['crdt.credit_type_id' => $customer_id], NULL, 1);
-        
-        if(!$customer){
+
+    public function submitAssignShift() {
+
+        header('Access-allow-control-origin: *');
+        header('Content-type: text/json');
+
+        $this->usr->checkStatusJson(1, 1, 1);
+
+
+        $validations = [
+            //['field' => 'order_date', 'label' => 'Order Date', 'rules' => 'trim|required|callback_validateOrderDate', 'errors' => ['required' => 'Select the order date.']],
+                ['field' => 'as_attendant', 'label' => 'Attendant', 'rules' => 'trim|required|callback_validateAsAttendant'],
+                ['field' => 'as_pump_id', 'label' => 'Pump', 'rules' => 'trim|required|callback_validateAsPumpId'],
+                ['field' => 'as_form', 'label' => 'Delivery Point', 'rules' => 'callback_validateAsForm']
+        ];
+
+        $this->form_validation->set_rules($validations);
+
+        if ($this->form_validation->run() === FALSE) {
+            echo json_encode([
+                'status' => [
+                    'error' => TRUE,
+                    'error_type' => 'display',
+                    "form_errors" => validation_errors_array()
+                ]
+            ]);
+        } else {
+
+            $pump_id = $this->input->post('as_pump_id');
+
+            $pump = $this->mnt->getPumps($this->usr->station_id, ['pump_id' => $pump_id], NULL, 1);
+
+            if (!$pump) {
+                cus_json_error('Pump was not found or may have been removed from the system');
+            }
+
+            // Lets have max and min shift sequences
+            $min_shift = $this->mnt->getShifts($this->usr->station_id, NULL, NULL, 1, NULL, [['col' => 'shift_sequence', 'sort' => 'ASC']]);
+            $max_shift = $this->mnt->getShifts($this->usr->station_id, NULL, NULL, 1, NULL, [['col' => 'shift_sequence', 'sort' => 'DESC']]);
+
+            // Get last shift for selected pump
+            $last_pump_shift = $this->att->getAttendances(['att.att_pump_id' => $pump['pump_id'], 'att.att_station_id' => $this->usr->station_id], ['att.att_date', 's.shift_sequence'], 1, NULL, [['col' => 'att.att_date', 'sort' => 'DESC'], ['col' => 's.shift_sequence', 'sort' => 'DESC']]);
+
+            // Check if we have it
+            if ($last_pump_shift) {
+
+                // If we have it lets check if next shift is latest
+                if (((int) $last_pump_shift['shift_sequence'] + 1) > $max_shift['shift_sequence']) {
+
+                    $next_shift_date = date('Y-m-d', strtotime('+1 day', strtotime($last_pump_shift['att_date'])));
+                    $next_shift_id = $min_shift['shift_id'];
+                } else {
+
+                    $next_shift_date = $last_pump_shift['att_date'];
+                    $next_shift = $this->mnt->getShifts($this->usr->station_id, ['shift_sequence' => ((int) $last_pump_shift['shift_sequence'] + 1)], NULL, 1, NULL, NULL);
+
+                    if ($next_shift) {
+                        $next_shift_id = $next_shift['shift_id'];
+                    } else {
+                        $next_shift_date = date('Y-m-d', strtotime('+1 day', strtotime($last_pump_shift['att_date'])));
+                        $next_shift_id = $min_shift['shift_id'];
+                    }
+                }
+            } else {
+
+                $next_shift_id = $min_shift['shift_id'];
+                $next_shift_date = $this->usr->station_first_day;
+            }
+
+            $att_data = [
+                'att_date' => $next_shift_date,
+                'att_shift_id' => $next_shift_id,
+                'att_op_mtr_reading' => $pump['pump_curr_mtr_rdngs'],
+                'att_clo_mtr_reading' => 0,
+                'att_employee_id' => $this->input->post('as_attendant'),
+                'att_shift_status' => 'Opened',
+                'att_pump_id' => $pump['pump_id'],
+                'att_sale_price_per_ltr' => $pump['fuel_type_curr_price_per_ltr'],
+                'att_station_id' => $this->usr->station_id,
+                'att_amount_banked' => 0
+            ];
+
+            $res = $this->att->saveAssignShift(['att_data' => $att_data]);
+
+            if ($res) {
+
+                $this->usr->setSessMsg('Pump ' . $pump['pump_name'] . ' assigned to attendant successfully', 'success');
+
+                echo json_encode([
+                    'status' => [
+                        'error' => FALSE,
+                        'redirect' => true,
+                        'redirect_url' => site_url('dailyentries/attendantsshifts?date=' . $next_shift_date)
+                    ]
+                ]);
+
+                die();
+            } else {
+                cus_json_error('Something went wrong, system was unable to assign pump to an attendant.');
+            }
+        }
+    }
+
+    public function requestCloseShiftForm() {
+
+        header('Access-allow-control-origin: *');
+        header('Content-type: text/json');
+
+        $this->usr->checkStatusJson(1, 1, 1);
+
+        $att_id = $this->uri->segment(3);
+
+        $cols = ['u.user_name', 'credit_sales', 'return_to_tank', 'transfered_to_station', 's.shift_name', 'att.att_id', 'att.att_op_mtr_reading', 'p.pump_name', 'f.fuel_type_generic_name'];
+
+        $att = $this->att->getAttendances(['att_station_id' => $this->usr->station_id, 'att_id' => $att_id], $cols, 1, NULL, NULL);
+
+        if (!$att) {
+            cus_json_error('Attendant shift was not found or may have been removed from the system');
+        }
+
+
+        $json = json_encode([
+            'status' => ['error' => FALSE, 'redirect' => FALSE, 'pop_form' => TRUE, 'form_type' => 'closeAttShift', 'form_url' => site_url('dailyentries/submitcloseattshift/' . $att['att_id'])],
+            'att' => $att
+        ]);
+
+        echo $json;
+
+        die();
+    }
+
+    public function postToLedger() {
+
+        //Check user status
+        $this->usr->checkStatus(1, 1, 1);
+
+        $att_id = $this->uri->segment(3);
+
+        $att = $this->rpt->getSales(['att.att_station_id' => $this->usr->station_id], NULL, NULL, $att_id);
+
+
+
+        if (!$att) {
+            $this->usr->setSessMsg('Details was not found or may have been removed from the system', 'error', 'dailyentries/attendantsshifts');
+        }
+
+        if ($this->usr->station_new_credit_sales) {
+            $this->usr->setSessMsg('Posting to ledger can not be performed at this momoment. Contact the system developer', 'error', 'dailyentries/saledetails/' . $att['att_id'] . '?url=' . site_url('dailyentries/attendantsshifts?date=') . urlencode($att['att_date']));
+        }
+
+        if ($att['att_posted_to_ledger'] == '1') {
+            $this->usr->setSessMsg('Sale details were alredy posted to ledger.', 'error', 'dailyentries/saledetails/' . $att['att_id'] . '?url=' . site_url('dailyentries/attendantsshifts?date=') . urlencode($att['att_date']));
+        }
+        if ($att['att_shift_status'] == 'Opened') {
+            $this->usr->setSessMsg('You should close this shift before posting to ledger.', 'error', 'dailyentries/saledetails/' . $att['att_id'] . '?url=' . site_url('dailyentries/attendantsshifts?date=') . urlencode($att['att_date']));
+        }
+
+        // get credit sales in this shift
+
+        $credit_sales = $this->rpt->getCreditSales(['cs.customer_sale_att_id' => $att['att_id']], NULL);
+
+        $res = $this->txn->saveShiftToLedger(['att' => $att, 'credit_sales' => $credit_sales, 'user_id' => $this->usr->user_id, 'admin_id' => $this->usr->admin_id]);
+
+        if ($res) {
+            $this->usr->setSessMsg('Sale details posted to ledger successfully', 'success', 'dailyentries/saledetails/' . $att['att_id'] . '?url=' . site_url('dailyentries/attendantsshifts?date=') . urlencode($att['att_date']));
+        } else {
+            $this->usr->setSessMsg('Something went wrong. Sale details was not posted to ledger', 'error', 'dailyentries/saledetails/' . $att['att_id'] . '?url=' . site_url('dailyentries/attendantsshifts?date=') . urlencode($att['att_date']));
+        }
+    }
+
+    public function submitCloseAttShift() {
+
+        header('Access-allow-control-origin: *');
+        header('Content-type: text/json');
+
+        $this->usr->checkStatusJson(1, 1, 1);
+
+        $att_id = $this->uri->segment(3);
+
+        $att = $this->att->getAttendances(['att_id' => $att_id, 'att_station_id' => $this->usr->station_id], NULL, 1, NULL, NULL);
+
+        if (!$att) {
+            cus_json_error('Shift details was not found or may have been removed from the system');
+        }
+
+        if ($att['att_shift_status'] == 'Closed') {
+            cus_json_error('Attendant shift is already closed');
+        }
+
+        $validations = [
+            //['field' => 'order_date', 'label' => 'Order Date', 'rules' => 'trim|required|callback_validateOrderDate', 'errors' => ['required' => 'Select the order date.']],
+                ['field' => 'cs_clo_mtr_rdngs', 'label' => 'Closing Meter Readings', 'rules' => 'trim|required|callback_validateCloMtrRdngs'],
+                ['field' => 'cs_throughput', 'label' => 'Throughput', 'rules' => 'callback_validateThroughput'],
+        ];
+
+        $this->form_validation->set_rules($validations);
+
+        if ($this->form_validation->run() === FALSE) {
+            echo json_encode([
+                'status' => [
+                    'error' => TRUE,
+                    'error_type' => 'display',
+                    "form_errors" => validation_errors_array()
+                ]
+            ]);
+        } else {
+
+            $att_data = [
+                'att_clo_mtr_reading' => $this->input->post('cs_clo_mtr_rdngs'),
+                'att_shift_status' => 'Closed'
+            ];
+
+            $res = $this->att->saveCloseShift(['att_data' => $att_data, 'att_id' => $att['att_id']]);
+
+            if ($res) {
+
+                $this->usr->setSessMsg('Attendant shift closed successfully', 'success');
+
+                echo json_encode([
+                    'status' => [
+                        'error' => FALSE,
+                        'redirect' => true,
+                        'redirect_url' => site_url('dailyentries/attendantsshifts?date=' . $att['att_date'])
+                    ]
+                ]);
+
+                die();
+            } else {
+                cus_json_error('Something went wrong, attendant shift was not closed.');
+            }
+        }
+    }
+
+//    Forms validations 
+
+    public function validateCloMtrRdngs($clo_mtr_readings) {
+
+        if (empty($clo_mtr_readings)) {
             return TRUE;
         }
+
+        $att_id = $this->uri->segment(3);
+
+        $att = $this->att->getAttendances(['att_id' => $att_id, 'att_station_id' => $this->usr->station_id], NULL, 1, NULL, NULL);
+
+        if (!$att) {
+            cus_json_error('Shift details was not found or may have been removed from the system');
+        }
+
+        if ($att['att_op_mtr_reading'] > $clo_mtr_readings) {
+            $this->form_validation->set_message('validateCloMtrRdngs', '<b>Closing meter readings</b> should be greater than or equal to <b>Opening meter readings</b>');
+            return FALSE;
+        }
+
+
+        return TRUE;
+    }
+    
+    public function validateThroughput() {
         
-        if($customer['credit_type_type_description'] == 'TRANSIT' AND empty($delivery_point)){
-            $this->form_validation->set_message('validateDeliveryPoint','Delivery point is required');
+        $clo_mtr_readings = $this->input->post('cs_clo_mtr_rdngs');
+        
+        if (empty($clo_mtr_readings)) {
+            return TRUE;
+        }
+
+        $att_id = $this->uri->segment(3);
+
+        $att = $this->att->getAttendances(['att_id' => $att_id, 'att_station_id' => $this->usr->station_id], NULL, 1, NULL, NULL);
+
+        if (!$att) {
+            cus_json_error('Shift details was not found or may have been removed from the system');
+        }
+        
+        $total_credit_sales = $att['credit_sales'] + $att['return_to_tank'] + $att['transfered_to_station']; 
+        $throughput = $clo_mtr_readings - $att['att_op_mtr_reading'];
+
+        if ($total_credit_sales > $throughput) {
+            $this->form_validation->set_message('validateThroughput', 'Throughput should atleast be equal to or exceed <b>Total Credit Sales</b>. Check if the <b>Closing Meter Readings</b> field or <b>Added Credit Sales</b> in this PUMP are correct');
+            return FALSE;
+        }
+
+
+        return TRUE;
+    }
+
+    public function validateAddCreditForm() {
+
+        $att_id = $this->uri->segment(3);
+        $customer_id = $this->input->post('cr_customer');
+
+
+        $customer = $this->cust->getCreditCustomers(['credit_type_id' => $customer_id, 'credit_type_admin_id' => $this->usr->admin_id], NULL, 1);
+
+        if (!$customer) {
+            return TRUE;
+        }
+
+        $last_credit_sale = $this->rpt->getCreditSales("(customer_sale_timestamp BETWEEN DATE_SUB(NOW() , INTERVAL 2 MINUTE) AND NOW()) AND customer_sale_credit_type_id ='" . $customer['credit_type_id'] . "' AND customer_sale_att_id = '" . $att_id . "' ", ['customer_sale_id'], 1);
+
+        if ($last_credit_sale) {
+
+            $this->form_validation->set_message('validateAddCreditForm', 'This record may have already been added. <a href="' . site_url('dailyentries/saledetails/' . $att_id) . '">Refresh</a> the page to confirm');
+            return FALSE;
+        }
+
+        return TRUE;
+    }
+
+    public function validateDeliveryPoint($delivery_point) {
+        $customer_id = $this->input->post('cr_customer');
+
+        $customer = $this->cust->getCreditCustomers(['crdt.credit_type_id' => $customer_id], NULL, 1);
+
+        if (!$customer) {
+            return TRUE;
+        }
+
+        if ($customer['credit_type_type_description'] == 'TRANSIT' AND empty($delivery_point)) {
+            $this->form_validation->set_message('validateDeliveryPoint', 'Delivery point is required');
             return FALSE;
         }
         return TRUE;
     }
-    
+
     public function validateDriverName($driver_name) {
-        
+
         $customer_id = $this->input->post('cr_customer');
-        
+
         $customer = $this->cust->getCreditCustomers(['crdt.credit_type_id' => $customer_id], NULL, 1);
-        
-        if(!$customer){
+
+        if (!$customer) {
             return TRUE;
         }
-        
-        if($customer['credit_type_type_description'] == 'TRANSIT' AND empty($driver_name)){
-            $this->form_validation->set_message('validateDriverName','Driver name is required');
+
+        if ($customer['credit_type_type_description'] == 'TRANSIT' AND empty($driver_name)) {
+            $this->form_validation->set_message('validateDriverName', 'Driver name is required');
             return FALSE;
         }
-        
+
         return TRUE;
     }
 
     public function releaseOrder() {
 
-        $this->checkStatus();
+        $this->usr->checkStatus();
 
         $order_id = $this->uri->segment(3);
 
         $po = $this->purchase->getPurchaseOrders(['po.po_id' => $order_id], 1);
 
         if (!$po) {
-            $this->setSessMsg('Purchase order was not found or it may have been removed from the system', 'error', 'dailyentries/purchaseorders');
+            $this->usr->setSessMsg('Purchase order was not found or it may have been removed from the system', 'error', 'dailyentries/purchaseorders');
         }
 
         if ($this->purchase->updatePurchaseOrder(['po_status' => 'RELEASED'], ['po_id' => $po['po_id']])) {
-            $this->setSessMsg('Purchase order updated successfully', 'success', 'dailyentries/purchaseorders');
+            $this->usr->setSessMsg('Purchase order updated successfully', 'success', 'dailyentries/purchaseorders');
         } else {
-            $this->setSessMsg('Something went wrong, Purchase order was not updates', 'warning', 'dailyentries/purchaseorders');
+            $this->usr->setSessMsg('Something went wrong, Purchase order was not updates', 'warning', 'dailyentries/purchaseorders');
         }
     }
 
@@ -686,6 +949,76 @@ class Dailyentries extends CI_Controller {
             return FALSE;
         }
 
+        return TRUE;
+    }
+
+    public function validateAsAttendant($attendant_id) {
+
+        if (empty($attendant_id)) {
+            return TRUE;
+        }
+
+        $attendant = $this->mnt->getStationAttendants($this->usr->station_id, ['user_id' => $attendant_id], NULL, 1);
+        if (!$attendant) {
+            $this->form_validation->set_message('validateAsPumpId', 'Attendant was not found or may have been removed form the system');
+            return FALSE;
+        }
+        return TRUE;
+    }
+
+    public function validateAsPumpId($pump_id) {
+
+        if (empty($pump_id)) {
+            return TRUE;
+        }
+
+        $pump = $this->mnt->getPumps($this->usr->station_id, ['pump_id' => $pump_id], NULL, 1);
+
+        if (!$pump) {
+            $this->form_validation->set_message('validateAsPumpId', 'Pump was not found or may have been removed form the system');
+            return FALSE;
+        }
+
+        $opened_pumps = $this->rpt->getSales(['att.att_station_id' => $this->usr->station_id, 'att_shift_status' => 'Opened'], ['att.att_pump_id'], NULL);
+
+        if ($opened_pumps) {
+            $opened_pumps = array_column($opened_pumps, 'att_pump_id');
+        } else {
+            $opened_pumps = [];
+        }
+
+        if (in_array($pump['pump_id'], $opened_pumps)) {
+            $this->form_validation->set_message('validateAsPumpId', 'Pump is assigned to an open shift');
+            return FALSE;
+        }
+
+        return TRUE;
+    }
+
+    public function validateAsForm() {
+        return TRUE;
+    }
+    
+    public function validateCrQtySold($qty) {
+        
+        if(empty($qty)){
+            return TRUE;
+        }
+        $att_id = $this->uri->segment(3);
+
+        $att = $this->rpt->getSales(['att.att_station_id' => $this->station_id], ['att.att_shift_status', 'credit_sales', 'return_to_tank','transfered_to_station'], NULL, $att_id, []);
+
+        if($att['att_shift_status'] == 'Opened'){
+            return TRUE;
+        }
+        
+        $total_credit_sales = $att['credit_sales'] + $att['return_to_tank'] + $att['transfered_to_station'];
+        
+        if(($total_credit_sales + $qty) > $att['throughput']){
+            $this->form_validation->set_message('validateCrQtySold','Total credit sales should not exceed the throughput');
+            return FALSE;
+        }
+        
         return TRUE;
     }
 
