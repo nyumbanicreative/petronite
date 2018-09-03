@@ -184,6 +184,122 @@ class Dailyentries extends CI_Controller {
 
         $this->load->view('view_base', $data);
     }
+    
+    
+    public function attendantsCollections() {
+
+        //Check user status
+        $this->usr->checkStatus(1, 1, 1);
+
+        // Attendants shifts date
+        $date = $this->input->get('date');
+        
+        if (empty($date)) {
+            $latest_att = $this->att->getLatestAtt($this->usr->station_id);
+            if ($latest_att) {
+                $date = $latest_att['att_date'];
+            } else {
+                $date = date('Y-m-d');
+            }
+        }
+
+        // Retrieving attendants shifts due to date 
+        $cond = ['att.att_station_id' => $this->usr->station_id, 'att.att_date' => $date];
+        $attendant_collections = $this->att->getAttendantCollection(NULL, $cond); // reused this function from report model coz it does the same
+        //echo '<pre>'; cus_print_r($attendant_collections);        die();
+
+        $data = [
+            'menu' => 'menu/view_sys_menu',
+            'content' => 'contents/dailyentries/view_attendants_collection',
+            'menu_data' => ['curr_menu' => 'DAILY', 'curr_sub_menu' => 'DAILY'],
+            'content_data' => [
+                'module_name' => 'Attendants Collection',
+                'customer' => $this->usr->customer,
+                'attendant_collections' => $attendant_collections,
+                'date' => $date,
+                'next_day' => date('Y-m-d', strtotime('+1 day', strtotime($date))),
+                'prev_day' => date('Y-m-d', strtotime('-1 day', strtotime($date)))
+            ],
+            'header_data' => [],
+            'footer_data' => [],
+            'top_bar_data' => []
+        ];
+
+        $this->load->view('view_base', $data);
+    }
+    
+    public function submitAddCollection() {
+
+        header('Access-allow-control-origin: *');
+        header('Content-type: text/json');
+
+        $this->usr->checkStatusJson(1, 1, 1);
+        
+        $date = $this->input->get('date');
+        $attendant = $this->input->get('attendant');
+        $shift = $this->input->get('shift');
+
+        $collection = $this->att->getAttendantCollection(NULL, ['att.att_date' => $date,'att.att_shift_id' => $shift,'att.att_employee_id' => $attendant,'att.att_station_id' => $this->usr->station_id], 1, NULL);
+
+        
+        if (!$collection) {
+            cus_json_error('Shift details was not found or may have been removed from the system');
+        }
+        
+        if(!empty($collection['attc_id'])){
+            cus_json_error('Collection is already completed for this shift. Only editing is allowed');
+        }
+
+        $validations = [
+                ['field' => 'addc_amount_collected', 'label' => 'Amount collected', 'rules' => 'trim|required|numeric'],
+        ];
+
+        $this->form_validation->set_rules($validations);
+
+        if ($this->form_validation->run() === FALSE) {
+            echo json_encode([
+                'status' => [
+                    'error' => TRUE,
+                    'error_type' => 'display',
+                    "form_errors" => validation_errors_array()
+                ]
+            ]);
+        } else {
+            
+            $amount_collected = $this->input->post('addc_amount_collected');
+            $cond = ['att.att_date' => $collection['att_date'],'att_employee_id' => $collection['att_employee_id'],'att_shift_id' => $collection['att_shift_id'],'att.att_station_id' => $collection['att_station_id']];
+            $cols = ['att.att_id','credit_sales','return_to_tank','transfered_to_station','att_sale_price_per_ltr'];
+            
+            $atts = $this->att->getAttendances($cond, $cols, NULL, NULL, NULL);
+            
+            $collection_data = [
+                'attc_attendant_id' => $collection['att_employee_id'],
+                'attc_date' => $collection['att_date'],
+                'attc_shift_id' => $collection['att_shift_id'],
+                'attc_amount' => $amount_collected,
+                'attc_user_id' => $this->usr->user_id,
+                'attc_station_id' => $this->usr->station_id
+            ];
+            
+            $res = $this->att->saveAddCollection(['atts' => $atts,'amount_collected' => $amount_collected,'collection_data' => $collection_data]);
+
+            if ($res) {
+                $this->usr->setSessMsg('Attendant collection added succesffuly', 'success');
+
+                echo json_encode([
+                    'status' => [
+                        'error' => FALSE,
+                        'redirect' => true,
+                        'redirect_url' => site_url('dailyentries/attendantscollections?date='.$collection['att_date'])
+                    ]
+                ]);
+
+                die();
+            } else {
+                cus_json_error('Something went wrong. Unable to add attendant collection, Contact the system developer.');
+            }
+        }
+    }
 
     public function expenditure() {
 
@@ -694,6 +810,40 @@ class Dailyentries extends CI_Controller {
         $json = json_encode([
             'status' => ['error' => FALSE, 'redirect' => FALSE, 'pop_form' => TRUE, 'form_type' => 'closeAttShift', 'form_url' => site_url('dailyentries/submitcloseattshift/' . $att['att_id'])],
             'att' => $att
+        ]);
+
+        echo $json;
+
+        die();
+    }
+    
+    
+    public function requestAddCollectionForm() {
+
+        header('Access-allow-control-origin: *');
+        header('Content-type: text/json');
+
+        $this->usr->checkStatusJson(1, 1, 1);
+        
+        $date = $this->input->get('date');
+        $attendant = $this->input->get('attendant');
+        $shift = $this->input->get('shift');
+
+        $collection = $this->att->getAttendantCollection(NULL, ['att.att_date' => $date,'att.att_shift_id' => $shift,'att.att_employee_id' => $attendant,'att.att_station_id' => $this->usr->station_id], 1, NULL);
+
+        
+        if (!$collection) {
+            cus_json_error('Shift details was not found or may have been removed from the system');
+        }
+        
+        if(!empty($collection['attc_id'])){
+            cus_json_error('Collection is already completed for this shift. Only editing is allowed');
+        }
+
+
+        $json = json_encode([
+            'status' => ['error' => FALSE, 'redirect' => FALSE, 'pop_form' => TRUE, 'form_type' => 'addCollection', 'form_url' => site_url('dailyentries/submitaddcollection?date=' . urlencode($collection['att_date']) . '&shift=' . urlencode($collection['att_shift_id']) . '&attendant=' . urlencode($collection['att_employee_id']))],
+            'collection' => $collection
         ]);
 
         echo $json;

@@ -125,7 +125,9 @@
 
 
 
-                                    <div class="col col-sm-6 col-md-6 col-12 col-lg-4">
+                                    
+                                
+                                <div class="col col-sm-6 col-md-6 col-12 col-lg-4">
                                         <div class="form-group">
                                             <label>Total Cash Sales</label>
 
@@ -146,6 +148,17 @@
                                             <label>Total Credit Sales</label>
                                             <div>
                                                 <p><?php echo (float) $sale['credit_sales']; ?>&nbsp;Ltr<sub>(s)</sub></p>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                
+                                <div class="col col-sm-6 col-md-6 col-12 col-lg-4">
+                                        <div class="form-group">
+                                            <label>Sale Price @ltr</label>
+
+                                            <div>
+                                                <p><?php echo cus_price_form($sale['att_sale_price_per_ltr']) . ' ' .CURRENCY; ?></p>
                                             </div>
 
                                         </div>

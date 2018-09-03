@@ -29,9 +29,9 @@
         <li class="<?php echo ($curr_menu == 'DAILY') ? "active" : "" ?>"><a href="#daily" aria-expanded="<?php echo ($curr_menu == 'DAILY') ? "true" : "false" ?>" data-toggle="collapse"><i class="fa fa-truck"></i>Daily Entries </a>
             <ul id="daily" class="<?php echo ($curr_sub_menu == 'DAILY') ? "" : "collapse" ?> list-unstyled">
                 <li><a href="<?php echo site_url('dailyentries/attendantsshifts'); ?>">Attendant Shifts</a></li>
-                <li><a href="<?php echo site_url('dailyentries/attendantscollections'); ?>">Attendant Collection</a></li>
                 <li><a href="<?php echo site_url('dailyentries/creditsales'); ?>">Credit Sales</a></li>
                 <li><a href="<?php echo site_url('dailyentries/stocktransfer'); ?>">Stock Transfer</a></li>
+                <li><a href="<?php echo site_url('dailyentries/attendantscollections'); ?>">Attendant Collection</a></li>
                 <li><a href="<?php echo site_url('dailyentries/expenditure'); ?>">Expenditure</a></li>
                 <li><a href="<?php echo site_url('dailyentries/dipping'); ?>">Dipping</a></li>
                 <li><a href="<?php echo site_url('dailyentries/purchases'); ?>">Purchases</a></li>
