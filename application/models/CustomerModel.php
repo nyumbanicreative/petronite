@@ -168,6 +168,24 @@ Class CustomerModel extends CI_Model {
             return true;
         }
     }
+    
+    public function saveEditCreditCustomer($data) {
+        
+        $this->db->trans_start();
+        
+        $this->db->where('credit_type_id',$data['customer_id'])->update('credit_types',$data['customer_data']);
+        
+        $this->db->trans_complete();
+
+        if ($this->db->trans_status() == false) {
+
+            $this->db->trans_rollback();
+            return false;
+        } else {
+            $this->db->trans_commit();
+            return true;
+        }
+    }
 
     public function savePetroniteCustomer($data) {
 

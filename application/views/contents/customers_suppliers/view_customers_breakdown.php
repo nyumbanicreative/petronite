@@ -6,6 +6,61 @@
 </header>
 <?php echo $alert; ?>
 
+<div id="editCustomerBalance"  role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" class="modal fade text-left">
+    <div role="document" class="modal-dialog">
+        <form id="edit_customer_balance_form" class="modal-content" action="">
+            <div class="modal-header">
+                <h4 id="exampleModalLabel" class="modal-title"> Update Customer Balanace</h4>
+                <button type="button" data-dismiss="modal" aria-label="Close" class="close"><span aria-hidden="true">×</span></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div id="b_form">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="form-group" id="b_customer_name">
+                            <label>Custimer Name</label>
+                            <input placeholder="Loading customer name ......" readonly=""  class="form-control" name="b_customer_name" autocomplete="off" value="">
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="form-group" id="b_balance_type">
+                            <label>Balance Type</label>
+                            <select style="width: 100%" name="b_balance_type">
+                                <option value=""></option>
+                                <option value="CREDIT">CREDIT</option>
+                                <option value="DEBIT">DEBIT</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="form-group" id="b_balance_amount">
+                            <label>Balance Amount</label>
+                            <input autocomplete="off"  placeholder="Enter the balance amount"  class="form-control amount" name="b_balance_amount"  value="">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" data-dismiss="modal" class="btn btn-secondary pull-left">Close</button>
+
+                <button type="submit" class="btn btn-success"><i class="fa fa-save"></i>&nbsp;Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <section class="tables no-padding-top">  
 
     <div class="container-fluid" style="min-height: 500px;">
@@ -36,7 +91,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                
+
                             </tbody>
                         </table>
                     </div>
@@ -52,6 +107,8 @@
 
     $(document).ready(function () {
         
+        $('select[name=b_balance_type]').select2({placeholder:'Select the balance type'});
+
         $('#shifts_table').DataTable({
             "aaSorting": [],
             responsive: true,

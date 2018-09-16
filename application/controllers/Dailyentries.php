@@ -6,9 +6,8 @@ class Dailyentries extends CI_Controller {
 
     public function __construct() {
         parent::__construct();
-
     }
-    
+
     public function attendantsShifts() {
 
         $this->usr->checkStatus(1, 1, 1);
@@ -184,8 +183,7 @@ class Dailyentries extends CI_Controller {
 
         $this->load->view('view_base', $data);
     }
-    
-    
+
     public function attendantsCollections() {
 
         //Check user status
@@ -193,7 +191,7 @@ class Dailyentries extends CI_Controller {
 
         // Attendants shifts date
         $date = $this->input->get('date');
-        
+
         if (empty($date)) {
             $latest_att = $this->att->getLatestAtt($this->usr->station_id);
             if ($latest_att) {
@@ -227,26 +225,26 @@ class Dailyentries extends CI_Controller {
 
         $this->load->view('view_base', $data);
     }
-    
+
     public function submitAddCollection() {
 
         header('Access-allow-control-origin: *');
         header('Content-type: text/json');
 
         $this->usr->checkStatusJson(1, 1, 1);
-        
+
         $date = $this->input->get('date');
         $attendant = $this->input->get('attendant');
         $shift = $this->input->get('shift');
 
-        $collection = $this->att->getAttendantCollection(NULL, ['att.att_date' => $date,'att.att_shift_id' => $shift,'att.att_employee_id' => $attendant,'att.att_station_id' => $this->usr->station_id], 1, NULL);
+        $collection = $this->att->getAttendantCollection(NULL, ['att.att_date' => $date, 'att.att_shift_id' => $shift, 'att.att_employee_id' => $attendant, 'att.att_station_id' => $this->usr->station_id], 1, NULL);
 
-        
+
         if (!$collection) {
             cus_json_error('Shift details was not found or may have been removed from the system');
         }
-        
-        if(!empty($collection['attc_id'])){
+
+        if (!empty($collection['attc_id'])) {
             cus_json_error('Collection is already completed for this shift. Only editing is allowed');
         }
 
@@ -265,13 +263,13 @@ class Dailyentries extends CI_Controller {
                 ]
             ]);
         } else {
-            
+
             $amount_collected = $this->input->post('addc_amount_collected');
-            $cond = ['att.att_date' => $collection['att_date'],'att_employee_id' => $collection['att_employee_id'],'att_shift_id' => $collection['att_shift_id'],'att.att_station_id' => $collection['att_station_id']];
-            $cols = ['att.att_id','credit_sales','return_to_tank','transfered_to_station','att_sale_price_per_ltr'];
-            
+            $cond = ['att.att_date' => $collection['att_date'], 'att_employee_id' => $collection['att_employee_id'], 'att_shift_id' => $collection['att_shift_id'], 'att.att_station_id' => $collection['att_station_id']];
+            $cols = ['att.att_id', 'credit_sales', 'return_to_tank', 'transfered_to_station', 'att_sale_price_per_ltr'];
+
             $atts = $this->att->getAttendances($cond, $cols, NULL, NULL, NULL);
-            
+
             $collection_data = [
                 'attc_attendant_id' => $collection['att_employee_id'],
                 'attc_date' => $collection['att_date'],
@@ -280,8 +278,8 @@ class Dailyentries extends CI_Controller {
                 'attc_user_id' => $this->usr->user_id,
                 'attc_station_id' => $this->usr->station_id
             ];
-            
-            $res = $this->att->saveAddCollection(['atts' => $atts,'amount_collected' => $amount_collected,'collection_data' => $collection_data]);
+
+            $res = $this->att->saveAddCollection(['atts' => $atts, 'amount_collected' => $amount_collected, 'collection_data' => $collection_data]);
 
             if ($res) {
                 $this->usr->setSessMsg('Attendant collection added succesffuly', 'success');
@@ -290,13 +288,82 @@ class Dailyentries extends CI_Controller {
                     'status' => [
                         'error' => FALSE,
                         'redirect' => true,
-                        'redirect_url' => site_url('dailyentries/attendantscollections?date='.$collection['att_date'])
+                        'redirect_url' => site_url('dailyentries/attendantscollections?date=' . $collection['att_date'])
                     ]
                 ]);
 
                 die();
             } else {
                 cus_json_error('Something went wrong. Unable to add attendant collection, Contact the system developer.');
+            }
+        }
+    }
+
+    public function submitEditCollection() {
+
+        header('Access-allow-control-origin: *');
+        header('Content-type: text/json');
+
+        $this->usr->checkStatusJson(1, 1, 1);
+
+        $date = $this->input->get('date');
+        $attendant = $this->input->get('attendant');
+        $shift = $this->input->get('shift');
+
+        $collection = $this->att->getAttendantCollection(NULL, ['att.att_date' => $date, 'att.att_shift_id' => $shift, 'att.att_employee_id' => $attendant, 'att.att_station_id' => $this->usr->station_id], 1, NULL);
+
+
+        if (!$collection) {
+            cus_json_error('Shift details was not found or may have been removed from the system');
+        }
+
+        if (empty($collection['attc_id'])) {
+            cus_json_error('Collection not yet done for selected shift. Use add option to add collection');
+        }
+
+        $validations = [
+                ['field' => 'editc_amount_collected', 'label' => 'Amount collected', 'rules' => 'trim|required|numeric'],
+        ];
+
+        $this->form_validation->set_rules($validations);
+
+        if ($this->form_validation->run() === FALSE) {
+            echo json_encode([
+                'status' => [
+                    'error' => TRUE,
+                    'error_type' => 'display',
+                    "form_errors" => validation_errors_array()
+                ]
+            ]);
+        } else {
+
+            $amount_collected = $this->input->post('editc_amount_collected');
+            $cond = ['att.att_date' => $collection['att_date'], 'att_employee_id' => $collection['att_employee_id'], 'att_shift_id' => $collection['att_shift_id'], 'att.att_station_id' => $collection['att_station_id']];
+            $cols = ['att.att_id', 'credit_sales', 'return_to_tank', 'transfered_to_station', 'att_sale_price_per_ltr'];
+
+            $atts = $this->att->getAttendances($cond, $cols, NULL, NULL, NULL);
+
+            $collection_data = [
+                'attc_amount' => $amount_collected,
+                'attc_user_id' => $this->usr->user_id
+            ];
+
+            $res = $this->att->saveEditCollection(['atts' => $atts, 'amount_collected' => $amount_collected, 'collection' => $collection, 'collection_data' => $collection_data]);
+
+            if ($res) {
+                $this->usr->setSessMsg('Attendant collection edited succesffuly', 'success');
+
+                echo json_encode([
+                    'status' => [
+                        'error' => FALSE,
+                        'redirect' => true,
+                        'redirect_url' => site_url('dailyentries/attendantscollections?date=' . $collection['att_date'])
+                    ]
+                ]);
+
+                die();
+            } else {
+                cus_json_error('Something went wrong. Unable to edit attendant collection, Contact the system developer.');
             }
         }
     }
@@ -417,8 +484,8 @@ class Dailyentries extends CI_Controller {
                 'module_name' => 'Purchases <span class="module-date">&nbsp;&nbsp;(' . cus_nice_date($date) . ')</span> ',
                 'customer' => $this->usr->customer,
                 'purchases' => $purchases,
-                'fuel_types' => $this->mnt->getFuelTypes($this->station_id),
-                'purchase_dates' => $this->purchase->getAllPurchaseDates($this->station_id),
+                'fuel_types' => $this->mnt->getFuelTypes($this->usr->station_id),
+                'purchase_dates' => $this->purchase->getAllPurchaseDates($this->usr->station_id),
                 'date' => $date,
                 'next_day' => date('Y-m-d', strtotime('+1 day', strtotime($date))),
                 'prev_day' => date('Y-m-d', strtotime('-1 day', strtotime($date)))
@@ -627,7 +694,7 @@ class Dailyentries extends CI_Controller {
             $rtt = 0;
             $tts = 0;
 
-            $credit = $this->cust->getCreditCustomers(['crdt.credit_type_id' => $customer_id, 'crdt.credit_type_admin_id' => $this->admin_id], NULL, 1);
+            $credit = $this->cust->getCreditCustomers(['crdt.credit_type_id' => $customer_id, 'crdt.credit_type_admin_id' => $this->usr->admin_id], NULL, 1);
 
             if (!$credit) {
                 cus_json_error('Customer was not found or may have been removed from the sysytem');
@@ -816,33 +883,82 @@ class Dailyentries extends CI_Controller {
 
         die();
     }
-    
-    
-    public function requestAddCollectionForm() {
+
+    public function requestCloseDipping() {
 
         header('Access-allow-control-origin: *');
         header('Content-type: text/json');
 
         $this->usr->checkStatusJson(1, 1, 1);
-        
+
+        $dipping_id = $this->uri->segment(3);
+
+        $dipping = $this->dipping->getDippings(['tr.inventory_traking_id' => $dipping_id, 'tr.inventory_traking_station_id' => $this->usr->station_id], 1);
+
+        if (!$dipping) {
+            cus_json_error('Dipping details was not found or may have been removed from the system');
+        }
+
+        $json = json_encode([
+            'status' => ['error' => FALSE, 'redirect' => FALSE, 'pop_form' => TRUE, 'form_type' => 'closeDipping', 'form_url' => site_url('dailyentries/submitclosedipping/' . $dipping['inventory_traking_id'])],
+            'dipping' => $dipping
+        ]);
+
+        echo $json;
+
+        die();
+    }
+
+    public function requestEditDipping() {
+
+        header('Access-allow-control-origin: *');
+        header('Content-type: text/json');
+
+        $this->usr->checkStatusJson(1, 1, 1);
+
+        $dipping_id = $this->uri->segment(3);
+
+        $dipping = $this->dipping->getDippings(['tr.inventory_traking_id' => $dipping_id, 'tr.inventory_traking_station_id' => $this->usr->station_id], 1);
+
+        if (!$dipping) {
+            cus_json_error('Dipping details was not found or may have been removed from the system');
+        }
+
+        $json = json_encode([
+            'status' => ['error' => FALSE, 'redirect' => FALSE, 'pop_form' => TRUE, 'form_type' => 'editDipping', 'form_url' => site_url('dailyentries/submiteditdipping/' . $dipping['inventory_traking_id'])],
+            'dipping' => $dipping
+        ]);
+
+        echo $json;
+
+        die();
+    }
+
+    public function requestEditCollectionForm() {
+
+        header('Access-allow-control-origin: *');
+        header('Content-type: text/json');
+
+        $this->usr->checkStatusJson(1, 1, 1);
+
         $date = $this->input->get('date');
         $attendant = $this->input->get('attendant');
         $shift = $this->input->get('shift');
 
-        $collection = $this->att->getAttendantCollection(NULL, ['att.att_date' => $date,'att.att_shift_id' => $shift,'att.att_employee_id' => $attendant,'att.att_station_id' => $this->usr->station_id], 1, NULL);
+        $collection = $this->att->getAttendantCollection(NULL, ['att.att_date' => $date, 'att.att_shift_id' => $shift, 'att.att_employee_id' => $attendant, 'att.att_station_id' => $this->usr->station_id], 1, NULL);
 
-        
+
         if (!$collection) {
             cus_json_error('Shift details was not found or may have been removed from the system');
         }
-        
-        if(!empty($collection['attc_id'])){
-            cus_json_error('Collection is already completed for this shift. Only editing is allowed');
+
+        if (empty($collection['attc_id'])) {
+            cus_json_error('Collection not yet done for selected shift. Use add option to add collection');
         }
 
 
         $json = json_encode([
-            'status' => ['error' => FALSE, 'redirect' => FALSE, 'pop_form' => TRUE, 'form_type' => 'addCollection', 'form_url' => site_url('dailyentries/submitaddcollection?date=' . urlencode($collection['att_date']) . '&shift=' . urlencode($collection['att_shift_id']) . '&attendant=' . urlencode($collection['att_employee_id']))],
+            'status' => ['error' => FALSE, 'redirect' => FALSE, 'pop_form' => TRUE, 'form_type' => 'editCollection', 'form_url' => site_url('dailyentries/submiteditcollection?date=' . urlencode($collection['att_date']) . '&shift=' . urlencode($collection['att_shift_id']) . '&attendant=' . urlencode($collection['att_employee_id']))],
             'collection' => $collection
         ]);
 
@@ -887,6 +1003,239 @@ class Dailyentries extends CI_Controller {
             $this->usr->setSessMsg('Sale details posted to ledger successfully', 'success', 'dailyentries/saledetails/' . $att['att_id'] . '?url=' . site_url('dailyentries/attendantsshifts?date=') . urlencode($att['att_date']));
         } else {
             $this->usr->setSessMsg('Something went wrong. Sale details was not posted to ledger', 'error', 'dailyentries/saledetails/' . $att['att_id'] . '?url=' . site_url('dailyentries/attendantsshifts?date=') . urlencode($att['att_date']));
+        }
+    }
+
+    public function submitCloseDipping() {
+
+        header('Access-allow-control-origin: *');
+        header('Content-type: text/json');
+
+        $this->usr->checkStatusJson(1, 1, 1);
+
+        $dipping_id = $this->uri->segment(3);
+
+        $dipping = $this->dipping->getDippings(['tr.inventory_traking_id' => $dipping_id, 'tr.inventory_traking_station_id' => $this->usr->station_id], 1);
+
+        if (!$dipping) {
+            cus_json_error('Dipping details was not found or may have been removed from the system');
+        }
+
+        if (strtolower($dipping['inventory_traking_status']) == 'closed') {
+            cus_json_error('Dipping is already closed');
+        }
+
+        $validations = [
+                ['field' => 'cd_closing', 'label' => 'Closing Stock Dipping', 'rules' => 'trim|required|numeric'],
+        ];
+
+        $this->form_validation->set_rules($validations);
+
+        if ($this->form_validation->run() === FALSE) {
+            echo json_encode([
+                'status' => [
+                    'error' => TRUE,
+                    'error_type' => 'display',
+                    "form_errors" => validation_errors_array()
+                ]
+            ]);
+        } else {
+
+            $closing_dipping = $this->input->post('cd_closing');
+            $min_shift = $this->mnt->getMinShift($this->usr->station_id);
+            $next_shift_date = date('Y-m-d', strtotime($dipping['inventory_traking_date'] . ' +1 day'));
+            $next_shift_id = $min_shift['shift_id'];
+
+            // Checks if there is next shift within same day
+            $next_shift = $this->mnt->getShifts($this->usr->station_id, ['shift_sequence >' => $dipping['shift_sequence'], 'shift_sequence <' => ($dipping['shift_sequence'] + 2)], NULL, 1);
+
+
+
+            // If Yes the change next shift values
+            if ($next_shift) {
+                $next_shift_date = $dipping['inventory_traking_date'];
+                $next_shift_id = $next_shift['shift_id'];
+            }
+
+            // Clossing current dipping data
+            $close_dipping_data = [
+                'inventory_traking_phisical_clo' => $closing_dipping,
+                'inventory_traking_status' => 'Closed'
+            ];
+
+
+            // Data for next dipping shift
+            $new_dipping_data = [
+                'inventory_traking_phisical_op' => $closing_dipping,
+                'inventory_traking_phisical_clo' => 0,
+                'inventory_traking_date' => $next_shift_date,
+                'inventory_traking_status' => 'Opened',
+                'inventory_traking_user_id' => $this->usr->user_id,
+                'inventory_traking_shift_id' => $next_shift_id,
+                'inventory_traking_station_id' => $this->usr->station_id,
+                'inventory_traking_fuel_tank_id' => $dipping['inventory_traking_fuel_tank_id']
+            ];
+
+
+            $res = $this->dipping->saveCloseDipping(['close_dipping_data' => $close_dipping_data, 'new_dipping_data' => $new_dipping_data, 'dipping_id' => $dipping['inventory_traking_id']]);
+
+            if ($res) {
+
+                $this->usr->setSessMsg('Dipping was closed successfully', 'success');
+
+                echo json_encode([
+                    'status' => [
+                        'error' => FALSE,
+                        'redirect' => true,
+                        'redirect_url' => site_url('dailyentries/dipping?date=' . $dipping['inventory_traking_date'])
+                    ]
+                ]);
+
+                die();
+            } else {
+                cus_json_error('Something went wrong, dipping was not closed.');
+            }
+        }
+    }
+
+    public function submitEditDipping() {
+
+        header('Access-allow-control-origin: *');
+        header('Content-type: text/json');
+
+        $this->usr->checkStatusJson(1, 1, 1);
+
+        $dipping_id = $this->uri->segment(3);
+
+        $dipping = $this->dipping->getDippings(['tr.inventory_traking_id' => $dipping_id, 'tr.inventory_traking_station_id' => $this->usr->station_id], 1);
+
+        if (!$dipping) {
+            cus_json_error('Dipping details was not found or may have been removed from the system');
+        }
+
+        if (strtolower($dipping['inventory_traking_status']) == 'opened') {
+            cus_json_error('In-progress dipping can not be edited.');
+        }
+
+        $validations = [
+                ['field' => 'ed_opening', 'label' => 'Opening Stock Dipping', 'rules' => 'trim|required|numeric'],
+                ['field' => 'ed_closing', 'label' => 'Closing Stock Dipping', 'rules' => 'trim|required|numeric'],
+        ];
+
+        $this->form_validation->set_rules($validations);
+
+        if ($this->form_validation->run() === FALSE) {
+            echo json_encode([
+                'status' => [
+                    'error' => TRUE,
+                    'error_type' => 'display',
+                    "form_errors" => validation_errors_array()
+                ]
+            ]);
+        } else {
+
+            $closing_dipping = $this->input->post('ed_closing');
+            $opening_dipping = $this->input->post('ed_opening');
+            $previous_dipping_data = [];
+            $next_dipping_data = [];
+            $previous_dipping_id = NULL;
+            $next_dipping_id = NULL;
+
+            $min_shift = $this->mnt->getMinShift($this->usr->station_id);
+            $max_shift = $this->mnt->getMaxShift($this->usr->station_id);
+
+            $next_shift_date = date('Y-m-d', strtotime($dipping['inventory_traking_date'] . ' +1 day'));
+            $next_shift_id = $min_shift['shift_id'];
+
+            $previous_shift_date = date('Y-m-d', strtotime($dipping['inventory_traking_date'] . ' -1 day'));
+            $previous_shift_id = $max_shift['shift_id'];
+
+
+            // Checks if there is next shift sequence and previous shift sequence preaty much in a same day
+            $next_shift = $this->mnt->getShifts($this->usr->station_id, ['shift_sequence >' => $dipping['shift_sequence'], 'shift_sequence <' => ($dipping['shift_sequence'] + 2)], NULL, 1);
+            $previous_shift = $this->mnt->getShifts($this->usr->station_id, ['shift_sequence <' => $dipping['shift_sequence'], 'shift_sequence >' => ($dipping['shift_sequence'] - 2)], NULL, 1);
+
+
+            // If Yes the change next shift values
+            if ($next_shift) {
+                $next_shift_date = $dipping['inventory_traking_date'];
+                $next_shift_id = $next_shift['shift_id'];
+            }
+
+            // If Yes the change next shift values
+            if ($previous_shift) {
+                $previous_shift_date = $dipping['inventory_traking_date'];
+                $previous_shift_id = $previous_shift['shift_id'];
+            }
+
+            $previous_dipping = $this->dipping->getDippings([
+                'inventory_traking_date' => $previous_shift_date,
+                'inventory_traking_shift_id' => $previous_shift_id,
+                'inventory_traking_fuel_tank_id' => $dipping['inventory_traking_fuel_tank_id']
+                    ], 1);
+
+
+            $next_dipping = $this->dipping->getDippings([
+                'inventory_traking_date' => $next_shift_date,
+                'inventory_traking_shift_id' => $next_shift_id,
+                'inventory_traking_fuel_tank_id' => $dipping['inventory_traking_fuel_tank_id']
+                    ], 1);
+
+
+
+            if ($previous_dipping) {
+                $previous_dipping_data = [
+                    'inventory_traking_phisical_clo' => $opening_dipping,
+                    'inventory_traking_user_id' => $this->usr->user_id
+                ];
+                $previous_dipping_id = $previous_dipping['inventory_traking_id'];
+            }
+
+            if ($next_dipping) {
+                $next_dipping_data = [
+                    'inventory_traking_phisical_op' => $closing_dipping,
+                    'inventory_traking_user_id' => $this->usr->user_id
+                ];
+                $next_dipping_id = $next_dipping['inventory_traking_id'];
+            }
+
+
+            // Closing current dipping data
+            $edit_dipping_data = [
+                'inventory_traking_phisical_clo' => $closing_dipping,
+                'inventory_traking_phisical_op' => $opening_dipping,
+                'inventory_traking_user_id' => $this->usr->user_id
+            ];
+
+            $dipping_ids = [
+                'next_dipping_id' => $next_dipping_id,
+                'previous_dipping_id' => $previous_dipping_id,
+                'edit_dipping_id' => $dipping['inventory_traking_id']
+            ];
+
+            $res = $this->dipping->saveEditDipping([
+                'previous_dipping_data' => $previous_dipping_data,
+                'edit_dipping_data' => $edit_dipping_data,
+                'next_dipping_data' => $next_dipping_data,
+                'dipping_ids' => $dipping_ids
+            ]);
+
+            if ($res) {
+
+                $this->usr->setSessMsg('Dipping was edited successfully', 'success');
+
+                echo json_encode([
+                    'status' => [
+                        'error' => FALSE,
+                        'redirect' => true,
+                        'redirect_url' => site_url('dailyentries/dipping?date=' . $dipping['inventory_traking_date'])
+                    ]
+                ]);
+
+                die();
+            } else {
+                cus_json_error('Something went wrong, dipping was not edited.');
+            }
         }
     }
 
@@ -977,11 +1326,11 @@ class Dailyentries extends CI_Controller {
 
         return TRUE;
     }
-    
+
     public function validateThroughput() {
-        
+
         $clo_mtr_readings = $this->input->post('cs_clo_mtr_rdngs');
-        
+
         if (empty($clo_mtr_readings)) {
             return TRUE;
         }
@@ -993,8 +1342,8 @@ class Dailyentries extends CI_Controller {
         if (!$att) {
             cus_json_error('Shift details was not found or may have been removed from the system');
         }
-        
-        $total_credit_sales = $att['credit_sales'] + $att['return_to_tank'] + $att['transfered_to_station']; 
+
+        $total_credit_sales = $att['credit_sales'] + $att['return_to_tank'] + $att['transfered_to_station'];
         $throughput = $clo_mtr_readings - $att['att_op_mtr_reading'];
 
         if ($total_credit_sales > $throughput) {
@@ -1092,7 +1441,11 @@ class Dailyentries extends CI_Controller {
 
     public function validateCreditCustomer($customer_id) {
 
-        $credit = $this->cust->getCreditCustomers(['crdt.credit_type_id' => $customer_id, 'crdt.credit_type_admin_id' => $this->admin_id], NULL, 1);
+        if (empty($customer_id)) {
+            return TRUE;
+        }
+
+        $credit = $this->cust->getCreditCustomers(['crdt.credit_type_id' => $customer_id, 'crdt.credit_type_admin_id' => $this->usr->admin_id], NULL, 1);
 
         if (!$credit AND ! empty($customer_id)) {
             $this->form_validation->set_message('validateCreditCustomer', 'Select a valid customer');
@@ -1148,27 +1501,27 @@ class Dailyentries extends CI_Controller {
     public function validateAsForm() {
         return TRUE;
     }
-    
+
     public function validateCrQtySold($qty) {
-        
-        if(empty($qty)){
+
+        if (empty($qty)) {
             return TRUE;
         }
         $att_id = $this->uri->segment(3);
 
-        $att = $this->rpt->getSales(['att.att_station_id' => $this->station_id], ['att.att_shift_status', 'credit_sales', 'return_to_tank','transfered_to_station'], NULL, $att_id, []);
+        $att = $this->rpt->getSales(['att.att_station_id' => $this->usr->station_id], ['att.att_shift_status', 'credit_sales', 'return_to_tank', 'transfered_to_station'], NULL, $att_id, []);
 
-        if($att['att_shift_status'] == 'Opened'){
+        if ($att['att_shift_status'] == 'Opened') {
             return TRUE;
         }
-        
+
         $total_credit_sales = $att['credit_sales'] + $att['return_to_tank'] + $att['transfered_to_station'];
-        
-        if(($total_credit_sales + $qty) > $att['throughput']){
-            $this->form_validation->set_message('validateCrQtySold','Total credit sales should not exceed the throughput');
+
+        if (($total_credit_sales + $qty) > $att['throughput']) {
+            $this->form_validation->set_message('validateCrQtySold', 'Total credit sales should not exceed the throughput');
             return FALSE;
         }
-        
+
         return TRUE;
     }
 

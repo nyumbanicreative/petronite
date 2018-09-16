@@ -203,5 +203,23 @@ Class MaintenanceModel extends CI_Model {
 
         return $res->result_array();
     }
+    
+    public function getMinShift($station_id) {
+        $res = $this->db->where('shift_station_id',$station_id)->order_by('shift_sequence','ACS')->limit(1)->get('shifts');
+        if($res->num_rows() == 1){
+            return $res->row_array();
+        }else{
+            return FALSE;
+        }
+    }
+    
+    public function getMaxShift($station_id) {
+        $res = $this->db->where('shift_station_id',$station_id)->order_by('shift_sequence','DESC')->limit(1)->get('shifts');
+        if($res->num_rows() == 1){
+            return $res->row_array();
+        }else{
+            return FALSE;
+        }
+    }
 
 }

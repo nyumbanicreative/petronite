@@ -111,6 +111,37 @@ class Customers extends CI_Controller {
         // Now call the base view which have everything we need to dispaly
         $this->load->view('view_base', $data);
     }
+    
+    public function requestEditBalanceForm() {
+        
+        header('Access-allow-control-origin: *');
+        header('Content-type: text/json');
+
+        $this->checkStatusJson(1, 1, 1);
+
+        $customer_id = $this->uri->segment(3);
+
+        $customer = $this->cust->getCreditCustomers( ['crdt.credit_type_id' => $customer_id,'crdt.credit_type_admin_id' => $this->usr->admin_id], NULL, 1);
+        
+        if (!$customer) {
+            cus_json_error('Credit customer was not found or may have been removed form the system');
+        }
+
+        $data = [
+            'customer_data' => $customer
+        ];
+
+        echo json_encode([
+            'status' => [
+                'error' => FALSE,
+                'redirect' => FALSE,
+                'pop_form' => TRUE,
+                'form_type' => 'editCustomerBalance',
+                'form_url' => site_url('customers/submitEditCustomerBalance/' . $customer['credit_type_id']),
+            ],
+            'data' => $data
+        ]);
+    }
 
     public function ajaxsCustomerBreakdown() {
 
@@ -143,7 +174,16 @@ class Customers extends CI_Controller {
                 $balance = "<h4><span class='badge badge-danger'>" . CURRENCY . '  ' . cus_price_form(abs($balance)) . " Dr</span></h4>";
             }
 
-            $link = '<a href="' . site_url('customers/customersstatement/' . $a->credit_type_id) . '" class="btn btn-sm btn-outline-info">View Statement</a>';
+            $link = '<div class="btn-group" role="group" aria-label="Edit customer balance">'
+                    . '<a href="' . site_url('customers/customersstatement/' . $a->credit_type_id) . '" '
+                    . 'class="btn btn-sm btn-outline-info">View Statement</a>';
+            
+            if(strtolower($this->usr->user_system_role) == 'developer'){
+                $link .= '<a href="'. site_url('customers/requesteditbalanceform/'.$a->credit_type_id).'" class="btn btn-sm btn-danger request_form"><i class="fa fa-edit"></i></a>';
+            }
+            
+            
+            $link .= '</div>';
 
             //$row[] = $no;
             $row[] = $a->credit_type_name;
@@ -193,6 +233,7 @@ class Customers extends CI_Controller {
                     </div>';
 
             //$row[] = $no;
+//            $row[] = "<input type='checkbox'/>";
             $row[] = $a->credit_type_name;
             $row[] = $a->stations;
             $row[] = $a->credit_type_type_description;
@@ -282,7 +323,7 @@ class Customers extends CI_Controller {
         // $txns = $this->txn->getTransactions(NULL, "txn.txn_type IN ('CREDIT_SALE','CREDIT_PAYMENT') AND txn.txn_acc_ref = '".$cc['credit_type_id']."'");
 
         $txns = $this->txn->getTransactions(NULL, $cond, NULL, ['txn.txn_type' => ['CREDIT_SALE', 'CREDIT_PAYMENT','CANCELLED_PAYMENT']]);
-
+        
 //        echo '<pre>';
 //        print_r($txns);
 //        
@@ -537,6 +578,75 @@ class Customers extends CI_Controller {
             ]
         ]);
     }
+    
+    public function submitEditCustomerBalance() {
+
+        header('Access-allow-control-origin: *');
+        header('Content-type: text/json');
+
+        $this->checkStatusJson(1, 1, 1);
+        
+        $customer_id = $this->uri->segment(3);
+
+        $customer = $this->cust->getCreditCustomers( ['crdt.credit_type_id' => $customer_id,'crdt.credit_type_admin_id' => $this->usr->admin_id], NULL, 1);
+        
+        if (!$customer) {
+            cus_json_error('Credit customer was not found or may have been removed form the system');
+        }
+
+        $validations = [
+                ['field' => 'b_balance_amount', 'label' => 'Balance Amount', 'rules' => 'callback_validateBform'],
+                ['field' => 'b_balance_amount', 'label' => 'Balance Amount', 'rules' => 'trim|required|numeric'],
+                ['field' => 'b_balance_type', 'label' => 'Balance Type', 'rules' => 'trim|required|callback_validateBalanceType'],
+                
+        ];
+
+        $this->form_validation->set_rules($validations);
+
+        if ($this->form_validation->run() === FALSE) {
+            echo json_encode([
+                'status' => [
+                    'error' => TRUE,
+                    'error_type' => 'display',
+                    "form_errors" => validation_errors_array()
+                ]
+            ]);
+        } else {
+
+
+            $balace = $this->input->post('b_balance_amount');
+            $b_type = $this->input->post('b_balance_type');
+            
+            if($b_type == 'CREDIT'){
+                $balace = 0- $balace;
+            }
+            
+            $customer_data = [
+                'credit_type_balance'=> $balace
+            ];
+
+            $res = $this->cust->saveEditCreditCustomer(['customer_data' => $customer_data, 'customer_id' => $customer['credit_type_id']]);
+
+            if ($res) {
+
+                $this->setSessMsg('Customer\'s balance updated successfully', 'success');
+
+                echo json_encode([
+                    'status' => [
+                        'error' => FALSE,
+                        'redirect' => true,
+                        'redirect_url' => site_url('customers/customersbalance')
+                    ]
+                ]);
+
+                die();
+            } else {
+                cus_json_error('Unable to update customer\'s balance, please refresh the page and try again.');
+            }
+        }
+    }
+    
+    
 
     public function submitAddPetroniteCustomer() {
 
@@ -772,6 +882,36 @@ class Customers extends CI_Controller {
 
     public function validateReportDateRange($param) {
         return TRUE;
+    }
+    
+    public function validateBalanceType($b_type) {
+        if(empty($b_type)){
+            return TRUE;
+        }
+        
+        
+        if(!in_array($b_type, ['CREDIT','DEBIT'])){
+            $this->form_validation->set_message('validateBalanceType','Select a valid balance type');
+            return FALSE;
+        }
+        
+        return TRUE;
+    }
+    
+    
+    public function validateBform() {
+        
+        $customer_id = $this->uri->segment(3);
+        
+        $txns = $this->txn->getTransactions(NULL, ['txn.txn_acc_ref' => trim($customer_id)], NULL, ['txn.txn_type' => ['CREDIT_SALE', 'CREDIT_PAYMENT','CANCELLED_PAYMENT']]);
+        
+        if($txns){
+            $this->form_validation->set_message('validateBform','Updating balance of this customer is currently not allowed because customer has already done some transactions');
+            return FALSE;
+        }
+        
+        return TRUE;
+        
     }
 
 }

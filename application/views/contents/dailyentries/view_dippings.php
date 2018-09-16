@@ -6,6 +6,130 @@
 </header>
 <?php echo $alert; ?>
 
+<div id="closeDipping"  role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" class="modal fade text-left">
+    <div role="document" class="modal-dialog">
+        <form id="close_dipping_form" class="modal-content" action="">
+            <div class="modal-header">
+                <h4 id="exampleModalLabel" class="modal-title"> Close Dipping</h4>
+                <button type="button" data-dismiss="modal" aria-label="Close" class="close"><span aria-hidden="true">×</span></button>
+            </div>
+            <div class="modal-body">
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div id="cd_form">
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="form-group" id="cd_tank">
+                            <label>Dipping Tank</label>
+                            <input name="cd_tank" readonly="" class="form-control"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="form-group" id="cd_shift">
+                            <label>Dipping Shift</label>
+                            <input name="cd_shift" readonly="" class="form-control"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="form-group" id="cd_opening">
+                            <label>Opening Stock Dipping</label>
+                            <input name="cd_opening" readonly="" class="form-control"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="form-group" id="cd_closing">
+                            <label>Closing Stock Dipping</label>
+                            <input name="cd_closing" autocomplete="off" class="form-control volume"/>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" data-dismiss="modal" class="btn btn-secondary pull-left">Cancel</button>
+                <button type="submit" class="btn btn-success">Close Dipping</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="editDipping"  role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" class="modal fade text-left">
+    <div role="document" class="modal-dialog">
+        <form id="edit_dipping_form" class="modal-content" action="">
+            <div class="modal-header">
+                <h4 id="exampleModalLabel" class="modal-title"> Edit Dipping</h4>
+                <button type="button" data-dismiss="modal" aria-label="Close" class="close"><span aria-hidden="true">×</span></button>
+            </div>
+            <div class="modal-body">
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div id="cd_form">
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="form-group" id="ed_tank">
+                            <label>Dipping Tank</label>
+                            <input name="ed_tank" readonly="" class="form-control"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="form-group" id="ed_shift">
+                            <label>Dipping Shift</label>
+                            <input name="ed_shift" readonly="" class="form-control"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="form-group" id="ed_opening">
+                            <label>Opening Stock Dipping</label>
+                            <input name="ed_opening" class="form-control volume"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="form-group" id="ed_closing">
+                            <label>Closing Stock Dipping</label>
+                            <input name="ed_closing" autocomplete="off" class="form-control volume"/>
+                        </div>
+                    </div>
+                </div>
+                
+                <p class="text-small text-info"><strong>Note:</strong> Modifying of opening or closing values may affect the opening and closing dipping values of previous and next dipping shift </p>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" data-dismiss="modal" class="btn btn-secondary pull-left">Cancel</button>
+                <button type="submit" class="btn btn-success"><i class="fa fa-save"></i>&nbsp;&nbsp;Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <section class="tables no-padding-top">  
 
     <div class="container-fluid" style="min-height: 500px;">
@@ -39,7 +163,7 @@
                 </form>
             </div>
 
-            
+
 
         </div>
         <br/>
@@ -47,7 +171,7 @@
             <?php
             foreach ($fuel_types as $ft) {
                 ?>
-            <div class="col-12" style="margin-top: 10px;"></div>
+                <div class="col-12" style="margin-top: 10px;"></div>
                 <div class="col-lg-12">
                     <div class="line-chart-example card">
 
@@ -82,23 +206,27 @@
                                                     <?php
                                                     if (strtolower($d['inventory_traking_status']) == 'closed') {
                                                         ?>
-                                                        <span class="badge badge-success">CLOSED</span>
+                                                        <h5><span class="badge badge-success">CLOSED</span></h5>
                                                         <?php
                                                     } else {
                                                         ?>
-                                                        <span class="badge badge-danger">IN-PROGRESS</span>
+                                                        <h5><span class="badge badge-danger">IN-PROGRESS</span></h5>
                                                         <?php
                                                     }
                                                     ?>
                                                 </td>
                                                 <td>
-                                                    <div class="dropdown">
-                                                        <button type="button" id="closeCard2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" class="btn btn-info btn-sm"><i class="fa fa-ellipsis-v"></i></button>
-                                                        <div aria-labelledby="closeCard2" class="dropdown-menu dropdown-menu-right has-shadow">
-                                                            <a href="<?php //echo site_url('inventory/edithallitem/' . $list['customer_sale_id']);    ?>"  class="dropdown-item edit_item text-info"> <i class="fa fa-edit"></i>&nbsp;&nbsp;Edit</a>
-                                                            <a href="<?php //echo site_url('inventory/deletehallitem/' . $list['customer_sale_id']);    ?>" class="dropdown-item edit text-danger"> <i class="fa fa-trash"></i>&nbsp;&nbsp;Delete</a>
-                                                        </div>
-                                                    </div>
+                                                    <?php
+                                                    if (strtolower($d['inventory_traking_status']) == 'opened') {
+                                                        ?>
+                                                        <a href="<?php echo site_url('dailyentries/requestclosedipping/' . $d['inventory_traking_id']); ?>"  class="btn btn-sm btn-outline-danger btn-block request_form">Close</a>
+                                                        <?php
+                                                    } else {
+                                                        ?>
+                                                        <a href="<?php echo site_url('dailyentries/requesteditdipping/' . $d['inventory_traking_id']); ?>"  class="btn btn-sm btn-outline-info btn-block request_form">Edit</a>
+                                                        <?php
+                                                    }
+                                                    ?>
                                                 </td>
                                             </tr>
                                             <?php
@@ -128,7 +256,7 @@
         s_table = $('.dippings_table').DataTable({
             "aaSorting": [],
             responsive: true,
-            fixedHeader: { headerOffset: 70 },
+            fixedHeader: {headerOffset: 70},
             searching: false,
             lengthChange: false,
             info: false,

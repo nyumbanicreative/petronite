@@ -15,8 +15,9 @@
                 <div class="btn-group pull-left" role="group" aria-label="Dashboard">
                     <a href="<?php echo site_url('user/dashboard'); ?>"class="btn btn-primary btn-sm" data-target="#myModal"><i class="fa fa-dashboard"></i>&nbsp;Dashboard</a>
                 </div>
-                <div class="btn-group pull-right" role="group" aria-label="Fuel Types">
+                <div class="pull-right" role="group" aria-label="Fuel Types">
                     <!--<button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#myModal"><i class="fa fa-calendar-o"></i>&nbsp;Latest Shifts</button>-->
+                    <button type="button" class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#mergeCustomers"><i class="fa fa-connectdevelop"></i>&nbsp;Merge Customers</button>
                     <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#myModal"><i class="fa fa-user-plus"></i>&nbsp;Add Customer</button>
                 </div>
             </div>
@@ -30,6 +31,7 @@
                         <table id="shifts_table" class="table  table-hover table-striped table-light table-sm" style="width:100%">
                             <thead>
                                 <tr>
+                                    <!--<th></th>-->
                                     <th>Customer Name</th>
                                     <th style="max-width: 450px;">Customer Stations</th>
                                     <th>Description</th>
@@ -72,7 +74,7 @@
                 data: {type: ""},
                 "type": "POST",
                 error: function (xhr, error, thrown) {
-                    alert('Something went wrong!');
+                    //alert('Something went wrong!');
                     // location.reload(false);
                 }
             },

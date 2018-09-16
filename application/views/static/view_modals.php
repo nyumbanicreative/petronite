@@ -1549,7 +1549,7 @@ if (in_array('modal_close_att_shift', $modals)) {
         $('select[name=po_vessel_id],#_po_vessel_id,select[name=loading_vessel_id],select[name=close_vs_remain_transfered_to],#_edit_po_vessel_id').select2({placeholder: 'Select vessel'});
 
 
-        $(document).on('submit', '#add_collection_form,#close_att_shift_form,#cancel_payment_form,#edit_petronite_customer_form,#create_order_form,#add_vessel_form,#add_loading_form,#add_release_instruction_form,#add_po_in_ri_form,#close_vessel_form,#edit_order_form,#add_user_form,#edit_user_form,#add_supplier_form,#add_credit_sale_form,#add_petronite_customer_form,#add_payment_form', function (e) {
+        $(document).on('submit', '#edit_dipping_form,#close_dipping_form,#edit_customer_balance_form,#edit_collection_form,#add_collection_form,#close_att_shift_form,#cancel_payment_form,#edit_petronite_customer_form,#create_order_form,#add_vessel_form,#add_loading_form,#add_release_instruction_form,#add_po_in_ri_form,#close_vessel_form,#edit_order_form,#add_user_form,#edit_user_form,#add_supplier_form,#add_credit_sale_form,#add_petronite_customer_form,#add_payment_form', function (e) {
             e.preventDefault();
             var post_data = $(this).serializeArray();
             submitAjaxForm(post_data, $(this).attr('action'));
@@ -1598,14 +1598,55 @@ if (in_array('modal_close_att_shift', $modals)) {
                         } else if (data.status.pop_form == true) {
 
                             switch (data.status.form_type) {
+                                
+                                // Edit Dipping
+                                case 'editDipping':
+                                
+                                $('input[name=ed_tank]').val(data.dipping.fuel_tank_name);
+                                $('input[name=ed_shift]').val(data.dipping.inventory_traking_date +' - '+data.dipping.shift_name);
+                                $('input[name=ed_opening]').val(data.dipping.inventory_traking_phisical_op);
+                                $('input[name=ed_closing]').val(data.dipping.inventory_traking_phisical_clo);
+                                $('#edit_dipping_form').attr('action', data.status.form_url);
+                                
+                                
+                                break;
 
-                                // Populate close vessel form
+                                // Close Dipping
+                                case 'closeDipping':
+                                
+                                $('input[name=cd_tank]').val(data.dipping.fuel_tank_name);
+                                $('input[name=cd_shift]').val(data.dipping.inventory_traking_date + ' - '+ data.dipping.shift_name);
+                                $('input[name=cd_opening]').val(data.dipping.inventory_traking_phisical_op);
+                                $('#close_dipping_form').attr('action', data.status.form_url);
+                                
+                                
+                                break;
+                                // Edit credit customer balance
+
+                                case 'editCustomerBalance':
+                                    
+                                    $('input[name=b_customer_name]').val(data.data.customer_data.credit_type_name);
+                                    
+                                    var balance_amount = data.data.customer_data.credit_type_balance;
+                                    if(balance_amount > 0){
+                                        $('select[name=b_balance_type]').val('CREDIT').trigger('change');
+                                    }else if(balance_amount < 0){
+                                        $('select[name=b_balance_type]').val('DEBIT').trigger('change');
+                                    }
+                                    $('input[name=b_balance_amount]').val(balance_amount);
+                                    $('#edit_customer_balance_form').attr('action', data.status.form_url);
+                                    
+                                    
+                                    break;
+
+                               // Populate close vessel form
 
                                 case 'addCollection':
 
                                     throughput_amount = data.collection.througput_amount;
                                     credit_sales_amount = data.collection.credit_sales_amount;
                                     amount_to_collect = throughput_amount - credit_sales_amount;
+
 
                                     $(document).on('keyup', 'input[name=addc_amount_collected]', function () {
 
@@ -1631,7 +1672,55 @@ if (in_array('modal_close_att_shift', $modals)) {
                                     $('input[name=addc_amount_to_collect]').val(jsAmount(parseFloat(amount_to_collect).toFixed(2)));
                                     $('input[name=addc_attendant]').val(data.collection.attendant + ' - ' + data.collection.shift_name + '');
                                     $('#add_collection_form').attr('action', data.status.form_url);
-                                break;
+                                    break;
+
+                                case 'editCollection':
+
+                                    throughput_amount = data.collection.througput_amount;
+                                    credit_sales_amount = data.collection.credit_sales_amount;
+                                    amount_to_collect = throughput_amount - credit_sales_amount;
+
+                                    amount_collected = data.collection.attc_amount;
+
+                                    loss_gain = amount_collected - amount_to_collect;
+
+                                    if (loss_gain >= 0) {
+                                        $('input[name=editc_loss_gain]').val(jsAmount(parseFloat(loss_gain).toFixed(2)) + " <?php echo CURRENCY; ?>")
+                                        $('input[name=editc_loss_gain]').css({'background': '#0f8234', 'color': '#fff'});
+                                    } else if (loss_gain < 0) {
+
+                                        $('input[name=editc_loss_gain]').val(jsAmount(parseFloat(Math.abs(loss_gain)).toFixed(2)) + " <?php echo CURRENCY; ?>")
+                                        $('input[name=editc_loss_gain]').css({'background': 'red', 'color': '#fff'});
+
+                                    }
+
+                                    $('input[name=editc_amount_collected]').val(amount_collected);
+
+                                    $(document).on('keyup', 'input[name=editc_amount_collected]', function () {
+
+                                        amount_collected = ($(this).val() || 0);
+
+                                        loss_gain = amount_collected - amount_to_collect;
+
+                                        if (loss_gain >= 0) {
+                                            $('input[name=editc_loss_gain]').val(jsAmount(parseFloat(loss_gain).toFixed(2)) + " <?php echo CURRENCY; ?>")
+                                            $('input[name=editc_loss_gain]').css({'background': '#0f8234', 'color': '#fff'});
+                                        } else if (loss_gain < 0) {
+
+                                            $('input[name=editc_loss_gain]').val(jsAmount(parseFloat(Math.abs(loss_gain)).toFixed(2)) + " <?php echo CURRENCY; ?>")
+                                            $('input[name=editc_loss_gain]').css({'background': 'red', 'color': '#fff'});
+
+                                        }
+
+                                    });
+
+                                    console.log(amount_to_collect);
+
+                                    $('input[name=editc_date]').val(data.collection.att_date);
+                                    $('input[name=editc_amount_to_collect]').val(jsAmount(parseFloat(amount_to_collect).toFixed(2)));
+                                    $('input[name=editc_attendant]').val(data.collection.attendant + ' - ' + data.collection.shift_name + '');
+                                    $('#edit_collection_form').attr('action', data.status.form_url);
+                                    break;
 
                                 case 'closeVessel':
 

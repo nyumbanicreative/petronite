@@ -53,6 +53,53 @@ Class DippingModel extends CI_Model {
         }
     }
     
+    public function saveCloseDipping($data) {
+        
+        $this->db->trans_start();
+        
+        $this->db->insert('inventrory_traking', $data['new_dipping_data']);
+        
+        $this->db->where('inventory_traking_id',$data['dipping_id'])->update('inventrory_traking',$data['close_dipping_data']);
+
+        $this->db->trans_complete();
+
+        if ($this->db->trans_status() == false) {
+
+            $this->db->trans_rollback();
+            return false;
+        } else {
+            $this->db->trans_commit();
+            return true;
+        }
+        
+    }
+    
+    public function saveEditDipping($data) {
+        
+        $this->db->trans_start();
+
+        if($data['next_dipping_data'] AND $data['dipping_ids']['next_dipping_id']){
+            $this->db->where('inventory_traking_id',$data['dipping_ids']['next_dipping_id'])->update('inventrory_traking',$data['next_dipping_data']);
+        }
+        
+        if($data['dipping_ids']['previous_dipping_id'] AND $data['previous_dipping_data'] ){
+            $this->db->where('inventory_traking_id',$data['dipping_ids']['previous_dipping_id'])->update('inventrory_traking',$data['previous_dipping_data']);
+        }
+        
+        $this->db->where('inventory_traking_id',$data['dipping_ids']['edit_dipping_id'])->update('inventrory_traking',$data['edit_dipping_data']);
+        
+        $this->db->trans_complete();
+
+        if ($this->db->trans_status() == false) {
+
+            $this->db->trans_rollback();
+            return false;
+        } else {
+            $this->db->trans_commit();
+            return true;
+        }
+    }
+    
     
    
 }

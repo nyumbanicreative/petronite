@@ -80,6 +80,80 @@
     </div>
 </div>
 
+<div id="editCollection"  role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" class="modal fade text-left">
+    <div role="document" class="modal-dialog">
+        <form id="edit_collection_form" class="modal-content" action="">
+            <div class="modal-header">
+                <h4 id="exampleModalLabel" class="modal-title"> Edit Attendant Collection</h4>
+                <button type="button" data-dismiss="modal" aria-label="Close" class="close"><span aria-hidden="true">×</span></button>
+            </div>
+            <div class="modal-body">
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="" id="as_form">
+
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="form-group" id="editc_date">
+                            <label>Collection Date</label>
+                            <input name="editc_date" class="form-control" readonly="readonly" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="form-group" id="editc_attendant">
+                            <label>Attendant & Shift</label>
+                            <input name="editc_attendant" class="form-control" readonly="readonly" />
+                        </div>
+                    </div>
+                </div>
+                
+              
+                
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="form-group" id="editc_amount_to_collect">
+                            <label>Amount To Be Collected</label>
+                            <input  class="form-control" name="editc_amount_to_collect" readonly="readonly" />
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="form-group" id="editc_amount_collected">
+                            <label>Amount Collected</label>
+                            <input autocomplete="off" type="text" name="editc_amount_collected"  placeholder="Enter the amount collected"  class="form-control amount"/>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="form-group" id="editc_loss_gain">
+                            <label>Loss/Gain</label>
+                            <input type="text" name="editc_loss_gain"  placeholder="Loss Or Gain" readonly="" class="form-control"/>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" data-dismiss="modal" class="btn btn-secondary pull-left">Close</button>
+                <button type="submit" class="btn btn-success"><i class="fa fa-plus-circle"></i>&nbsp;Submit Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <section class="tables no-padding-top">  
 
     <div class="container-fluid" style="min-height: 500px;">
@@ -184,7 +258,7 @@
                                                 N/A
                                                 <?php
                                             } else {
-                                                echo $loss_gain > 0 ? '<h4><span class="badge badge-success">'.cus_price_form_french($loss_gain).' '.CURRENCY.'</span></h4>':'<h4><span class="badge badge_danger">'. cus_price_form_french(abs($loss_gain)).' '.CURRENCY.'</span></h4>';
+                                                echo $loss_gain >= 0 ? '<h4><span class="badge badge-success">'.cus_price_form_french($loss_gain).' '.CURRENCY.'</span></h4>':'<h4><span class="badge badge-danger">'. cus_price_form_french(abs($loss_gain)).' '.CURRENCY.'</span></h4>';
                                             }
                                             ?>
                                         </td>
@@ -199,7 +273,7 @@
                                                         <?php
                                                     } else {
                                                         ?>
-                                                        <a href="<?php echo site_url('dailyentries/saledetails/' . $attc['att_employee_id']) . '?url=' . urlencode(current_url()) . '?' . $_SERVER['QUERY_STRING']; ?>"  class="dropdown-item edit_item text-info"> <i class="fa fa-edit"></i>&nbsp;&nbsp;Edit Collection</a>
+                                                        <a href="<?php echo site_url('dailyentries/requesteditcollectionform/' . $attc['att_employee_id']) . '?date=' . urlencode($attc['att_date']) . '&shift=' . urlencode($attc['att_shift_id']) . '&attendant=' . urlencode($attc['att_employee_id']) . '&url=' . urlencode(current_url()) . '?' . $_SERVER['QUERY_STRING']; ?>"  class="dropdown-item text-info request_form"> <i class="fa fa-edit"></i>&nbsp;&nbsp;Edit Collection</a>
                                                         <?php
                                                     }
                                                     ?>
@@ -236,8 +310,9 @@
             "pageLength": 100,
             columnDefs: [
                 {responsivePriority: 1, targets: 0},
-                {responsivePriority: 2, targets: -1},
-                {responsivePriority: 3, targets: 1}
+                {responsivePriority: 2, targets: 1},
+                {responsivePriority: 3, targets: -1},
+                {responsivePriority: 4, targets: 1}
             ]
         });
 

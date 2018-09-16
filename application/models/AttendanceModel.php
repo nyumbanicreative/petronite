@@ -115,7 +115,17 @@ Class AttendanceModel extends CI_Model {
         if ($cols !== NULL) {
             $this->db->select($cols);
         } else {
-            $this->db->select(['attc.attc_amount', 'attc.attc_id', 's.shift_name', 's.shift_id', 'att.att_employee_id', 'att.att_date', 'att.att_shift_id', 'att.att_station_id', 'emp.user_name attendant', 'credit_sales_amount']);
+            $this->db->select([
+                'attc.attc_amount', 
+                'attc.attc_id', 
+                's.shift_name', 
+                's.shift_id', 
+                'att.att_employee_id', 
+                'att.att_date', 
+                'att.att_shift_id', 
+                'att.att_station_id', 
+                'emp.user_name attendant', 
+                'credit_sales_amount']);
         }
 
         if ($cond !== NULL) {
@@ -186,6 +196,48 @@ Class AttendanceModel extends CI_Model {
         }
         
         $this->db->insert('attendant_collection', $data['collection_data']);
+
+        $this->db->trans_complete();
+
+        if ($this->db->trans_status() == false) {
+
+            $this->db->trans_rollback();
+            return false;
+        } else {
+            $this->db->trans_commit();
+            return true;
+        }
+    }
+    
+    public function saveEditCollection($data) {
+
+        $this->db->trans_start();
+        $tot_atts = count($data['atts']) - 1;
+
+        foreach ($data['atts'] as $i => $att) {
+            
+            $temp = 0;
+            
+            $amount_to_collect = ((float) $att['throughput'] - (float) $att['credit_sales'] - (float) $att['return_to_tank'] - (float)$att['transfered_to_station']) * $att['att_sale_price_per_ltr'];
+    
+            if ($data['amount_collected'] >= $amount_to_collect AND $tot_atts != $i) {
+                $temp = $amount_to_collect;
+                $data['amount_collected'] = $data['amount_collected'] - $temp;
+            } elseif ($data['amount_collected'] < $amount_to_collect AND $tot_atts != $i) {
+                $temp = $data['amount_collected'];
+                $data['amount_collected'] = 0;
+            } elseif ($data['amount_collected'] == 0 AND $tot_atts != $i) {
+                $temp = 0;
+            }
+
+            if ($tot_atts == $i) {
+                $temp = $data['amount_collected'];
+            }
+
+            $this->db->where('att_id',$att['att_id'])->update('attandance',['att_amount_banked' => $temp]);
+        }
+        
+        $this->db->where('attc_id',$data['collection']['attc_id'])->update('attendant_collection', $data['collection_data']);
 
         $this->db->trans_complete();
 
