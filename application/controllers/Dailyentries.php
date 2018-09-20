@@ -966,6 +966,39 @@ class Dailyentries extends CI_Controller {
 
         die();
     }
+    
+    public function requestAddCollectionForm() {
+
+        header('Access-allow-control-origin: *');
+        header('Content-type: text/json');
+
+        $this->usr->checkStatusJson(1, 1, 1);
+        
+        $date = $this->input->get('date');
+        $attendant = $this->input->get('attendant');
+        $shift = $this->input->get('shift');
+
+        $collection = $this->att->getAttendantCollection(NULL, ['att.att_date' => $date,'att.att_shift_id' => $shift,'att.att_employee_id' => $attendant,'att.att_station_id' => $this->usr->station_id], 1, NULL);
+
+        
+        if (!$collection) {
+            cus_json_error('Shift details was not found or may have been removed from the system');
+        }
+        
+        if(!empty($collection['attc_id'])){
+            cus_json_error('Collection is already completed for this shift. Only editing is allowed');
+        }
+
+
+        $json = json_encode([
+            'status' => ['error' => FALSE, 'redirect' => FALSE, 'pop_form' => TRUE, 'form_type' => 'addCollection', 'form_url' => site_url('dailyentries/submitaddcollection?date=' . urlencode($collection['att_date']) . '&shift=' . urlencode($collection['att_shift_id']) . '&attendant=' . urlencode($collection['att_employee_id']))],
+            'collection' => $collection
+        ]);
+
+        echo $json;
+
+        die();
+    }
 
     public function postToLedger() {
 

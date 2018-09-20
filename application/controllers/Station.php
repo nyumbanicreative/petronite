@@ -338,11 +338,11 @@ class Station extends CI_Controller {
                 $qty_in_words .= $j > 0 ? ", " : " ";
 
                 if (AGO == $oq->poq_ftg_id) {
-                    $qty_in_words .= ucwords($f->format(round($oq->poq_volume))) . ' Litres Of <b>DIESEL</b>';
+                    $qty_in_words .= ucwords($f->format(round($oq->poq_volume))) . ' Litres Of  <b>DIESEL</b>';
                 } elseif (PMS == $oq->poq_ftg_id) {
-                    $qty_in_words .= ucwords($f->format(round($oq->poq_volume))) . ' Litres Of <b>SUPER</b>';
+                    $qty_in_words .= ucwords($f->format(round($oq->poq_volume))) . ' Litres Of  <b>SUPER</b>';
                 } elseif (IK == $oq->poq_ftg_id) {
-                    $qty_in_words .= ucwords($f->format(round($oq->poq_volume))) . ' Litres Of <b>KEROSENE</b>';
+                    $qty_in_words .= ucwords($f->format(round($oq->poq_volume))) . ' Litres Of  <b>KEROSENE</b>';
                 }
             }
 
@@ -380,9 +380,8 @@ class Station extends CI_Controller {
         $station_ids = [];
         $type = $_POST['type'];
         $no = $_POST['start'];
-        
-        $list = $this->purchase->get_datatables_purchase_order("", $this->admin_id);
 
+        $list = $this->purchase->get_datatables_purchase_order("", $this->admin_id);
 
         foreach ($list as $p) {
 
@@ -391,7 +390,6 @@ class Station extends CI_Controller {
             $status = "<div class='text-nowrap'>";
             $driver = "";
             $volume = "<div class='text-nowrap'>";
-            $delivery = "<div class='text-nowrap'>";
             $order_qty = [];
             $can_edit = FALSE;
 
@@ -406,21 +404,33 @@ class Station extends CI_Controller {
                 $volume .= $oq->product . ' - ' . $oq->poq_volume;
             }
 
-            foreach ($order_qty as $i => $oq) {
-                if ($i > 0) {
-                    $delivery .= '<br/>';
-                }
-                $delivery .= $oq->product . ' - ' . $oq->station_name;
-            }
-
-            $volume .= "</div>";
-            $delivery .= "</div>";
-
             $driver .= "<div class='text-nowrap'>";
             $driver .= $p->po_driver_name;
-            $driver .= !empty($p->po_driver_license) ? '<br/>' . $p->po_driver_license : '';
+            $driver .= !empty($p->po_driver_license_number) ? '<br/>' . $p->po_driver_license_number : '';
             $driver .= "</div>";
 
+            switch ($p->po_status) {
+                case 'NEW':
+                    $status .= "<h4><span class='badge badge-info'>NEW</span></h4>";
+                    $can_edit = TRUE;
+                    break;
+                case 'LOADED':
+                    $status .= "<h4><span class='badge badge-info'>LOADED</span></h4>";
+                    break;
+                case 'UNRELEASED':
+                    $status .= "<h4><span class='badge badge-danger'>UNRELEASED</span></h4>";
+                    $can_edit = TRUE;
+                    break;
+                case 'RELEASED':
+                    $status .= "<h4><span class='badge badge-warning'>RELEASED</span></h4>";
+                    break;
+                case 'DELIVERED':
+                    $status .= "<h4><span class='badge badge-success'> DELIVERED</span></h4>";
+                    break;
+            }
+
+
+            /*
             foreach ($order_qty as $i => $oq) {
 
                 switch ($oq->poq_status) {
@@ -443,7 +453,7 @@ class Station extends CI_Controller {
                         $status .= "<h5><span class='badge badge-success'>" . $oq->product . " - DELIVERED</span></h5>";
                         break;
                 }
-            }
+            }*/
 
             $status .= "</div>";
 
@@ -453,7 +463,6 @@ class Station extends CI_Controller {
             $row[] = $driver;
             $row[] = "<div class='text-nowrap'>" . $p->po_truck_number . '</div>';
             $row[] = $status;
-            $row[] = $delivery;
 
 
             $actions = "";
@@ -668,13 +677,9 @@ class Station extends CI_Controller {
 
         $validations = [
                 ['field' => 'order_date', 'label' => 'Order Date', 'rules' => 'trim|required|callback_validateOrderDate', 'errors' => ['required' => 'Select the order date.']],
-            //['field' => 'po_station_id', 'label' => 'Delivery Point', 'rules' => 'trim|required|callback_validatePoStationId'],
-            //['field' => 'po_depo_id', 'label' => 'Depo', 'rules' => 'trim|required'],
-            //['field' => 'super_qty', 'label' => 'super quantity', 'rules' => 'trim|numeric|callback_validateSuperQty'],
-            //['field' => 'diesel_qty', 'label' => 'diesel quantity', 'rules' => 'trim|numeric|callback_validateDieselQty'],
-            //['field' => 'kerosene_qty', 'label' => 'kerosene quantity', 'rules' => 'trim|numeric|callback_validateKeroseneQty'],
-            ['field' => 'truck_number', 'label' => 'Truck Number', 'rules' => 'trim|required'],
-                ['field' => 'driver_id', 'label' => 'Driver', 'rules' => 'trim|required'],
+                ['field' => 'truck_number', 'label' => 'Truck Number', 'rules' => 'trim|required'],
+                ['field' => 'driver_name', 'label' => 'Driver', 'rules' => 'trim|required'],
+                ['field' => 'license_number', 'label' => 'Driver License Number', 'rules' => 'trim|required'],
                 ['field' => 'lpo_notes', 'label' => 'Purchase order notes', 'rules' => 'trim'],
                 ['field' => 'supplier_id', 'label' => 'Supplier', 'rules' => 'trim|required'],
                 ['field' => 'product[]', 'label' => 'Product type', 'rules' => 'trim|required'],
@@ -709,7 +714,7 @@ class Station extends CI_Controller {
                     'poq_unit_price' => $price[$key]
                 ];
             }
-           
+
 
             $transfer_note_data = [
                 'stn_status' => 'GENERATED'
@@ -718,21 +723,17 @@ class Station extends CI_Controller {
 
             $order_data = [
                 'po_date' => date('Y-m-d', strtotime($this->input->post('order_date'))),
-//                'po_depo_id' => $this->input->post('po_depo_id'),
-//                'po_station_id' => $this->input->post('po_station_id'),
-                'po_user_id' => $this->user_id,
+                'po_user_id' => $this->usr->user_id,
                 'po_truck_number' => $this->input->post('truck_number'),
-//                'po_volume' => $this->input->post('volume_ordered'),
-                'po_driver_id' => $this->input->post('driver_id'),
+                'po_driver_name' => $this->input->post('driver_name'),
+                'po_driver_license_number' => $this->input->post('license_number'),
                 'po_notes' => $this->input->post('lpo_notes'),
                 'po_admin_id' => $this->usr->admin_id,
                 'po_supplier_id' => $this->input->post('supplier_id'),
-                'po_status' => 'UNRELEASED'
-//                'po_vessel_id' => $vessel['vessel_id'],
-//                'po_fuel_type_group_id' => $vessel['vessel_fuel_type_group_id']
+                'po_status' => 'NEW'
             ];
 
-            $res = $this->purchase->savePurchaseOrder(['order_data' => $order_data, 'po_qty_data' => $po_qty_data,  'transfer_note_data' => $transfer_note_data], $this->admin_id); //'vessels' => $vessels,
+            $res = $this->purchase->savePurchaseOrder(['order_data' => $order_data, 'po_qty_data' => $po_qty_data, 'transfer_note_data' => $transfer_note_data], $this->admin_id); //'vessels' => $vessels,
 
             if ($res) {
                 $this->setSessMsg('Order created succesffuly', 'success');

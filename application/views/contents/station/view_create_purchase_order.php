@@ -45,6 +45,7 @@
                                 </select>
                             </div>
                         </div>
+                        <!--
                         <div class="col-md-4 col-sm-6">
                             <div class="form-group" id="driver_id">
                                 <label>Select Driver</label>
@@ -59,12 +60,26 @@
                                     ?>
                                 </select>
                             </div>
-                        </div>
-
+                        </div>-->
+                        
                         <div class="col-md-4 col-sm-6">
                             <div class="form-group" id="truck_number">
                                 <label>Truck Number</label>
-                                <input autocomplete="off" placeholder="Enter the truck number" id="_truck_number" class="form-control" name="truck_number"  value="">
+                                <input autocomplete="off" placeholder="Enter the truck number"  class="form-control" name="truck_number"  value="">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 col-sm-6">
+                            <div class="form-group" id="driver_name">
+                                <label>Driver Name</label>
+                                <input autocomplete="off" placeholder="Enter the driver name" class="form-control" name="driver_name"  value="">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 col-sm-6">
+                            <div class="form-group" id="license_number">
+                                <label>License Number</label>
+                                <input autocomplete="off" placeholder="Enter the license number" class="form-control" name="license_number"  value="">
                             </div>
                         </div>
                     </div>

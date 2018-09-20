@@ -4,10 +4,10 @@ Class PurchaseModel extends CI_Model {
 
     var $admin_id = null;
     //Purchase Order 
-    var $tbl_purchase_order = 'purchase_order po';
-    var $cols_select_purchase_order = ['poq.order_qty', 'd.user_fullname po_driver_name', 'd.user_driving_license po_driver_license', 'ri.ri_status', 'po.po_id', 'po.po_date', 'po.po_number', 'po.po_truck_number', 'st.station_name'];
-    var $cols_search_purchase_order = ['po.po_id', 'po.po_number', 'po.po_date', 'po.po_driver_name', 'po.po_driver_license', 'st.station_name'];
-    var $cols_order_purchase_order = ['po.po_id', 'po.po_volume'];
+    var $tbl_purchase_order = 'po po';
+    var $cols_select_purchase_order = ['poq.order_qty', 'po.po_id', 'po.po_date', 'po.po_number', 'po.po_truck_number', 'po.po_driver_name', 'po.po_driver_license_number','po.po_status'];
+    var $cols_search_purchase_order = ['po.po_id', 'po.po_number', 'po.po_date', 'po.po_driver_name', 'po.po_driver_license_number'];
+    var $cols_order_purchase_order = ['po.po_number'];
     var $col_order_by_purchase_order = ['po.po_number' => 'DESC'];
     // Release Instructions 
     var $tbl_release_instruction = 'release_instructions ri';
@@ -94,25 +94,19 @@ Class PurchaseModel extends CI_Model {
         if ($cols !== null) {
             $this->db->select($cols);
         } else {
-            $this->db->select('*,d.user_fullname po_driver_name,d.user_driving_license po_driver_license,poq.order_qty order_qty,s.pc_contact_text contact_text');
+            $this->db->select('*,po.po_driver_name po_driver_name,po.po_driver_license_number po_driver_license,poq.order_qty order_qty,"test" contact_text');
         }
 
         $res = $this->db
-                ->from('purchase_order po')
+                ->from('po po')
                 ->join('users u', 'u.user_id = po.po_user_id', 'INNER')
-                ->join('depots depo', 'depo.depo_id = po.po_depo_id', 'LEFT OUTER')
+                ->join('suppliers s', 's.supplier_id = po.po_supplier_id', 'INNER')
                 ->join("(SELECT poq.poq_po_id,"
-                        . "GROUP_CONCAT(CONCAT('{\"poq_ftg_id\":\"',poq.poq_ftg_id,'\",\"poq_volume\" :\"',poq.poq_volume,'\",\"poq_vessel_id\" :\"',poq.poq_vessel_id,'\",\"poq_status\" :\"',poq.poq_status,'\",\"poq_po_id\" :\"',poq.poq_po_id,'\",\"station_name\" :\"',s.station_name,'\",\"product\" :\"',ftg.fuel_type_group_name,'\"}')) order_qty FROM " . $this->db->dbprefix . "purchase_order_qty poq, " . $this->db->dbprefix . "stations s," . $this->db->dbprefix . "fuel_types_group ftg WHERE poq.poq_station_id = s.station_id AND poq.poq_ftg_id = ftg.fuel_type_group_id  GROUP BY poq.poq_po_id) poq", "poq.poq_po_id = po.po_id", 'INNER')
-//                ->join('fuel_types_group ftg', 'ftg.fuel_type_group_id = po.po_fuel_type_group_id', 'INNER')
-//                ->join('vessels v', 'v.vessel_id = po.po_vessel_id', 'INNER')
-                ->join('stations st', 'st.station_id = po.po_station_id', 'LEFT OUTER')
-                ->join('petronite_customers c', 'c.pc_admin_id = st.station_admin_id')
-                ->join('petronite_customers s', 's.pc_admin_id = depo.depo_admin_id')
-                ->join('users d', 'd.user_id = po.po_driver_id', 'INNER')
-                ->join('release_instructions ri', 'ri.ri_id = po.po_ri_id', 'LEFT OUTER')
-                ->join('stock_transfer_notes stn','stn.stn_po_id = po.po_id AND stn.stn_depo_id = depo.depo_id','INNER')
-                ->order_by('po.po_timestamp', 'DESC')
-                ->get();
+                        . "GROUP_CONCAT(CONCAT('{\"poq_ftg_id\":\"',poq.poq_ftg_id,'\",\"poq_unit_price\":\"',poq.poq_unit_price,'\",\"poq_volume\" :\"',poq.poq_volume,'\",\"poq_po_id\" :\"',poq.poq_po_id,'\",\"poq_status\" :\"',poq.poq_status,'\",\"product\" :\"',ftg.fuel_type_group_name,'\"}')) order_qty "
+                        . "FROM " . $this->db->dbprefix . "purchase_order_qty poq "
+                        . "JOIN " . $this->db->dbprefix . "fuel_types_group ftg ON  poq.poq_ftg_id = ftg.fuel_type_group_id  "
+                        . "GROUP BY poq.poq_po_id) poq", "poq.poq_po_id = po.po_id", 'INNER')
+                ->join('petronite_customers c', 'c.pc_admin_id = po.po_admin_id')->get();
 
         if ($limit == 1 AND $res->num_rows() == 1) {
             return $res->row_array();
@@ -148,9 +142,9 @@ Class PurchaseModel extends CI_Model {
 
     public function generatePurchaseOrderNumber($admin_id) {
         $res = $this->db->select('po.po_id')
-                        ->from('purchase_order po')
-                        ->join('stations st', 'st.station_id = po.po_station_id', 'INNER')
-                        ->where(['st.station_admin_id' => $admin_id])->get();
+                        ->from('po po')
+                        //->join('stations st', 'st.station_id = po.po_station_id', 'INNER')
+                        ->where(['po.po_admin_id' => $admin_id])->get();
 
         $po = 1 + (int) $res->num_rows();
 
@@ -184,39 +178,26 @@ Class PurchaseModel extends CI_Model {
 
     public function savePurchaseOrder($data, $admin_id) {
 
-        $po_id = NULL;
-
         $this->db->trans_start();
 
         $this->db->trans_strict(TRUE);
 
-        $this->db->insert('purchase_order', $data['order_data']);
+        $this->db->insert('po', $data['order_data']);
 
         $po_id = $this->db->insert_id();
 
         foreach ($data['po_qty_data'] as $key => $pqd) {
             $data['po_qty_data'][$key]['poq_po_id'] = $po_id;
             $data['po_qty_data'][$key]['poq_status'] = 'UNRELEASED';
-//            foreach ($data['vessels'] as $v) {
-//                if ($v['fuel_type_group_id'] == $data['po_qty_data'][$key]['poq_ftg_id']) {
-//                    $data['po_qty_data'][$key]['poq_vessel_id'] = $v['vessel_id'];
-//                }
-//            }
         }
-        
         
         $this->db->insert_batch('purchase_order_qty', $data['po_qty_data']);
 
         $po_number = $this->generatePurchaseOrderNumber($admin_id);
 
-        $this->db->where('po_id', $po_id)->update('purchase_order', ['po_number' => cus_preciding_zeros($po_number)]);
-//
-//        $data['transfer_note_data']['stn_po_id'] = $po_id;
-//        $data['transfer_note_data']['stn_depo_id'] = $data['order_data']['po_depo_id'];
-//        $data['transfer_note_data']['stn_number'] = cus_preciding_zeros($this->generateStnNumber($data['order_data']['po_depo_id']));
-//        
-//        $this->db->insert('stock_transfer_notes',$data['transfer_note_data']);
-//        
+        $this->db->where('po_id', $po_id)->update('po', ['po_number' => cus_preciding_zeros($po_number)]);
+
+        
         $this->db->trans_complete();
 
         if ($this->db->trans_status() === FALSE) {
@@ -314,24 +295,19 @@ Class PurchaseModel extends CI_Model {
         $this->db->select($this->cols_select_purchase_order);
         $this->db->from($this->tbl_purchase_order)
                 ->join('users u', 'u.user_id = po.po_user_id', 'INNER')
-                ->join('users d', 'd.user_id = po.po_driver_id', 'INNER')
-                ->join('depots depo', 'depo.depo_id = po.po_depo_id', 'LEFT OUTER')
                 ->join("(SELECT poq.poq_po_id,"
-                        . "GROUP_CONCAT(CONCAT('{\"poq_ftg_id\":\"',poq.poq_ftg_id,'\",\"poq_volume\" :\"',poq.poq_volume,'\",\"poq_po_id\" :\"',poq.poq_po_id,'\",\"poq_status\" :\"',poq.poq_status,'\",\"poq_po_id\" :\"',poq.poq_po_id,'\",\"station_name\" :\"',s.station_name,'\",\"product\" :\"',ftg.fuel_type_group_name,'\"}')) order_qty FROM " . $this->db->dbprefix . "purchase_order_qty poq LEFT OUTER JOIN " . $this->db->dbprefix . "stations s ON poq.poq_station_id = s.station_id JOIN " . $this->db->dbprefix . "fuel_types_group ftg ON  poq.poq_ftg_id = ftg.fuel_type_group_id  GROUP BY poq.poq_po_id) poq", "poq.poq_po_id = po.po_id", 'INNER')
-//                ->join('fuel_types_group ftg', 'ftg.fuel_type_group_id = po.po_fuel_type_group_id', 'INNER')
-//                ->join('vessels v', 'v.vessel_id = po.po_vessel_id', 'INNER')
-                ->join('stations st', 'st.station_id = po.po_station_id', 'LEFT OUTER')
-                ->join('petronite_customers c', 'c.pc_admin_id = po.po_admin_id')
-                ->join('petronite_customers s', 's.pc_admin_id = depo.depo_admin_id','LEFT OUTER')
-                ->join('release_instructions ri', 'ri.ri_id = po.po_ri_id', 'LEFT OUTER');
+                        . "GROUP_CONCAT(CONCAT('{\"poq_ftg_id\":\"',poq.poq_ftg_id,'\",\"poq_volume\" :\"',poq.poq_volume,'\",\"poq_po_id\" :\"',poq.poq_po_id,'\",\"poq_status\" :\"',poq.poq_status,'\",\"product\" :\"',ftg.fuel_type_group_name,'\"}')) order_qty "
+                        . "FROM " . $this->db->dbprefix . "purchase_order_qty poq "
+                        . "JOIN " . $this->db->dbprefix . "fuel_types_group ftg ON  poq.poq_ftg_id = ftg.fuel_type_group_id  "
+                        . "GROUP BY poq.poq_po_id) poq", "poq.poq_po_id = po.po_id", 'INNER')
+                ->join('petronite_customers c', 'c.pc_admin_id = po.po_admin_id');
 
         if (null != $admin_id) {
             $this->db->where_in('po.po_admin_id', $admin_id);
         }
 
         $this->db->where('po.po_status <> ', 'DELETED');
-
-
+        
         $i = 0;
         foreach ($this->cols_search_purchase_order as $item) { // loop column 
             if ($_POST['search']['value']) { // if datatable send POST for search
@@ -375,8 +351,7 @@ Class PurchaseModel extends CI_Model {
 
     public function count_all_purchase_order($type = "", $admin_id =null) {
         $this->db->select($this->cols_select_purchase_order);
-        $this->db->from($this->tbl_purchase_order)
-                ->join('stations st', 'st.station_id = po.po_station_id', 'INNER');
+        $this->db->from($this->tbl_purchase_order);
         $this->db->where('po.po_status <> ', 'DELETED');
 
         if (!empty($admin_id)) {

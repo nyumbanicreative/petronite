@@ -35,7 +35,6 @@
                                     <th>Driver</th>
                                     <th>Truck Number</th>
                                     <th>Order Status</th>
-                                    <th>Delivery</th>
                                     <th style="width:10px;"></th>
                                 </tr>
                             </thead>
@@ -80,7 +79,7 @@
                 {responsivePriority: 1, targets: 1},
                 {responsivePriority: 2, targets: -1},
                 {
-                    "targets": [2, 4, 5, 6], //first column / numbering column
+                    "targets": [2, 4, 5], //first column / numbering column
                     "orderable": false, //set not orderable
                 },
             ]
